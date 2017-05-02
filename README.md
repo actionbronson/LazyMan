@@ -10,7 +10,7 @@ To make it an all in one jar:
 
 Under the Files tab, right click `build.xml` then Run Target > Other Targets > package-for-store. The jar should appear in the folder called `store`.
 
-##Support LazyMan 
+## Support LazyMan 
 
 LazyMan is free and frequently updated. Out of pocket costs are required to keep this project going. Here are some ways you can support it
 
