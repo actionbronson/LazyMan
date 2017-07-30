@@ -37,9 +37,8 @@ public class Streamlink {
         }
         String ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Like Gecko) Chrome/48.0.2564.82 Safari/537.36 Edge/14.14316";
         ProcessBuilder pb;
-
-        List<String> args = new ArrayList<>(Arrays.asList(new String[]{location, getURLFormat(gwi.getUrl(), gwi.getQuality().equals("best")), gwi.getQuality(),
-            "--http-header", "\"User-Agent=" + ua + "\"", "--http-cookie=mediaAuth=" + Encryption.getSaltString()}));
+       
+        List<String> args = new ArrayList<>(Arrays.asList(new String[]{location, getURLFormat(gwi.getUrl(), gwi.getQuality().equals("best")), gwi.getQuality(),            "--http-header", "\"User-Agent=" + ua + "\"", "--http-cookie=mediaAuth=" + Encryption.getSaltString()}));
 
         if (record) {
             String saveLoc = Props.getSaveStreamLoc() + File.separator + gwi.getDate();

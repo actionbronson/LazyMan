@@ -241,6 +241,46 @@ public class Props {
             }
         }
     }
+    
+    public static String getMLBTeam() {
+        try {
+            InputStream input;
+            input = new FileInputStream(getConfigLoc());
+
+            PROP.load(input);
+            input.close();
+            if (PROP.containsKey("MLBTeam")) {
+                return PROP.getProperty("MLBTeam");
+            }
+            return "";
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public static void setMLBTeam(String team) {
+        OutputStream output = null;
+        try {
+            output = new FileOutputStream(getConfigLoc());
+
+            PROP.setProperty("MLBTeam", team);
+            PROP.store(output, "");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            e.printStackTrace();
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     public static void setPreferFrench(String f) {
         OutputStream output = null;

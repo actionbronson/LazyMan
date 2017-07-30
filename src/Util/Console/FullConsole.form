@@ -2,11 +2,15 @@
 
 <Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JDialogFormInfo">
   <NonVisualComponents>
-    <Menu class="javax.swing.JPopupMenu" name="consolePM">
+    <Container class="javax.swing.JPopupMenu" name="consolePM">
       <Properties>
         <Property name="label" type="java.lang.String" value="popupMenu1"/>
       </Properties>
-    </Menu>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
+        <Property name="useNullLayout" type="boolean" value="true"/>
+      </Layout>
+    </Container>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
@@ -57,7 +61,7 @@
             </Property>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jTextPane1.addMouseListener(new PopupListener(consolePM));"/>
+            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jTextPane1.addMouseListener(new PopupListener(consolePM));&#xa;jTextPane1.setEditable(false);"/>
           </AuxValues>
         </Component>
       </SubComponents>

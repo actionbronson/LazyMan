@@ -1,135 +1,50 @@
-
 package GameObj;
 
+import java.util.ArrayList;
 
 public class GameStream {
 
-    private String aMID, hMID, nMID, fMID, threeCamMID, sixCamMID, aTV, hTV, nTV, fTV;
-    private final String[] isoStreamNames = new String[3], isoStreams = new String[3];
+    private final ArrayList<ArrayList<String>> feeds = new ArrayList<>();
 
-    
-    public void setAwayMediaID(String id) {
-        aMID=id;
+    public void addFeed(String name, String id, String tv) {
+        ArrayList<String> feed = new ArrayList<>();
+        feed.add(name);
+        feed.add(id);
+        feed.add(tv);
+        feeds.add(feed);
     }
 
-    
-    public String getAwayMediaID() {
-        return aMID;
+    public String getFeedName(int idx) {
+        return feeds.get(idx).get(0);
     }
 
-    
-    public void setHomeMediaID(String id) {
-        hMID=id;
+    public String getFeedID(int idx) {
+        return feeds.get(idx).get(1);
     }
 
-    
-    public String getHomeMediaID() {
-        return hMID;
+    public String getFeedTV(int idx) {
+        return feeds.get(idx).get(2);
     }
 
-    
-    public void setNationalMediaID(String id) {
-        nMID = id;
+    public int getNumOfFeeds() {
+        return feeds.size();
     }
 
-    
-    public String getNationalMediaID() {
-        return nMID;
-    }
-
-    
-    public void setFrenchMediaID(String id) {
-        fMID = id;
-    }
-
-    
-    public String getFrenchMediaID() {
-        return fMID;
-    }
-
-    
-    public void setAwayTVStation(String station) {
-        aTV=station;
-    }
-
-    
-    public String getAwayTVStation() {
-        return aTV;
-    }
-
-    
-    public void setHomeTVStation(String station) {
-        hTV=station;
-    }
-
-    
-    public String getHomeTVStation() {
-        return hTV;
-    }
-
-    
-    public void setNationalTVStation(String station) {
-        nTV=station;
-    }
-
-    
-    public String getNationalTVStation() {
-        return nTV;
-    }
-
-    
-    public void setFrenchTVStation(String station) {
-        fTV=station;
-    }
-
-    
-    public String getFrenchTVStation() {
-        return fTV;
-    }
-
-
-    public String getThreeCamMID() {
-        return threeCamMID;
-    }
-
-    public void setThreeCamMID(String threeCamMID) {
-        this.threeCamMID = threeCamMID;
-    }
-
-    public String getSixCamMID() {
-        return sixCamMID;
-    }
-
-    public void setSixCamMID(String sixCamMID) {
-        this.sixCamMID = sixCamMID;
-    }
-
-    public String getIsoStreamNames(int index) {
-        try {
-        return isoStreamNames[index];
-        } catch (ArrayIndexOutOfBoundsException ae) {
-            return null;
+    public boolean contains(String s) {
+        for (int i = 0; i < feeds.size(); i++) {
+            if (feeds.get(i).get(0).equals(s)) {
+                return true;
+            }
         }
+        return false;
     }
 
-    public void setIsoStreamNames(String isoStreamName, int index) {
-        try {
-        this.isoStreamNames[index] = isoStreamName;
-        } catch (ArrayIndexOutOfBoundsException ae) {
-            ae.printStackTrace();
+    public int getFeedIndex(String feed) {
+        for (int i = 0; i < feeds.size(); i++) {
+            if (feeds.get(i).get(0).equals(feed)) {
+                return i;
+            }
         }
+        return 0;
     }
-    
-   public String getIsoStream(int index) {
-       try {
-           return isoStreams[index];
-        } catch (ArrayIndexOutOfBoundsException ae) {
-            return null;
-        }
-    }
-
-    public void setIsoStream(String isoStream, int index) {
-        this.isoStreams[index] = isoStream;
-    }
-    
 }

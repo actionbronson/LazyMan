@@ -25,7 +25,7 @@ public class Web {
             ex.printStackTrace();
         }
         catch (Exception x) {
-            System.err.println(url);
+            x.printStackTrace();
         }
         return c;
     }

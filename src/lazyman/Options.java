@@ -6,10 +6,11 @@ import java.nio.file.Paths;
 import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Options extends javax.swing.JDialog {
 
-    private Map<String, String> nhl;
+    private Map<String, String> nhl, mlb;
     private String fcb;
 
     public Options(java.awt.Frame parent, boolean modal) {
@@ -17,18 +18,31 @@ public class Options extends javax.swing.JDialog {
         initComponents();
 
         nhl = new java.util.TreeMap();
+        mlb = new java.util.TreeMap();
         setNHLMap();
+        setMLBMap();
         
             fcb = Props.getPreferFrench();
-            String team = Props.getNHLTeam();
-            if (!team.equals("")) {
+            String nhlTeam = Props.getNHLTeam();
+            if (!nhlTeam.equals("")) {
                 for (Map.Entry<String, String> e : nhl.entrySet()) {
-                    if (team.equals(e.getValue())) {
-                        team = (String) e.getKey();
+                    if (nhlTeam.equals(e.getValue())) {
+                        nhlTeam = (String) e.getKey();
                         break;
                     }
                 }
-                NHLCB.setSelectedItem(team);
+                NHLCB.setSelectedItem(nhlTeam);
+            }
+            
+            String mlbTeam = Props.getMLBTeam();
+            if (!mlbTeam.equals("")) {
+                for (Map.Entry<String, String> e : mlb.entrySet()) {
+                    if (mlbTeam.equals(e.getValue())) {
+                        mlbTeam = (String) e.getKey();
+                        break;
+                    }
+                }
+                MLBCB.setSelectedItem(mlbTeam);
             }
 
             if (Props.getPreferFrench().equals("1")) {
@@ -60,7 +74,9 @@ public class Options extends javax.swing.JDialog {
             
             refreshSpinner.setValue(Props.getRefreshRate());
             
-    
+            if (!mpLocTB.getText().equals("")) {
+                mpLocTB.setText(Props.getVlcloc());
+            }
     }
 
     /**
@@ -88,6 +104,11 @@ public class Options extends javax.swing.JDialog {
         mpArgTB = new javax.swing.JTextArea();
         jLabel5 = new javax.swing.JLabel();
         refreshSpinner = new javax.swing.JSpinner();
+        jLabel6 = new javax.swing.JLabel();
+        mpLocTB = new javax.swing.JTextField();
+        mpLocBtn = new javax.swing.JButton();
+        jLabel7 = new javax.swing.JLabel();
+        MLBCB = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -169,6 +190,26 @@ public class Options extends javax.swing.JDialog {
             }
         });
 
+        jLabel6.setText("Media Player Location :");
+
+        mpLocTB.setText("jTextField1");
+
+        mpLocBtn.setText("...");
+        mpLocBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mpLocBtnActionPerformed(evt);
+            }
+        });
+
+        jLabel7.setText("Choose your favorite MLB team:");
+
+        MLBCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "None", "Arizona Diamondbacks", "Atlanta Braves", "Baltimore Orioles", "Boston Red Sox", "Chicago Cubs", "Chicago White Sox", "Cinncinnati Reds", "Cleveland Indians", "Colorado Rockies", "Detroit Tigers", "Houston Astros", "Kansas City Royals", "Los Angeles Angels", "Los Angeles Dodgers", "Miami Marlins", "Milwaukee Brewers", "Minnesota Twins", "New York Mets", "New York Yankees", "Oakland Athletics", "Philadelphia Phillies", "Pittsburgh Pirates", "San Diego Padres", "San Francisco Giants", "Seattle Mariners", "St. Louis Cardinals", "Tampa Bay Rays", "Texas Rangers", "Toronto Blue Jays", "Washington Nationals" }));
+        MLBCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MLBCBActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -177,16 +218,17 @@ public class Options extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(refreshSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.LEADING))
-                        .addContainerGap(175, Short.MAX_VALUE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(saveStreamLocTB)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(setSaveBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(frenchCheckBox))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(applyBtn)
@@ -194,24 +236,30 @@ public class Options extends javax.swing.JDialog {
                         .addComponent(closeBtn)
                         .addGap(24, 24, 24))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(mpLocTB)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(mpLocBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(NHLCB, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(73, 73, 73))
-                                    .addComponent(saveStreamLocTB))
+                                .addComponent(jLabel5)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(setSaveBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(frenchCheckBox)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                                .addComponent(refreshSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel6))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
+                                .addGap(4, 4, 4)
+                                .addComponent(MLBCB, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(NHLCB, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(115, 115, 115))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -222,14 +270,24 @@ public class Options extends javax.swing.JDialog {
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(frenchCheckBox)
-                .addGap(13, 13, 13)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(MLBCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(mpLocTB, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(mpLocBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(setSaveBtn)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(1, 1, 1)
-                        .addComponent(saveStreamLocTB)))
+                        .addComponent(saveStreamLocTB, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
@@ -238,15 +296,15 @@ public class Options extends javax.swing.JDialog {
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(26, 26, 26)
+                .addGap(46, 46, 46)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(applyBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(closeBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addGap(18, 18, 18))
         );
 
         pack();
@@ -255,6 +313,8 @@ public class Options extends javax.swing.JDialog {
     private void applyBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyBtnActionPerformed
         String team = (String) NHLCB.getSelectedItem();
         Props.setNHLTeam((String) nhl.get(team));
+        team = (String) MLBCB.getSelectedItem();
+        Props.setMLBTeam((String) mlb.get(team));
         if (frenchCheckBox.isSelected()) {
             Props.setPreferFrench("1");
         } else {
@@ -264,6 +324,7 @@ public class Options extends javax.swing.JDialog {
         Props.setStreamlinkArgs(slArgTB.getText());
         Props.setMediaPlayerrArgs(mpArgTB.getText());
         Props.setRefreshRate((int) refreshSpinner.getValue());
+        Props.setVlcloc(mpLocTB.getText());
         applyBtn.setEnabled(false);
     }//GEN-LAST:event_applyBtnActionPerformed
 
@@ -329,6 +390,43 @@ public class Options extends javax.swing.JDialog {
         enableApply();
     }//GEN-LAST:event_refreshSpinnerStateChanged
 
+    private void mpLocBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mpLocBtnActionPerformed
+        String loc;
+
+        if (!System.getProperty("os.name").toLowerCase().contains("win")) {
+            FileDialog fd = new FileDialog(this, "Choose Media Player", FileDialog.LOAD);
+            if (!Props.getVlcloc().equals("")) {
+                fd.setFile(Props.getVlcloc());
+            }
+
+            fd.setVisible(true);
+            loc = fd.getFile();
+            if (loc != null) {
+                mpLocTB.setText(Paths.get(fd.getDirectory(), fd.getFile()).toAbsolutePath().normalize().toString());
+            }
+        } else {
+            javax.swing.JFileChooser fileChooser = new JFileChooser();
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                fileChooser.setFileFilter(new FileNameExtensionFilter("Executable Files", "exe"));
+            } else {
+                fileChooser.setFileFilter(null);
+            }
+            if (!Props.getVlcloc().equals("")) {
+                fileChooser.setCurrentDirectory(new java.io.File(Props.getVlcloc()));
+            }
+            int returnVal = fileChooser.showOpenDialog(null);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                loc = fileChooser.getSelectedFile().getPath();
+                mpLocTB.setText(loc);
+            }
+        }
+        enableApply();
+    }//GEN-LAST:event_mpLocBtnActionPerformed
+
+    private void MLBCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MLBCBActionPerformed
+        enableApply();
+    }//GEN-LAST:event_MLBCBActionPerformed
+
     private void setNHLMap() {
         nhl.put("None", "None");
         nhl.put("Ottawa Senators", "OTT");
@@ -363,8 +461,43 @@ public class Options extends javax.swing.JDialog {
         nhl.put("Vancouver Canucks", "VAN");
         nhl.put("Vegas Golden Knights", "VGK");
     }
+    
+    private void setMLBMap() {
+        mlb.put("None", "None");
+        mlb.put("Chicago Cubs", "CHC");
+        mlb.put("Chicago White Sox", "CWS");
+        mlb.put("Oakland Athletics", "OAK");
+        mlb.put("Baltimore Orioles", "BAL");
+        mlb.put("New York Yankees", "NYY");
+        mlb.put("Toronto Blue Jays", "TOR");
+        mlb.put("Pittsburgh Pirates", "PIT");
+        mlb.put("New York Mets", "NYM");
+        mlb.put("Seattle Mariners", "SEA");
+        mlb.put("Boston Red Sox", "BOS");
+        mlb.put("Arizona Diamondbacks", "ARI");
+        mlb.put("Atlanta Braves", "ATL");
+        mlb.put("Tampa Bay Rays", "TB");
+        mlb.put("Texas Rangers", "TEX");
+        mlb.put("Cleveland Indians", "CLE");
+        mlb.put("Minnesota Twins", "MIN");
+        mlb.put("Detroit Tigers", "DET");
+        mlb.put("Houston Astros", "HOU");
+        mlb.put("Los Angeles Angels", "LAA");
+        mlb.put("Kansas City Royals", "KC");
+        mlb.put("Philadelphia Phillies", "PHI");
+        mlb.put("Milwaukee Brewers", "MIL");
+        mlb.put("Miami Marlins", "MIA");
+        mlb.put("St. Louis Cardinals", "STL");
+        mlb.put("San Diego Padres", "SD");
+        mlb.put("Colorado Rockies", "COL");
+        mlb.put("Cincinnati Reds", "CIN");
+        mlb.put("Los Angeles Dodgers", "LAD");
+        mlb.put("Washington Nationals", "WSH");
+        mlb.put("San Francisco Giants", "SF");
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> MLBCB;
     private javax.swing.JComboBox<String> NHLCB;
     private javax.swing.JButton applyBtn;
     private javax.swing.JButton closeBtn;
@@ -374,9 +507,13 @@ public class Options extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea mpArgTB;
+    private javax.swing.JButton mpLocBtn;
+    private javax.swing.JTextField mpLocTB;
     private javax.swing.JSpinner refreshSpinner;
     private javax.swing.JTextField saveStreamLocTB;
     private javax.swing.JButton setSaveBtn;
@@ -386,11 +523,13 @@ public class Options extends javax.swing.JDialog {
     private void enableApply() {
         boolean enable;
         enable = !Props.getNHLTeam().equals(nhl.get(NHLCB.getSelectedItem())) ||
+                !Props.getMLBTeam().equals(mlb.get(MLBCB.getSelectedItem())) ||
                 !Props.getPreferFrench().equals(fcb) ||
                 !Props.getSaveStreamLoc().equals(saveStreamLocTB.getText()) ||
                 !Props.getStreamLinkArgs().equals(slArgTB.getText()) ||
                 !Props.getMediaPlayerrArgs().equals(mpArgTB.getText()) ||
-                Props.getRefreshRate() != (int) refreshSpinner.getValue();
+                Props.getRefreshRate() != (int) refreshSpinner.getValue() ||
+                !Props.getVlcloc().equals(mpLocTB.getText());
         applyBtn.setEnabled(enable);
     }
 }

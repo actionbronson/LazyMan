@@ -36,6 +36,7 @@ public class FullConsole extends javax.swing.JDialog {
         jTextPane1.setForeground(new java.awt.Color(255, 255, 255));
         jScrollPane1.setViewportView(jTextPane1);
         jTextPane1.addMouseListener(new PopupListener(consolePM));
+        jTextPane1.setEditable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

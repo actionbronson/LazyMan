@@ -47,10 +47,10 @@ public class ProcessReader {
                             int offset = document.getLength();
                             message = stdInput.readLine();
                             try {
-                                if (message.contains("med.nhl") && message.contains("m3u8")) {
+                                if (message.contains("http") && message.contains("m3u8")) {
                                     message = message.substring(0, message.indexOf("http")) + "<censored>" + message.substring(message.indexOf("m3u8")+4, message.length());
                                 }
-                                if (message.contains("med.nhl") && message.contains(".ts")) {
+                                if (message.contains("http") && message.contains(".ts")) {
                                     message = message.substring(0, message.indexOf("http")) + "<censored>" + message.substring(message.indexOf("ts")+2, message.length());
                                 }
 

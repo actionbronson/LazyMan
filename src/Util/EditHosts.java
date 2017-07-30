@@ -18,20 +18,45 @@ import java.util.Scanner;
 public class EditHosts {
 
     private String ip = getIP();
-    private final String host = "mf.svc.nhl.com";
-    private boolean wrongIP = false, ipNotFound = false ;
+    private final String NHLHost = "mf.svc.nhl.com", MLBHost = "mlb-ws-mf.media.mlb.com";
+    private boolean NHLWrongIP = false, NHLIPNotFound = false, MLBWrongIP = false, MLBIPNotFound = false;
 
-    public boolean hostsFileEdited() {
+    public boolean hostsFileEdited(String league) {
         if (!Props.getIP().equals("")) {
             ip = Props.getIP();
         }
-        if (ip == null)
+        if (ip == null) {
             return false;
-        
+        }
+
         Scanner s = null;
         boolean edited = false;
         try {
-            if (InetAddress.getByName(new URL("http://" + host).getHost()).getHostAddress().equals(ip)) {
+            if (league.equals("NHL")) {
+                if (InetAddress.getByName(new URL("http://" + NHLHost).getHost()).getHostAddress().equals(ip)) {
+                    return true;
+                } else {
+                    File hosts;
+
+                    if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                        hosts = new File(System.getenv("WINDIR") + "\\system32\\drivers\\etc\\hosts");
+                    } else {
+                        hosts = new File("/etc/hosts");
+                    }
+
+                    s = new Scanner(hosts);
+                    while (s.hasNext()) {
+                        String line = s.nextLine();
+                        if (line.startsWith(ip) && line.contains(NHLHost)) {
+                            edited = true;
+                            break;
+                        } else if (line.contains(NHLHost)) {
+                            NHLWrongIP = true;
+                            break;
+                        }
+                    }
+                }
+            } else if (InetAddress.getByName(new URL("http://" + MLBHost).getHost()).getHostAddress().equals(ip)) {
                 return true;
             } else {
                 File hosts;
@@ -45,11 +70,11 @@ public class EditHosts {
                 s = new Scanner(hosts);
                 while (s.hasNext()) {
                     String line = s.nextLine();
-                    if (line.startsWith(ip) && line.contains(host)) {
+                    if (line.startsWith(ip) && line.contains(MLBHost)) {
                         edited = true;
                         break;
-                    } else if (line.contains(host)) {
-                        wrongIP = true;
+                    } else if (line.contains(MLBHost)) {
+                        MLBWrongIP = true;
                         break;
                     }
                 }
@@ -64,62 +89,103 @@ public class EditHosts {
         return edited;
     }
 
-    public boolean editHosts() {
-        if (ipNotFound)
+    public boolean editHosts(String league) {
+        if (league.equals("NHL")) {
+            if (NHLIPNotFound) {
+                return false;
+            }
+        } else if (MLBIPNotFound) {
             return false;
-        
+        }
+
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
-            return editWindowsHosts();
+            return editWindowsHosts(league);
         } else {
-            return editUnixHosts();
+            return editUnixHosts(league);
         }
     }
 
-    private boolean editUnixHosts() {
+    private boolean editUnixHosts(String league) {
         if (!Props.getIP().equals("")) {
             ip = Props.getIP();
         }
 
-        String p = "echo \'" + Props.getPW() + "\' | sudo -S ", line = "\n" + ip + " " + host;
-        Process e;
-        try {
-            e = new ProcessBuilder(new String[]{"/bin/sh", "-c", p + "-- sh -c \"echo \'" + line + "\' >> /etc/hosts\""}).start();
-            e.waitFor();
-            return hostsFileEdited();
-        } catch (IOException | InterruptedException ex) {
-            ex.printStackTrace();
+        if (league.equals("NHL")) {
+            String p = "echo \'" + Props.getPW() + "\' | sudo -S ", line = "\n" + ip + " " + NHLHost;
+            Process e;
+            try {
+                e = new ProcessBuilder(new String[]{"/bin/sh", "-c", p + "-- sh -c \"echo \'" + line + "\' >> /etc/hosts\""}).start();
+                e.waitFor();
+                return hostsFileEdited(league);
+            } catch (IOException | InterruptedException ex) {
+                ex.printStackTrace();
 
-            return false;
+                return false;
+            }
+        } else {
+            String p = "echo \'" + Props.getPW() + "\' | sudo -S ", line = "\n" + ip + " " + MLBHost;
+            Process e;
+            try {
+                e = new ProcessBuilder(new String[]{"/bin/sh", "-c", p + "-- sh -c \"echo \'" + line + "\' >> /etc/hosts\""}).start();
+                e.waitFor();
+                return hostsFileEdited(league);
+            } catch (IOException | InterruptedException ex) {
+                ex.printStackTrace();
+
+                return false;
+            }
         }
     }
 
-    private boolean editWindowsHosts() {
+    private boolean editWindowsHosts(String league) {
         if (!Props.getIP().equals("")) {
             ip = Props.getIP();
         }
 
-        try {
-            String line = "\n" + ip + " " + host;
-            File f = new File(System.getenv("WINDIR") + "\\system32\\drivers\\etc\\hosts");
-            if (!f.exists())
-                f.createNewFile();
-            
-            Files.write(Paths.get(System.getenv("WINDIR") + "\\system32\\drivers\\etc\\hosts"), line.getBytes(), StandardOpenOption.APPEND);
-            return true;
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return false;
+        if (league.equals("NHL")) {
+            try {
+                String line = "\r\n" + ip + " " + NHLHost;
+                File f = new File(System.getenv("WINDIR") + "\\system32\\drivers\\etc\\hosts");
+                if (!f.exists()) {
+                    f.createNewFile();
+                }
+
+                Files.write(Paths.get(System.getenv("WINDIR") + "\\system32\\drivers\\etc\\hosts"), line.getBytes(), StandardOpenOption.APPEND);
+                return true;
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                return false;
+            }
+        } else {
+            try {
+                String line = "\r\n" + ip + " " + MLBHost;
+                File f = new File(System.getenv("WINDIR") + "\\system32\\drivers\\etc\\hosts");
+                if (!f.exists()) {
+                    f.createNewFile();
+                }
+
+                Files.write(Paths.get(System.getenv("WINDIR") + "\\system32\\drivers\\etc\\hosts"), line.getBytes(), StandardOpenOption.APPEND);
+                return true;
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                return false;
+            }
         }
     }
 
-    public boolean modifyHosts() {
-        if (ipNotFound)
+    public boolean modifyHosts(String league) {
+        if (league.equals("NHL")) {
+            if (NHLIPNotFound) {
+                return false;
+            }
+        } else if (MLBIPNotFound) {
             return false;
-        
+        }
+
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
-            return modifyWindowsHosts();
+            return modifyWindowsHosts(league);
         } else {
-            return modifyUnixHosts();
+            return modifyUnixHosts(league);
         }
     }
 
@@ -131,29 +197,47 @@ public class EditHosts {
         }
     }
 
-    private boolean modifyUnixHosts() {
+    private boolean modifyUnixHosts(String league) {
         if (!Props.getIP().equals("")) {
             ip = Props.getIP();
         }
 
         String p = "echo \'" + Props.getPW() + "\' | sudo -S ";
         Process m;
-        try {
-            if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-                m = new ProcessBuilder("/bin/sh", "-c", p + "sed -E -i '' \"s/^ *[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+( +" + host + ")/" + ip + "\\1/\" /etc/hosts").start();
-            } else {
-                m = new ProcessBuilder("/bin/sh", "-c", p + "sed -r -i \"s/^ *[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+( +" + host + ")/" + ip + "\\1/\" /etc/hosts").start();
-            }
-            m.waitFor();
-            return hostsFileEdited();
-        } catch (IOException | InterruptedException ex) {
-            ex.printStackTrace();
+        if (league.equals("NHL")) {
+            try {
+                if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+                    m = new ProcessBuilder("/bin/sh", "-c", p + "sed -E -i '' \"s/^ *[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+( +" + NHLHost + ")/" + ip + "\\1/\" /etc/hosts").start();
+                } else {
+                    m = new ProcessBuilder("/bin/sh", "-c", p + "sed -r -i \"s/^ *[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+( +" + NHLHost + ")/" + ip + "\\1/\" /etc/hosts").start();
+                }
+                m.waitFor();
+                return hostsFileEdited(league);
 
-            return false;
+            } catch (IOException | InterruptedException ex) {
+                ex.printStackTrace();
+
+                return false;
+            }
+        } else {
+            try {
+                if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+                    m = new ProcessBuilder("/bin/sh", "-c", p + "sed -E -i '' \"s/^ *[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+( +" + MLBHost + ")/" + ip + "\\1/\" /etc/hosts").start();
+                } else {
+                    m = new ProcessBuilder("/bin/sh", "-c", p + "sed -r -i \"s/^ *[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+( +" + NHLHost + ")/" + ip + "\\1/\" /etc/hosts").start();
+                }
+                m.waitFor();
+                return hostsFileEdited(league);
+
+            } catch (IOException | InterruptedException ex) {
+                ex.printStackTrace();
+
+                return false;
+            }
         }
     }
 
-    private boolean modifyWindowsHosts() {
+    private boolean modifyWindowsHosts(String league) {
         if (!Props.getIP().equals("")) {
             ip = Props.getIP();
         }
@@ -162,14 +246,20 @@ public class EditHosts {
         BufferedReader br = null;
         FileWriter fw = null;
         boolean modified = false;
+        String Host;
+        if (league.equals("NHL")) {
+            Host = NHLHost;
+        } else {
+            Host = MLBHost;
+        }
         try {
             fr = new FileReader(new File(System.getenv("WINDIR") + "\\system32\\drivers\\etc\\hosts"));
             String s;
             StringBuilder totalStr = new StringBuilder();
             br = new BufferedReader(fr);
             while ((s = br.readLine()) != null) {
-                if (s.contains(host)) {
-                    s = ip + " " + host;
+                if (s.contains(Host)) {
+                    s = ip + " " + Host;
                 }
                 if (!s.contains("146.185.131.14")) {
                     totalStr.append(s).append("\r\n");
@@ -207,6 +297,7 @@ public class EditHosts {
                 }
             }
         }
+        
         return modified;
     }
 
@@ -219,12 +310,12 @@ public class EditHosts {
         Process m;
         try {
             if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-                m = new ProcessBuilder("/bin/sh", "-c", p + "sed -E -i '' '/" + host + "/d' /etc/hosts").start();
+                m = new ProcessBuilder("/bin/sh", "-c", p + "sed -E -i '' '/" + NHLHost + "/d' /etc/hosts").start();
             } else {
-                m = new ProcessBuilder("/bin/sh", "-c", p + "sed -i '/" + host + "/d' /etc/hosts").start();
+                m = new ProcessBuilder("/bin/sh", "-c", p + "sed -i '/" + NHLHost + "/d' /etc/hosts").start();
             }
             m.waitFor();
-            return hostsFileEdited();
+            return true;
         } catch (IOException | InterruptedException ex) {
             ex.printStackTrace();
 
@@ -245,14 +336,15 @@ public class EditHosts {
             Scanner sc = new Scanner(new File(System.getenv("WINDIR") + "\\system32\\drivers\\etc\\hosts"));
             while (sc.hasNextLine()) {
                 s = sc.nextLine();
-                if (s.contains(host)) {
+                if (s.contains(NHLHost) || s.contains(MLBHost)) {
                     continue;
                 }
-                if(sc.hasNextLine())
-                totalStr.append(s).append("\r\n");
+                if (sc.hasNextLine()) {
+                    totalStr.append(s).append("\r\n");
+                }
             }
             fw = new FileWriter(new File(System.getenv("WINDIR") + "\\system32\\drivers\\etc\\hosts"));
-            fw.write(totalStr.toString());
+            fw.write(totalStr.toString().trim());
             cleared = true;
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
@@ -271,8 +363,12 @@ public class EditHosts {
         return cleared;
     }
 
-    public boolean isWrongIP() {
-        return wrongIP;
+    public boolean isWrongIP(String league) {
+        if (league.equals("NHL")) {
+            return NHLWrongIP;
+        } else {
+            return MLBWrongIP;
+        }
     }
 
     private String getIP() {
@@ -280,15 +376,21 @@ public class EditHosts {
             return InetAddress.getByName(new URL("http://nhl.freegamez.gq").getHost()).getHostAddress();
         } catch (UnknownHostException ex) {
             MessageBox.show("It seems the server is down or blocked by a firewall.", "Error", 2);
-            ipNotFound = true;
+            NHLIPNotFound = true;
+            MLBIPNotFound = true;
         } catch (MalformedURLException ex) {
             MessageBox.show("If you see this message, the programmer sucks!.", "Error", 2);
-            ipNotFound = true;
+            NHLIPNotFound = true;
+            MLBIPNotFound = true;
         }
         return null;
     }
 
-    public boolean isIpNotFound() {
-        return ipNotFound;
+    public boolean isIpNotFound(String league) {
+        if (league.equals("NHL")) {
+        return NHLIPNotFound;
+        } else {
+            return MLBIPNotFound;
+        }
     }
 }

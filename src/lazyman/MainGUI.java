@@ -15,7 +15,6 @@ import Util.OpenURL;
 import Util.ProcessReader;
 import Util.Props;
 import java.awt.Color;
-import java.awt.FileDialog;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -34,27 +33,29 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 import java.util.TimerTask;
-import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import java.util.Timer;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 public final class MainGUI extends javax.swing.JFrame {
 
-    private String date;
-    private Game[] g;
-    private final ArrayList<String> playbackIDs = new ArrayList<>();
+    private String NHLDate, MLBDate, league;
+    private Game[] nhl, mlb;
+    private final ArrayList<String> NHLPlaybackIDs = new ArrayList<>(), MLBPlaybackIDs = new ArrayList<>();
     private final Streamlink streamlink;
-    private final GameWatchInfo gwi;
-    private boolean hostsEdited, selectedFavGm;
-    private int streamlinkSwitch = 0, selectedGame, z = 0;
-    private Timer timer;
+    private final GameWatchInfo NHLGWI;
+    private boolean NHLHostsEdited, MLBHostsEdited, NHLSelectedFavGm, MLBSelectedFavGm;
+    private int NHLStreamlinkSwitch = 0, MLBStreamlinkSwitch = 0, NHLSelectedGame, MLBSelectedGame, z = 0;
+    private Timer NHLTimer, MLBTimer;
 
     public MainGUI() {
-        hostsEdited = false;
-        selectedFavGm = false;
+        league = "NHL";
+        NHLHostsEdited = false;
+        MLBHostsEdited = false;
+        NHLSelectedFavGm = false;
+        MLBSelectedFavGm = false;
         streamlink = new Streamlink();
         initComponents();
         checkUpdate();
@@ -67,24 +68,26 @@ public final class MainGUI extends javax.swing.JFrame {
             changePasswordMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.META_MASK));
             exitMI.setVisible(false);
         }
-        getVLCLoc();
         getSLLoc();
-        gwi = new GameWatchInfo();
+        NHLGWI = new GameWatchInfo();
         setButtons();
         new newDay().start();
-        checkHosts();
-        date = Time.getPSTDate("yyyy-MM-dd");
-        dateTF.setDate(Time.getPSTDate1("MMM dd, yyyy"));
+        checkHosts("NHL");
+        checkHosts("MLB");
+        NHLDate = Time.getPSTDate("yyyy-MM-dd");
+        NHLDateTF.setDate(Time.getPSTDate1("MMM dd, yyyy"));
+        MLBDateTF.setDate(Time.getPSTDate1("MMM dd, yyyy"));
+        MLBDate = Time.getPSTDate("yyyy-MM-dd");
 
         MessageConsole console = new MessageConsole(consoleTA);
         console.redirectOut();
         console.redirectErr(Color.RED, null);
     }
 
-    private void checkHosts() {
+    private void checkHosts(String league) {
         EditHosts eh = new EditHosts();
-        if (!eh.hostsFileEdited()) {
-            if (eh.isIpNotFound()) {
+        if (!eh.hostsFileEdited(league)) {
+            if (eh.isIpNotFound(league)) {
                 return;
             }
             if (!System.getProperty("os.name").toLowerCase().contains("win") && Props.getPW().equals("")) {
@@ -92,19 +95,25 @@ public final class MainGUI extends javax.swing.JFrame {
                 gp.setLocationRelativeTo(this);
                 gp.setVisible(true);
             }
-            if (eh.isWrongIP()) {
-                if (!eh.modifyHosts()) {
-                    MessageBox.show("Could not update your hosts file. Please check the logs.", "Error", 2);
-                } else {
-                    hostsEdited = true;
+            if (eh.isWrongIP(league)) {
+                if (eh.modifyHosts(league)) {
+                    if (league.equals("NHL")) {
+                        NHLHostsEdited = true;
+                    } else {
+                        MLBHostsEdited = true;
+                    }
                 }
-            } else if (!eh.editHosts()) {
-                MessageBox.show("Could not edit your hosts file. Please check the logs.", "Error", 2);
-            } else {
-                hostsEdited = true;
+            } else if (eh.editHosts(league)) {
+                if (league.equals("NHL")) {
+                    NHLHostsEdited = true;
+                } else {
+                    MLBHostsEdited = true;
+                }
             }
+        } else if (league.equals("NHL")) {
+            NHLHostsEdited = true;
         } else {
-            hostsEdited = true;
+            MLBHostsEdited = true;
         }
     }
 
@@ -121,40 +130,36 @@ public final class MainGUI extends javax.swing.JFrame {
         buttonGroup2 = new javax.swing.ButtonGroup();
         buttonGroup3 = new javax.swing.ButtonGroup();
         consolePM = new javax.swing.JPopupMenu();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        gameTable = new javax.swing.JTable();
-        jLabel1 = new javax.swing.JLabel();
-        dateTF = new com.toedter.calendar.JDateChooser();
         jSeparator2 = new javax.swing.JSeparator();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         consoleTA = new javax.swing.JTextPane();
-        jLabel2 = new javax.swing.JLabel();
-        setVLCBtn = new javax.swing.JButton();
-        vlcLbl = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        awayRdBtn = new javax.swing.JRadioButton();
-        frRdBtn = new javax.swing.JRadioButton();
-        homeRdBtn = new javax.swing.JRadioButton();
-        threeCamRdBtn = new javax.swing.JRadioButton();
-        sixCamRdBtn = new javax.swing.JRadioButton();
-        ma1RdBtn = new javax.swing.JRadioButton();
-        ma2RdBtn = new javax.swing.JRadioButton();
-        ma3RdBtn = new javax.swing.JRadioButton();
-        jPanel3 = new javax.swing.JPanel();
-        RdBtn360p = new javax.swing.JRadioButton();
-        RdBtn720p = new javax.swing.JRadioButton();
-        RdBtn540p = new javax.swing.JRadioButton();
-        RdBtn720p60 = new javax.swing.JRadioButton();
-        jPanel4 = new javax.swing.JPanel();
-        akamailRdBtn = new javax.swing.JRadioButton();
-        level3RdBtn = new javax.swing.JRadioButton();
-        saveStreamCB = new javax.swing.JCheckBox();
-        playBtn = new javax.swing.JButton();
-        refreshBtn = new javax.swing.JButton();
         maximizeConsoleButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jPanel5 = new javax.swing.JPanel();
+        NHLPrevDayBtn = new javax.swing.JButton();
+        NHLNextDayBtn = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        NHLDateTF = new com.toedter.calendar.JDateChooser();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        NHLGameTable = new javax.swing.JTable();
+        jPanel6 = new javax.swing.JPanel();
+        jPanel7 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        MLBGameTable = new javax.swing.JTable();
+        jLabel2 = new javax.swing.JLabel();
+        MLBDateTF = new com.toedter.calendar.JDateChooser();
+        MLBPrevDayBtn = new javax.swing.JButton();
+        MLBNextDayBtn = new javax.swing.JButton();
+        NHLPlayBtn = new javax.swing.JButton();
+        NHLSaveStreamCB = new javax.swing.JCheckBox();
+        jPanel4 = new javax.swing.JPanel();
+        NHLCDNCB = new javax.swing.JComboBox<>();
+        jPanel3 = new javax.swing.JPanel();
+        NHLQualityCB = new javax.swing.JComboBox<>();
+        jPanel2 = new javax.swing.JPanel();
+        NHLFeedCB = new javax.swing.JComboBox<>();
+        NHLRefreshBtn = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         changePasswordMI = new javax.swing.JMenuItem();
@@ -179,7 +184,69 @@ public final class MainGUI extends javax.swing.JFrame {
         setLocationByPlatform(true);
         setResizable(false);
 
-        gameTable.setModel(new javax.swing.table.DefaultTableModel(
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Console"));
+        jPanel1.setForeground(new java.awt.Color(0, 0, 0));
+        jPanel1.setMaximumSize(new java.awt.Dimension(32, 145));
+
+        consoleTA.setEditable(false);
+        consoleTA.setBackground(new java.awt.Color(0, 0, 0));
+        consoleTA.setForeground(new java.awt.Color(255, 255, 255));
+        consoleTA.setDoubleBuffered(true);
+        consoleTA.setMaximumSize(new java.awt.Dimension(8, 21));
+        jScrollPane3.setViewportView(consoleTA);
+        consoleTA.addMouseListener(new PopupListener(consolePM));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 568, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
+        );
+
+        maximizeConsoleButton.setIcon(new javax.swing.ImageIcon(MainGUI.class.getResource("/Icons/fullscreen.png")));
+        maximizeConsoleButton.setLabel("   View bigger console");
+        maximizeConsoleButton.setMaximumSize(new java.awt.Dimension(38, 38));
+        maximizeConsoleButton.setMinimumSize(new java.awt.Dimension(38, 38));
+        maximizeConsoleButton.setPreferredSize(new java.awt.Dimension(23, 23));
+        maximizeConsoleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                maximizeConsoleButtonActionPerformed(evt);
+            }
+        });
+
+        jTabbedPane1.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jTabbedPane1StateChanged(evt);
+            }
+        });
+
+        NHLPrevDayBtn.setText("<");
+        NHLPrevDayBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                NHLPrevDayBtnActionPerformed(evt);
+            }
+        });
+
+        NHLNextDayBtn.setText(">");
+        NHLNextDayBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                NHLNextDayBtnActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
+        jLabel1.setText("Date:");
+
+        NHLDateTF.setDateFormatString("MMM d, yyyy");
+        NHLDateTF.setInheritsPopupMenu(true);
+
+        NHLGameTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null}
             },
@@ -202,681 +269,507 @@ public final class MainGUI extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        gameTable.setRowHeight(26);
-        gameTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        gameTable.addMouseListener(new java.awt.event.MouseAdapter() {
+        NHLGameTable.setRowHeight(26);
+        NHLGameTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        NHLGameTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                gameTableMouseClicked(evt);
+                NHLGameTableMouseClicked(evt);
             }
         });
-        gameTable.addKeyListener(new java.awt.event.KeyAdapter() {
+        NHLGameTable.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                gameTableKeyReleased(evt);
+                NHLGameTableKeyReleased(evt);
             }
         });
-        jScrollPane1.setViewportView(gameTable);
-        if (gameTable.getColumnModel().getColumnCount() > 0) {
-            gameTable.getColumnModel().getColumn(0).setCellRenderer(new IconTextCellRemderer());
-            gameTable.getColumnModel().getColumn(1).setCellRenderer(new IconTextCellRemderer());
-            gameTable.getColumnModel().getColumn(2).setCellRenderer(new CenterTextCellRenderer());
+        jScrollPane1.setViewportView(NHLGameTable);
+        if (NHLGameTable.getColumnModel().getColumnCount() > 0) {
+            NHLGameTable.getColumnModel().getColumn(0).setCellRenderer(new IconTextCellRemderer());
+            NHLGameTable.getColumnModel().getColumn(1).setCellRenderer(new IconTextCellRemderer());
+            NHLGameTable.getColumnModel().getColumn(2).setCellRenderer(new CenterTextCellRenderer());
         }
 
-        jLabel1.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        jLabel1.setText("Date:");
-
-        dateTF.setDateFormatString("MMM d, yyyy");
-        dateTF.setInheritsPopupMenu(true);
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Console"));
-        jPanel1.setForeground(new java.awt.Color(0, 0, 0));
-        jPanel1.setMaximumSize(new java.awt.Dimension(32, 145));
-
-        consoleTA.setEditable(false);
-        consoleTA.setBackground(new java.awt.Color(0, 0, 0));
-        consoleTA.setForeground(new java.awt.Color(255, 255, 255));
-        consoleTA.setDoubleBuffered(true);
-        consoleTA.setMaximumSize(new java.awt.Dimension(8, 21));
-        jScrollPane3.setViewportView(consoleTA);
-        consoleTA.addMouseListener(new PopupListener(consolePM));
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
-        );
-
-        jLabel2.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        jLabel2.setText("Set Media Player Path:");
-
-        setVLCBtn.setMnemonic(KeyEvent.VK_S);
-        setVLCBtn.setText("Set");
-        setVLCBtn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                setVLCBtnMouseClicked(evt);
-            }
-        });
-        setVLCBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                setVLCBtnActionPerformed(evt);
-            }
-        });
-
-        vlcLbl.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        vlcLbl.setText("Location already set.");
-
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Feed"));
-
-        buttonGroup1.add(awayRdBtn);
-        awayRdBtn.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        awayRdBtn.setMnemonic(KeyEvent.VK_A);
-        awayRdBtn.setSelected(true);
-        awayRdBtn.setText("Away");
-        awayRdBtn.setFocusTraversalPolicyProvider(true);
-
-        buttonGroup1.add(frRdBtn);
-        frRdBtn.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        frRdBtn.setMnemonic(KeyEvent.VK_R);
-        frRdBtn.setText("French");
-
-        buttonGroup1.add(homeRdBtn);
-        homeRdBtn.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        homeRdBtn.setMnemonic(KeyEvent.VK_H);
-        homeRdBtn.setText("Home");
-
-        buttonGroup1.add(threeCamRdBtn);
-        threeCamRdBtn.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        threeCamRdBtn.setMnemonic(KeyEvent.VK_3);
-        threeCamRdBtn.setText("3 Cam View");
-
-        buttonGroup1.add(sixCamRdBtn);
-        sixCamRdBtn.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        sixCamRdBtn.setText("6 Cam View");
-
-        buttonGroup1.add(ma1RdBtn);
-        ma1RdBtn.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        ma1RdBtn.setText("Multi-Angle 1");
-
-        buttonGroup1.add(ma2RdBtn);
-        ma2RdBtn.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        ma2RdBtn.setText("Multi-Angle 2");
-
-        buttonGroup1.add(ma3RdBtn);
-        ma3RdBtn.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        ma3RdBtn.setText("Multi-Angle 3");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(15, 15, 15)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(awayRdBtn)
-                    .addComponent(homeRdBtn)
-                    .addComponent(frRdBtn))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(threeCamRdBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(sixCamRdBtn))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ma2RdBtn)
-                    .addComponent(ma1RdBtn)
-                    .addComponent(ma3RdBtn))
-                .addGap(29, 29, 29))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(threeCamRdBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(ma1RdBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(ma2RdBtn)
-                            .addComponent(sixCamRdBtn))
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 314, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel5Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(ma3RdBtn)
-                        .addGap(1, 1, 1))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(awayRdBtn)
+                        .addComponent(NHLDateTF, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(homeRdBtn)
+                        .addComponent(NHLPrevDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(frRdBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(13, Short.MAX_VALUE))
+                        .addComponent(NHLNextDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGap(7, 7, 7)
+                        .addComponent(jLabel1))
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(NHLNextDayBtn, javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(NHLPrevDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(NHLDateTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(11, 11, 11)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE))
         );
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Quality"));
-
-        buttonGroup2.add(RdBtn360p);
-        RdBtn360p.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        RdBtn360p.setMnemonic(KeyEvent.VK_3);
-        RdBtn360p.setText("360p");
-        RdBtn360p.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RdBtn360pbitrateRdBtnActionPerformed(evt);
-            }
-        });
-
-        buttonGroup2.add(RdBtn720p);
-        RdBtn720p.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        RdBtn720p.setMnemonic(KeyEvent.VK_7);
-        RdBtn720p.setText("720p");
-        RdBtn720p.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RdBtn720pbitrateRdBtnActionPerformed(evt);
-            }
-        });
-
-        buttonGroup2.add(RdBtn540p);
-        RdBtn540p.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        RdBtn540p.setMnemonic(KeyEvent.VK_5);
-        RdBtn540p.setText("540p");
-        RdBtn540p.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RdBtn540pbitrateRdBtnActionPerformed(evt);
-            }
-        });
-
-        buttonGroup2.add(RdBtn720p60);
-        RdBtn720p60.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        RdBtn720p60.setMnemonic(KeyEvent.VK_6);
-        RdBtn720p60.setSelected(true);
-        RdBtn720p60.setText("720p 60fps");
-        RdBtn720p60.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RdBtn720p60bitrateRdBtnActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(RdBtn360p)
-                        .addGap(18, 18, 18)
-                        .addComponent(RdBtn720p))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(RdBtn540p)
-                        .addGap(18, 18, 18)
-                        .addComponent(RdBtn720p60)))
-                .addContainerGap(21, Short.MAX_VALUE))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(RdBtn360p)
-                    .addComponent(RdBtn720p, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(RdBtn540p, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(RdBtn720p60))
-                .addGap(3, 3, 3))
-        );
-
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("CDN"));
-
-        buttonGroup3.add(akamailRdBtn);
-        akamailRdBtn.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        akamailRdBtn.setMnemonic(KeyEvent.VK_K);
-        akamailRdBtn.setText("Akamai");
-        akamailRdBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                akamailRdBtncdnRBAP(evt);
-            }
-        });
-
-        buttonGroup3.add(level3RdBtn);
-        level3RdBtn.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        level3RdBtn.setMnemonic(KeyEvent.VK_L);
-        level3RdBtn.setSelected(true);
-        level3RdBtn.setText("Level 3");
-        level3RdBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                level3RdBtncdnRBAP(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(akamailRdBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(level3RdBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(13, Short.MAX_VALUE))
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(akamailRdBtn)
-                    .addComponent(level3RdBtn)))
-        );
-
-        saveStreamCB.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-        saveStreamCB.setMnemonic(KeyEvent.VK_V);
-        saveStreamCB.setText("Save stream");
-        saveStreamCB.setEnabled(false);
-        saveStreamCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveStreamCBActionPerformed(evt);
-            }
-        });
-
-        playBtn.setMnemonic(KeyEvent.VK_P);
-        playBtn.setText("Play");
-        playBtn.setEnabled(false);
-        playBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                playBtnActionPerformed(evt);
-            }
-        });
-
-        refreshBtn.setText("Refresh");
-        refreshBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshBtnActionPerformed(evt);
-            }
-        });
-
-        maximizeConsoleButton.setIcon(new javax.swing.ImageIcon(MainGUI.class.getResource("/Icons/fullscreen.png")));
-        maximizeConsoleButton.setLabel("   View bigger console");
-        maximizeConsoleButton.setMaximumSize(new java.awt.Dimension(38, 38));
-        maximizeConsoleButton.setMinimumSize(new java.awt.Dimension(38, 38));
-        maximizeConsoleButton.setPreferredSize(new java.awt.Dimension(23, 23));
-        maximizeConsoleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                maximizeConsoleButtonActionPerformed(evt);
-            }
-        });
-
-        jButton1.setText("<");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
-        jButton2.setText(">");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
-        jMenu1.setMnemonic(KeyEvent.VK_F);
-        jMenu1.setText("File");
-
-        changePasswordMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        changePasswordMI.setText("Change Password");
-        changePasswordMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                changePasswordMIActionPerformed(evt);
-            }
-        });
-        jMenu1.add(changePasswordMI);
-
-        exitMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
-        exitMI.setText("Exit");
-        exitMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exitMIActionPerformed(evt);
-            }
-        });
-        jMenu1.add(exitMI);
-
-        jMenuBar1.add(jMenu1);
-
-        jMenu2.setMnemonic(KeyEvent.VK_E);
-        jMenu2.setText("Edit");
-
-        preferencesMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
-        preferencesMI.setText("Preferences");
-        preferencesMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                preferencesMIActionPerformed(evt);
-            }
-        });
-        jMenu2.add(preferencesMI);
-
-        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem1.setText("Change IP");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jMenuItem1);
-
-        jMenuItem2.setText("Clear Hosts File");
-        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem2ActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jMenuItem2);
-
-        jMenuBar1.add(jMenu2);
-
-        jMenu3.setMnemonic(KeyEvent.VK_H);
-        jMenu3.setText("Help");
-
-        guidesMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
-        guidesMI.setText("Guides");
-        guidesMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                guidesMIActionPerformed(evt);
-            }
-        });
-        jMenu3.add(guidesMI);
-
-        AboutMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        AboutMI.setText("About");
-        AboutMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                AboutMIActionPerformed(evt);
-            }
-        });
-        jMenu3.add(AboutMI);
-
-        updateMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.CTRL_MASK));
-        updateMI.setText("Update Available");
-        updateMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                updateMIActionPerformed(evt);
-            }
-        });
-        jMenu3.add(updateMI);
-
-        jMenuBar1.add(jMenu3);
-
-        jMenu4.setMnemonic(KeyEvent.VK_D);
-        jMenu4.setText("Donate");
-
-        ppMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        ppMI.setText("PayPal");
-        ppMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ppMIActionPerformed(evt);
-            }
-        });
-        jMenu4.add(ppMI);
-
-        bitcoinMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        bitcoinMI.setText("Bitcoin");
-        bitcoinMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bitcoinMIActionPerformed(evt);
-            }
-        });
-        jMenu4.add(bitcoinMI);
-
-        jMenuBar1.add(jMenu4);
-
-        setJMenuBar(jMenuBar1);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(2, 10, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 276, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(playBtn)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(saveStreamCB))
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addComponent(refreshBtn)
-                                        .addGap(132, 132, 132)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGap(12, 12, 12)
-                                                .addComponent(vlcLbl))
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addComponent(jLabel2)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(setVLCBtn)))
-                                        .addGap(35, 35, 35))))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(dateTF, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(1, 1, 1))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(maximizeConsoleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(66, 66, 66))))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(26, 26, 26)
-                        .addComponent(jSeparator2)))
-                .addGap(28, 28, 28))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(setVLCBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2))
-                        .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING))
-                    .addComponent(jButton2, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(dateTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(refreshBtn)
-                                .addGap(18, 18, 18))
-                            .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(vlcLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(4, 4, 4)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(playBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(saveStreamCB)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(maximizeConsoleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(34, 34, 34))
-        );
-
-        dateTF.getDateEditor().addPropertyChangeListener(
+        NHLDateTF.getDateEditor().addPropertyChangeListener(
             "date", new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent e) {
                     z++;
                     if (z == 2) //game liat populates twice on start without this
                     return;
-                    selectedFavGm = false;
-                    date = Time.formatDateSched( ((JTextField)dateTF.getDateEditor().getUiComponent()).getText() );
-                    gwi.setDate(date);
-                    SwingWorker<Void, Void> gg = getNHLGames(0);
+                    NHLSelectedFavGm = false;
+                    NHLDate = Time.formatDateSched( ((JTextField)NHLDateTF.getDateEditor().getUiComponent()).getText() );
+
+                    SwingWorker<Void, Void> gg = getGames(0, NHLGameTable, "NHL");
                     gg.execute();
                 }
             });
 
-            pack();
-        }// </editor-fold>//GEN-END:initComponents
+            jTabbedPane1.addTab("NHL", jPanel5);
+
+            MLBGameTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object [][] {
+                    {null, null, null}
+                },
+                new String [] {
+                    "Away", "Home", "Time"
+                }
+            ) {
+                Class[] types = new Class [] {
+                    java.lang.Object.class, java.lang.Object.class, java.lang.String.class
+                };
+                boolean[] canEdit = new boolean [] {
+                    false, false, false
+                };
+
+                public Class getColumnClass(int columnIndex) {
+                    return types [columnIndex];
+                }
+
+                public boolean isCellEditable(int rowIndex, int columnIndex) {
+                    return canEdit [columnIndex];
+                }
+            });
+            MLBGameTable.setRowHeight(26);
+            MLBGameTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+            MLBGameTable.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    MLBGameTableMouseClicked(evt);
+                }
+            });
+            MLBGameTable.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyReleased(java.awt.event.KeyEvent evt) {
+                    MLBGameTableKeyReleased(evt);
+                }
+            });
+            jScrollPane2.setViewportView(MLBGameTable);
+            if (MLBGameTable.getColumnModel().getColumnCount() > 0) {
+                MLBGameTable.getColumnModel().getColumn(0).setCellRenderer(new IconTextCellRemderer());
+                MLBGameTable.getColumnModel().getColumn(1).setCellRenderer(new IconTextCellRemderer());
+                MLBGameTable.getColumnModel().getColumn(2).setCellRenderer(new CenterTextCellRenderer());
+            }
+
+            javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+            jPanel7.setLayout(jPanel7Layout);
+            jPanel7Layout.setHorizontalGroup(
+                jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel7Layout.createSequentialGroup()
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 311, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            jPanel7Layout.setVerticalGroup(
+                jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
+            );
+
+            jLabel2.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
+            jLabel2.setText("Date:");
+
+            MLBDateTF.setDateFormatString("MMM d, yyyy");
+            MLBDateTF.setInheritsPopupMenu(true);
+
+            MLBPrevDayBtn.setText("<");
+            MLBPrevDayBtn.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    MLBPrevDayBtnActionPerformed(evt);
+                }
+            });
+
+            MLBNextDayBtn.setText(">");
+            MLBNextDayBtn.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    MLBNextDayBtnActionPerformed(evt);
+                }
+            });
+
+            javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+            jPanel6.setLayout(jPanel6Layout);
+            jPanel6Layout.setHorizontalGroup(
+                jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(jPanel6Layout.createSequentialGroup()
+                            .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGap(177, 177, 177))
+                        .addGroup(jPanel6Layout.createSequentialGroup()
+                            .addComponent(jLabel2)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(MLBDateTF, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(MLBPrevDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(MLBNextDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+            );
+            jPanel6Layout.setVerticalGroup(
+                jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel6Layout.createSequentialGroup()
+                    .addGap(3, 3, 3)
+                    .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(MLBPrevDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(MLBNextDayBtn))
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel2)
+                            .addComponent(MLBDateTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+
+            MLBDateTF.getDateEditor().addPropertyChangeListener(
+                "date", new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent e) {
+                        z++;
+                        //  if (z == 2) //game liat populates twice on start without this
+                        // return;
+                        MLBSelectedFavGm = false;
+                        MLBDate = Time.formatDateSched( ((JTextField)MLBDateTF.getDateEditor().getUiComponent()).getText() );
+
+                        SwingWorker<Void, Void> gg = getGames(0, MLBGameTable, "MLB");
+                        gg.execute();
+                    }
+                });
+
+                jTabbedPane1.addTab("MLB", jPanel6);
+
+                NHLPlayBtn.setMnemonic(KeyEvent.VK_P);
+                NHLPlayBtn.setText("Play");
+                NHLPlayBtn.setEnabled(false);
+                NHLPlayBtn.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        NHLPlayBtnActionPerformed(evt);
+                    }
+                });
+
+                NHLSaveStreamCB.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
+                NHLSaveStreamCB.setMnemonic(KeyEvent.VK_V);
+                NHLSaveStreamCB.setText("Save stream");
+                NHLSaveStreamCB.setEnabled(false);
+                NHLSaveStreamCB.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        NHLSaveStreamCBActionPerformed(evt);
+                    }
+                });
+
+                jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("CDN"));
+
+                NHLCDNCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Akamai", "Level 3" }));
+                NHLCDNCB.addItemListener(new java.awt.event.ItemListener() {
+                    public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                        NHLCDNCBItemStateChanged(evt);
+                    }
+                });
+
+                javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+                jPanel4.setLayout(jPanel4Layout);
+                jPanel4Layout.setHorizontalGroup(
+                    jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(NHLCDNCB, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                );
+                jPanel4Layout.setVerticalGroup(
+                    jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(NHLCDNCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 12, Short.MAX_VALUE))
+                );
+
+                jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Quality"));
+
+                NHLQualityCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "360p", "540p", "720p", "720p60" }));
+                NHLQualityCB.addItemListener(new java.awt.event.ItemListener() {
+                    public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                        NHLQualityCBItemStateChanged(evt);
+                    }
+                });
+
+                javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+                jPanel3.setLayout(jPanel3Layout);
+                jPanel3Layout.setHorizontalGroup(
+                    jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(NHLQualityCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                );
+                jPanel3Layout.setVerticalGroup(
+                    jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(NHLQualityCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                );
+
+                jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Feed"));
+
+                javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+                jPanel2.setLayout(jPanel2Layout);
+                jPanel2Layout.setHorizontalGroup(
+                    jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(NHLFeedCB, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                );
+                jPanel2Layout.setVerticalGroup(
+                    jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(NHLFeedCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                );
+
+                NHLRefreshBtn.setText("Refresh");
+                NHLRefreshBtn.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        NHLRefreshBtnActionPerformed(evt);
+                    }
+                });
+
+                jMenu1.setMnemonic(KeyEvent.VK_F);
+                jMenu1.setText("File");
+
+                changePasswordMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+                changePasswordMI.setText("Change Password");
+                changePasswordMI.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        changePasswordMIActionPerformed(evt);
+                    }
+                });
+                jMenu1.add(changePasswordMI);
+
+                exitMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
+                exitMI.setText("Exit");
+                exitMI.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        exitMIActionPerformed(evt);
+                    }
+                });
+                jMenu1.add(exitMI);
+
+                jMenuBar1.add(jMenu1);
+
+                jMenu2.setMnemonic(KeyEvent.VK_E);
+                jMenu2.setText("Edit");
+
+                preferencesMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
+                preferencesMI.setText("Preferences");
+                preferencesMI.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        preferencesMIActionPerformed(evt);
+                    }
+                });
+                jMenu2.add(preferencesMI);
+
+                jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_MASK));
+                jMenuItem1.setText("Change IP");
+                jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        jMenuItem1ActionPerformed(evt);
+                    }
+                });
+                jMenu2.add(jMenuItem1);
+
+                jMenuItem2.setText("Clear Hosts File");
+                jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        jMenuItem2ActionPerformed(evt);
+                    }
+                });
+                jMenu2.add(jMenuItem2);
+
+                jMenuBar1.add(jMenu2);
+
+                jMenu3.setMnemonic(KeyEvent.VK_H);
+                jMenu3.setText("Help");
+
+                guidesMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
+                guidesMI.setText("Guides");
+                guidesMI.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        guidesMIActionPerformed(evt);
+                    }
+                });
+                jMenu3.add(guidesMI);
+
+                AboutMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+                AboutMI.setText("About");
+                AboutMI.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        AboutMIActionPerformed(evt);
+                    }
+                });
+                jMenu3.add(AboutMI);
+
+                updateMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.CTRL_MASK));
+                updateMI.setText("Update Available");
+                updateMI.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        updateMIActionPerformed(evt);
+                    }
+                });
+                jMenu3.add(updateMI);
+
+                jMenuBar1.add(jMenu3);
+
+                jMenu4.setMnemonic(KeyEvent.VK_D);
+                jMenu4.setText("Donate");
+
+                ppMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+                ppMI.setText("PayPal");
+                ppMI.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        ppMIActionPerformed(evt);
+                    }
+                });
+                jMenu4.add(ppMI);
+
+                bitcoinMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+                bitcoinMI.setText("Bitcoin");
+                bitcoinMI.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        bitcoinMIActionPerformed(evt);
+                    }
+                });
+                jMenu4.add(bitcoinMI);
+
+                jMenuBar1.add(jMenu4);
+
+                setJMenuBar(jMenuBar1);
+
+                javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+                getContentPane().setLayout(layout);
+                layout.setHorizontalGroup(
+                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(NHLRefreshBtn)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(NHLPlayBtn)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(NHLSaveStreamCB))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(maximizeConsoleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                        .addContainerGap(30, Short.MAX_VALUE))
+                );
+                layout.setVerticalGroup(
+                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTabbedPane1)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(31, 31, 31)
+                                .addComponent(NHLRefreshBtn)
+                                .addGap(18, 18, 18)
+                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(NHLPlayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(NHLSaveStreamCB))))
+                        .addGap(18, 18, 18)
+                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(maximizeConsoleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                );
+
+                pack();
+            }// </editor-fold>//GEN-END:initComponents
 
     private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMIActionPerformed
         System.exit(0);
     }//GEN-LAST:event_exitMIActionPerformed
 
-    private void gameTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_gameTableMouseClicked
-        if (gameTable.getModel().getValueAt(0, 0).equals("None")) {
+    private void NHLGameTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_NHLGameTableMouseClicked
+        if (NHLGameTable.getModel().getValueAt(0, 0).equals("None")) {
             return;
         }
 
-        selectedGame = gameTable.getSelectedRow();
-        getAvailableStreams();
+        NHLSelectedGame = NHLGameTable.getSelectedRow();
+        getAvailableStreams(NHLSelectedGame, "NHL");
 
         if (evt != null && evt.getClickCount() == 2) {
-            playBtnActionPerformed(null);
+            NHLPlayBtnActionPerformed(null);
         } else {
-            enablePlayBtn();
+            enablePlayBtn("NHL");
         }
-    }//GEN-LAST:event_gameTableMouseClicked
+    }//GEN-LAST:event_NHLGameTableMouseClicked
 
-    private void gameTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_gameTableKeyReleased
+    private void NHLGameTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_NHLGameTableKeyReleased
         if (evt.getKeyCode() == KeyEvent.VK_UP || KeyEvent.VK_DOWN == evt.getKeyCode()) {
-            gameTableMouseClicked(null);
+            NHLGameTableMouseClicked(null);
         }
-    }//GEN-LAST:event_gameTableKeyReleased
+    }//GEN-LAST:event_NHLGameTableKeyReleased
 
-    private void setVLCBtnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_setVLCBtnMouseClicked
-        String loc;
-
-        if (!System.getProperty("os.name").toLowerCase().contains("win")) {
-            FileDialog fd = new FileDialog(this, "Choose Media Player", FileDialog.LOAD);
-            if (!Props.getVlcloc().equals("")) {
-                fd.setFile(Props.getVlcloc());
-            }
-
-            fd.setVisible(true);
-            loc = fd.getFile();
-            if (loc != null) {
-                Props.setVlcloc(Paths.get(fd.getDirectory(), fd.getFile()).toAbsolutePath().normalize().toString());
-                vlcLbl.setText("Location set.");
-            } else if (Props.getVlcloc().equals("")) {
-                vlcLbl.setText("Location not set.");
+    private void NHLSaveStreamCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLSaveStreamCBActionPerformed
+        if (!NHLPlayBtn.getText().equals("Stop Recording")) {
+            if (NHLSaveStreamCB.isSelected()) {
+                NHLPlayBtn.setText("Record");
             } else {
-                vlcLbl.setText("Location not updated.");
-            }
-        } else {
-            javax.swing.JFileChooser fileChooser = new JFileChooser();
-            if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                fileChooser.setFileFilter(new FileNameExtensionFilter("Executable Files", "exe"));
-            } else {
-                fileChooser.setFileFilter(null);
-            }
-            if (!Props.getVlcloc().equals("")) {
-                fileChooser.setCurrentDirectory(new java.io.File(Props.getVlcloc()));
-            }
-            int returnVal = fileChooser.showOpenDialog(null);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                loc = fileChooser.getSelectedFile().getPath();
-                Props.setVlcloc(loc);
-                vlcLbl.setText("Location set.");
-            } else if (Props.getVlcloc().equals("")) {
-                vlcLbl.setText("Location not set.");
-            } else {
-                vlcLbl.setText("Location not updated.");
-            }
-        }
-    }//GEN-LAST:event_setVLCBtnMouseClicked
-
-    private void setVLCBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setVLCBtnActionPerformed
-        setVLCBtnMouseClicked(null);
-    }//GEN-LAST:event_setVLCBtnActionPerformed
-
-    private void RdBtn360pbitrateRdBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RdBtn360pbitrateRdBtnActionPerformed
-        gwi.setQuality("360p");
-        Props.setBitrate("360p");
-    }//GEN-LAST:event_RdBtn360pbitrateRdBtnActionPerformed
-
-    private void RdBtn720pbitrateRdBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RdBtn720pbitrateRdBtnActionPerformed
-        gwi.setQuality("720p");
-        Props.setBitrate("720p");
-    }//GEN-LAST:event_RdBtn720pbitrateRdBtnActionPerformed
-
-    private void RdBtn540pbitrateRdBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RdBtn540pbitrateRdBtnActionPerformed
-        gwi.setQuality("540p");
-        Props.setBitrate("540p");
-    }//GEN-LAST:event_RdBtn540pbitrateRdBtnActionPerformed
-
-    private void RdBtn720p60bitrateRdBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RdBtn720p60bitrateRdBtnActionPerformed
-        gwi.setQuality("best");
-        Props.setBitrate("best");
-    }//GEN-LAST:event_RdBtn720p60bitrateRdBtnActionPerformed
-
-    private void akamailRdBtncdnRBAP(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_akamailRdBtncdnRBAP
-        gwi.setCdn("akc");
-        Props.setCDN("Akamai");
-    }//GEN-LAST:event_akamailRdBtncdnRBAP
-
-    private void level3RdBtncdnRBAP(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_level3RdBtncdnRBAP
-        gwi.setCdn("l3c");
-        Props.setCDN("Level 3");
-    }//GEN-LAST:event_level3RdBtncdnRBAP
-
-    private void saveStreamCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveStreamCBActionPerformed
-        if (!playBtn.getText().equals("Stop Recording")) {
-            if (saveStreamCB.isSelected()) {
-                playBtn.setText("Record");
-            } else {
-                playBtn.setText("Play");
+                NHLPlayBtn.setText("Play");
             }
         }
 
-        streamlink.record = saveStreamCB.isSelected();
-    }//GEN-LAST:event_saveStreamCBActionPerformed
+        streamlink.record = NHLSaveStreamCB.isSelected();
+    }//GEN-LAST:event_NHLSaveStreamCBActionPerformed
 
-    private void playBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playBtnActionPerformed
-        if (!playBtn.isEnabled()) {
+    private void NHLPlayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLPlayBtnActionPerformed
+        if (!NHLPlayBtn.isEnabled()) {
             return;
         }
 
-        checkHosts();
+        checkHosts(league);
 
-        if (!hostsEdited) {
-            MessageBox.show("You are not completely set up! Your hosts file needs to be edited.", "Hosts file not edited", 2);
+        if (league.equals("NHL")) {
+            if (!NHLHostsEdited) {
+                MessageBox.show("You are not completely set up! Your hosts file needs to be edited for " + league + ".", "Hosts file not edited", 2);
+                return;
+            }
+        } else if (!MLBHostsEdited) {
+            MessageBox.show("You are not completely set up! Your hosts file needs to be edited for " + league + ".", "Hosts file not edited", 2);
             return;
         }
 
@@ -889,28 +782,37 @@ public final class MainGUI extends javax.swing.JFrame {
             }
         }
 
-        gwi.setUrl(date, getMediaID());
+        NHLGWI.setUrl(NHLDate, getMediaID(league), league);
 
-        if (playBtn.getText().equals("Stop Recording")) {
-            streamlinkSwitch = -1;
+        if (NHLPlayBtn.getText().equals("Stop Recording")) {
+            if (league.equals("NHL"))
+                NHLStreamlinkSwitch = -1;
+            else
+                MLBStreamlinkSwitch = -1;
 
-            if (saveStreamCB.isSelected()) {
-                playBtn.setText("Record");
+            if (NHLSaveStreamCB.isSelected()) {
+                NHLPlayBtn.setText("Record");
             } else {
-                playBtn.setText("Play");
+                NHLPlayBtn.setText("Play");
             }
             return;
         }
 
-        if (saveStreamCB.isSelected()) {
-            streamlinkSwitch = 1;
-            playBtn.setText("Stop Recording");
+        if (NHLSaveStreamCB.isSelected()) {
+            if (league.equals("NHL"))
+                NHLStreamlinkSwitch = 1;
+            else
+                MLBStreamlinkSwitch = 1;
+            NHLPlayBtn.setText("Stop Recording");
         } else {
-            streamlinkSwitch = 0;
+            if (league.equals("NHL"))
+                NHLStreamlinkSwitch = 0;
+            else
+                MLBStreamlinkSwitch = 0;
         }
-        SwingWorker<Void, Void> pl = playLive();
+        SwingWorker<Void, Void> pl = playGame(league);
         pl.execute();
-    }//GEN-LAST:event_playBtnActionPerformed
+    }//GEN-LAST:event_NHLPlayBtnActionPerformed
 
     private void preferencesMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferencesMIActionPerformed
         int refresh = Props.getRefreshRate();
@@ -919,23 +821,44 @@ public final class MainGUI extends javax.swing.JFrame {
         op.setLocationRelativeTo(this);
         op.setVisible(true);
 
-        if (!gameTable.getModel().getValueAt(0, 0).equals("None")) {
-            int idx = selectedGame;
-            setRow(idx);
-            setFeed(idx, 'a');
+        if (!NHLGameTable.getModel().getValueAt(0, 0).equals("None")) {
+            int idx = NHLSelectedGame;
+            setRow(idx, "NHL");
+            setFeed(idx, 'a', "NHL");
 
             if (Props.getRefreshRate() != refresh) {
                 refresh = Props.getRefreshRate();
 
-                if (refresh == 0 && timer != null) {
-                    timer.cancel();
-                    timer = null;
-                } else if (refresh > 0 && timer != null) {
-                    timer.cancel();
-                    timer.scheduleAtFixedRate(new Refresh(), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
-                } else if (refresh > 0 && timer == null) {
-                    timer = new Timer();
-                    timer.scheduleAtFixedRate(new Refresh(), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
+                if (refresh == 0 && NHLTimer != null) {
+                    NHLTimer.cancel();
+                    NHLTimer = null;
+                } else if (refresh > 0 && NHLTimer != null) {
+                    NHLTimer.cancel();
+                    NHLTimer.scheduleAtFixedRate(new Refresh("NHL"), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
+                } else if (refresh > 0 && NHLTimer == null) {
+                    NHLTimer = new Timer();
+                    NHLTimer.scheduleAtFixedRate(new Refresh("NHL"), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
+                }
+            }
+        }
+
+        if (!MLBGameTable.getModel().getValueAt(0, 0).equals("None")) {
+            int idx = MLBSelectedGame;
+            setRow(idx, "MLB");
+            setFeed(idx, 'a', "MLB");
+
+            if (Props.getRefreshRate() != refresh) {
+                refresh = Props.getRefreshRate();
+
+                if (refresh == 0 && NHLTimer != null) {
+                    NHLTimer.cancel();
+                    NHLTimer = null;
+                } else if (refresh > 0 && NHLTimer != null) {
+                    NHLTimer.cancel();
+                    NHLTimer.scheduleAtFixedRate(new Refresh("MLB"), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
+                } else if (refresh > 0 && NHLTimer == null) {
+                    NHLTimer = new Timer();
+                    NHLTimer.scheduleAtFixedRate(new Refresh("MLB"), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
                 }
             }
         }
@@ -962,17 +885,22 @@ public final class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_ppMIActionPerformed
 
     private void bitcoinMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bitcoinMIActionPerformed
-        OpenURL.open("https://blockchain.info/address/19V1BAifx9DBeW5igL5HLLytYfEjkzSJjD");
+        OpenURL.open("https://blockchain.info/address/1QHhn9wFZAPtuGaZQpYwHEUu5xrboN3ayi");
     }//GEN-LAST:event_bitcoinMIActionPerformed
 
     private void updateMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateMIActionPerformed
         OpenURL.open("https://www.reddit.com/r/LazyMan/wiki/downloads");
     }//GEN-LAST:event_updateMIActionPerformed
 
-    private void refreshBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
-        SwingWorker<Void, Void> gg = getNHLGames(selectedGame);
+    private void NHLRefreshBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLRefreshBtnActionPerformed
+        SwingWorker<Void, Void> gg;
+        if (league.equals("NHL")) {
+            gg = getGames(NHLSelectedGame, NHLGameTable, "NHL");
+        } else {
+            gg = getGames(MLBSelectedGame, MLBGameTable, "MLB");
+        }
         gg.execute();
-    }//GEN-LAST:event_refreshBtnActionPerformed
+    }//GEN-LAST:event_NHLRefreshBtnActionPerformed
 
     private void maximizeConsoleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maximizeConsoleButtonActionPerformed
         FullConsole fc = new FullConsole(this, true, consoleTA);
@@ -980,17 +908,17 @@ public final class MainGUI extends javax.swing.JFrame {
         fc.setVisible(true);
     }//GEN-LAST:event_maximizeConsoleButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        selectedFavGm = false;
-        date = Time.getPrevDay(date);
-        dateTF.setDate(Time.getDate(date, "yyyy-MM-dd"));
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void NHLPrevDayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLPrevDayBtnActionPerformed
+        NHLSelectedFavGm = false;
+        NHLDate = Time.getPrevDay(NHLDate);
+        NHLDateTF.setDate(Time.getDate(NHLDate, "yyyy-MM-dd"));
+    }//GEN-LAST:event_NHLPrevDayBtnActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        selectedFavGm = false;
-        date = Time.getNextDay(date);
-        dateTF.setDate(Time.getDate(date, "yyyy-MM-dd"));
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void NHLNextDayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLNextDayBtnActionPerformed
+        NHLSelectedFavGm = false;
+        NHLDate = Time.getNextDay(NHLDate);
+        NHLDateTF.setDate(Time.getDate(NHLDate, "yyyy-MM-dd"));
+    }//GEN-LAST:event_NHLNextDayBtnActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         CustomIP c = new CustomIP(this, true);
@@ -1008,15 +936,113 @@ public final class MainGUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
+    private void MLBPrevDayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MLBPrevDayBtnActionPerformed
+        MLBSelectedFavGm = false;
+        MLBDate = Time.getPrevDay(MLBDate);
+        MLBDateTF.setDate(Time.getDate(MLBDate, "yyyy-MM-dd"));
+        NHLGWI.setDate(MLBDate);
+    }//GEN-LAST:event_MLBPrevDayBtnActionPerformed
+
+    private void MLBNextDayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MLBNextDayBtnActionPerformed
+        MLBSelectedFavGm = false;
+        MLBDate = Time.getNextDay(MLBDate);
+        MLBDateTF.setDate(Time.getDate(MLBDate, "yyyy-MM-dd"));
+        NHLGWI.setDate(MLBDate);
+    }//GEN-LAST:event_MLBNextDayBtnActionPerformed
+
+    private void MLBGameTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MLBGameTableMouseClicked
+        if (MLBGameTable.getModel().getValueAt(0, 0).equals("None")) {
+            return;
+        }
+
+        MLBSelectedGame = MLBGameTable.getSelectedRow();
+        getAvailableStreams(MLBSelectedGame, "MLB");
+
+        if (evt != null && evt.getClickCount() == 2) {
+            NHLPlayBtnActionPerformed(null);
+        } else {
+            enablePlayBtn("MLB");
+        }
+    }//GEN-LAST:event_MLBGameTableMouseClicked
+
+    private void MLBGameTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_MLBGameTableKeyReleased
+        if (evt.getKeyCode() == KeyEvent.VK_UP || KeyEvent.VK_DOWN == evt.getKeyCode()) {
+            MLBGameTableMouseClicked(null);
+        }
+    }//GEN-LAST:event_MLBGameTableKeyReleased
+
+    private void NHLQualityCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_NHLQualityCBItemStateChanged
+        if (nhl == null && mlb == null) {
+            return;
+        }
+        String quality = (String) NHLQualityCB.getSelectedItem();
+
+        if (quality.equals("720p60")) {
+            quality = "best";
+        }
+
+        NHLGWI.setQuality(quality);
+        Props.setBitrate(quality);
+    }//GEN-LAST:event_NHLQualityCBItemStateChanged
+
+    private void NHLCDNCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_NHLCDNCBItemStateChanged
+        if (nhl == null && mlb == null) {
+            return;
+        }
+        String cdn = (String) NHLCDNCB.getSelectedItem();
+
+        if (cdn.equals("Akamai")) {
+            NHLGWI.setCdn("akc");
+        } else {
+            NHLGWI.setCdn("l3c");
+        }
+
+        Props.setCDN(cdn);
+    }//GEN-LAST:event_NHLCDNCBItemStateChanged
+
+    private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
+        if (nhl == null && mlb == null) {
+            return;
+        }
+        switch (jTabbedPane1.getSelectedIndex()) {
+            case 1:
+                league = jTabbedPane1.getTitleAt(1);
+                break;
+            case 0:
+            default:
+                league = jTabbedPane1.getTitleAt(0);
+        }
+        if (league.contains("NHL")) {
+            if (nhl != null) {
+                setRow(NHLSelectedGame, league);
+            } else {
+                NHLFeedCB.removeAllItems();
+            }
+        } else if (mlb != null) {
+            setRow(MLBSelectedGame, league);
+        } else {
+            NHLFeedCB.removeAllItems();
+        }
+        enablePlayBtn(league);
+    }//GEN-LAST:event_jTabbedPane1StateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem AboutMI;
-    private javax.swing.JRadioButton RdBtn360p;
-    private javax.swing.JRadioButton RdBtn540p;
-    private javax.swing.JRadioButton RdBtn720p;
-    private javax.swing.JRadioButton RdBtn720p60;
-    private javax.swing.JRadioButton akamailRdBtn;
-    private javax.swing.JRadioButton awayRdBtn;
+    private com.toedter.calendar.JDateChooser MLBDateTF;
+    private javax.swing.JTable MLBGameTable;
+    private javax.swing.JButton MLBNextDayBtn;
+    private javax.swing.JButton MLBPrevDayBtn;
+    private javax.swing.JComboBox<String> NHLCDNCB;
+    private com.toedter.calendar.JDateChooser NHLDateTF;
+    private javax.swing.JComboBox<String> NHLFeedCB;
+    private javax.swing.JTable NHLGameTable;
+    private javax.swing.JButton NHLNextDayBtn;
+    private javax.swing.JButton NHLPlayBtn;
+    private javax.swing.JButton NHLPrevDayBtn;
+    private javax.swing.JComboBox<String> NHLQualityCB;
+    private javax.swing.JButton NHLRefreshBtn;
+    private javax.swing.JCheckBox NHLSaveStreamCB;
     private javax.swing.JMenuItem bitcoinMI;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
@@ -1024,14 +1050,8 @@ public final class MainGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem changePasswordMI;
     private javax.swing.JPopupMenu consolePM;
     private javax.swing.JTextPane consoleTA;
-    private com.toedter.calendar.JDateChooser dateTF;
     private javax.swing.JMenuItem exitMI;
-    private javax.swing.JRadioButton frRdBtn;
-    private javax.swing.JTable gameTable;
     private javax.swing.JMenuItem guidesMI;
-    private javax.swing.JRadioButton homeRdBtn;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
@@ -1045,24 +1065,18 @@ public final class MainGUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JRadioButton level3RdBtn;
-    private javax.swing.JRadioButton ma1RdBtn;
-    private javax.swing.JRadioButton ma2RdBtn;
-    private javax.swing.JRadioButton ma3RdBtn;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton maximizeConsoleButton;
-    private javax.swing.JButton playBtn;
     private javax.swing.JMenuItem ppMI;
     private javax.swing.JMenuItem preferencesMI;
-    private javax.swing.JButton refreshBtn;
-    private javax.swing.JCheckBox saveStreamCB;
-    private javax.swing.JButton setVLCBtn;
-    private javax.swing.JRadioButton sixCamRdBtn;
-    private javax.swing.JRadioButton threeCamRdBtn;
     private javax.swing.JMenuItem updateMI;
-    private javax.swing.JLabel vlcLbl;
     // End of variables declaration//GEN-END:variables
 
     class newDay extends Thread {
@@ -1072,9 +1086,12 @@ public final class MainGUI extends javax.swing.JFrame {
             while (true) {
                 try {
                     Thread.sleep(Time.nextDay());
-                    date = Time.getPSTDate("yyyy-MM-dd");
-                    dateTF.setDate(Time.getPSTDate1("MMM dd, yyyy"));
-                    gwi.setDate(date);
+                    NHLDate = Time.getPSTDate("yyyy-MM-dd");
+                    NHLDateTF.setDate(Time.getPSTDate1("MMM dd, yyyy"));
+                    NHLGWI.setDate(NHLDate);
+
+                    MLBDate = Time.getPSTDate("yyyy-MM-dd");
+                    MLBDateTF.setDate(Time.getPSTDate1("MMM dd, yyyy"));
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
@@ -1083,57 +1100,101 @@ public final class MainGUI extends javax.swing.JFrame {
 
     }
 
-    private SwingWorker<Void, Void> getNHLGames(final int row) {
+    private SwingWorker<Void, Void> getGames(final int row, JTable table, String lg) {
 
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 
             @Override
             protected Void doInBackground() throws Exception {
                 try {
-                    if (Time.isToday(date) && Props.getRefreshRate() > 0 && timer == null) {
-                        timer = new Timer();
-                        timer.scheduleAtFixedRate(new Refresh(), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
-                    } else if (timer != null && !Time.isToday(date)) {
-                        timer.cancel();
-                        timer = null;
+                    if (lg.equals("NHL")) {
+                        if (Time.isToday(NHLDate) && Props.getRefreshRate() > 0 && NHLTimer == null) {
+                            NHLTimer = new Timer();
+                            NHLTimer.scheduleAtFixedRate(new Refresh(lg), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
+                        } else if (NHLTimer != null && !Time.isToday(NHLDate)) {
+                            NHLTimer.cancel();
+                            NHLTimer = null;
+                        }
+                    } else if (Time.isToday(MLBDate) && Props.getRefreshRate() > 0 && MLBTimer == null) {
+                        MLBTimer = new Timer();
+                        MLBTimer.scheduleAtFixedRate(new Refresh(lg), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
+                    } else if (MLBTimer != null && !Time.isToday(MLBDate)) {
+                        MLBTimer.cancel();
+                        MLBTimer = null;
                     }
                     String time;
 
-                    DefaultTableModel model = (DefaultTableModel) gameTable.getModel();
+                    DefaultTableModel model = (DefaultTableModel) table.getModel();
                     model.setRowCount(0);
 
-                    g = GetNHLInfo.getGames(date);
+                    if (lg.equals("NHL")) {
+                        nhl = GetNHLInfo.getGames(NHLDate);
 
-                    if (g != null && g.length > 0) {
-                        for (Game g1 : g) {
-                            if (g1.getTimeRemaining().equalsIgnoreCase("n/a")) {
-                                time = Time.toLocalTZ(date + " " + g1.getTime(), "UTC", "yyyy-MM-dd H:mm");
-                            } else {
-                                time = g1.getTimeRemaining();
+                        if (nhl != null && nhl.length > 0) {
+                            for (Game g1 : nhl) {
+                                if (g1.getTimeRemaining().equalsIgnoreCase("n/a")) {
+                                    time = Time.toLocalTZ(NHLDate + " " + g1.getTime(), "UTC", "yyyy-MM-dd H:mm");
+                                } else {
+                                    time = g1.getTimeRemaining();
+                                }
+                                model.addRow(new Object[]{g1.getAwayTeam() + "-" + g1.getAwayTeamFull(),
+                                    g1.getHomeTeam() + "-" + g1.getHomeTeamFull(),
+                                    time});
                             }
-                            model.addRow(new Object[]{g1.getAwayTeam() + g1.getAwayTeamFull(),
-                                g1.getHomeTeam() + g1.getHomeTeamFull(),
-                                time});
-                        }
-                        gameTable.setModel(model);
+                            table.setModel(model);
 
-                        if (row != -1) {
-                            selectedGame = setRow(row);
+                            if (row != -1 && league.equals("NHL")) {
+                                NHLSelectedGame = setRow(row, lg);
+                            }
+                            if (league.equals("NHL")) {
+                                enablePlayBtn("NHL");
+                            }
+                            NHLGWI.setDate(NHLDate);
+                            table.requestFocus();
+                        } else if (nhl == null) {
+                            model.setRowCount(0);
+                            model.addRow(new Object[]{"None", "None", "None"});
+                            if (NHLTimer != null) {
+                                NHLTimer.cancel();
+                                NHLTimer = null;
+                            }
+                            if (lg.equals("NHL")) {
+                                NHLPlayBtn.setEnabled(false);
+                            }
                         }
-                        enablePlayBtn();
+                    } else {
+                        mlb = GetMLBInfo.getGames(MLBDate);
+                        if (mlb != null && mlb.length > 0) {
+                            for (Game g1 : mlb) {
+                                if (g1.getTimeRemaining().equalsIgnoreCase("n/a")) {
+                                    time = Time.toLocalTZ(MLBDate + " " + g1.getTime(), "UTC", "yyyy-MM-dd H:mm");
+                                } else {
+                                    time = g1.getTimeRemaining();
+                                }
+                                model.addRow(new Object[]{g1.getAwayTeam() + "-" + g1.getAwayTeamFull(),
+                                    g1.getHomeTeam() + "-" + g1.getHomeTeamFull(),
+                                    time});
+                            }
+                            table.setModel(model);
 
-                        gameTable.requestFocus();
-                    } else if (g == null) {
-                        model.setRowCount(0);
-                        model.addRow(new Object[]{"None", "None", "None"});
-                        if (timer != null) {
-                            timer.cancel();
-                            timer = null;
+                            if (row != -1 && league.equals("MLB")) {
+                                MLBSelectedGame = setRow(row, lg);
+                            }
+                            if (league.equals("MLB")) {
+                                enablePlayBtn("MLB");
+                            }
+                            NHLGWI.setDate(MLBDate);
+                            table.requestFocus();
+                        } else if (mlb == null) {
+                            model.setRowCount(0);
+                            model.addRow(new Object[]{"None", "None", "None"});
+                            if (MLBTimer != null) {
+                                MLBTimer.cancel();
+                                MLBTimer = null;
+                            }
+                            NHLPlayBtn.setEnabled(false);
                         }
-                        playBtn.setEnabled(false);
                     }
-
-                    getAvailableStreams();
 
                 } catch (Exception e) {
                     // TODO Auto-generated catch block
@@ -1148,224 +1209,146 @@ public final class MainGUI extends javax.swing.JFrame {
         return worker;
     }
 
-    private String getFavTeamIndex(String team) {
-        for (int i = 0; i < g.length; i++) {
-            if ((g[i].getAwayTeam()).equals(team)) {
-                if (g[i].getGameState().contains("Pre") || g[i].getGameState().contains("In Progress") || g[i].getGameState().contains("Final")) {
-                    return i + "a";
+    private String getFavTeamIndex(String team, String league) {
+        if (league.equals("NHL")) {
+            for (int i = 0; i < nhl.length; i++) {
+                if ((nhl[i].getAwayTeam()).equals(team)) {
+                    if (nhl[i].getGameState().contains("Pre") || nhl[i].getGameState().contains("In Progress") || nhl[i].getGameState().contains("Final")) {
+                        return i + "a";
+                    }
+                    return "-1n";
                 }
-                return "-1n";
-            }
-            if (g[i].getHomeTeam().equals(team)) {
-                if (g[i].getGameState().contains("Pre") || g[i].getGameState().contains("In Progress") || g[i].getGameState().contains("Final")) {
-                    return i + "h";
+                if (nhl[i].getHomeTeam().equals(team)) {
+                    if (nhl[i].getGameState().contains("Pre") || nhl[i].getGameState().contains("In Progress") || nhl[i].getGameState().contains("Final")) {
+                        return i + "h";
+                    }
+                    return "-1n";
                 }
-                return "-1n";
             }
+            return "-1n";
+        } else {
+            for (int i = 0; i < mlb.length; i++) {
+                if ((mlb[i].getAwayTeam()).equals(team)) {
+                    if (mlb[i].getGameState().contains("War") || mlb[i].getGameState().contains("In Progress") || mlb[i].getGameState().contains("Final")) {
+                        return i + "a";
+                    }
+                    return "-1n";
+                }
+                if (mlb[i].getHomeTeam().equals(team)) {
+                    if (mlb[i].getGameState().contains("War") || mlb[i].getGameState().contains("In Progress") || mlb[i].getGameState().contains("Final")) {
+                        return i + "h";
+                    }
+                    return "-1n";
+                }
+            }
+            return "-1n";
         }
-        return "-1n";
     }
 
-    private int setRow(int row) {
-        if ((!Props.getNHLTeam().equals("") || !Props.getNHLTeam().equals("None")) && !selectedFavGm) {
-            String index = getFavTeamIndex(Props.getNHLTeam());
-            int idx = Integer.parseInt(index.substring(0, index.length() - 1));
-            char homeOrAway = index.charAt(index.length() - 1);
-            
-            if (idx != -1) {
-                setFeed(idx, homeOrAway);
-                gameTable.setRowSelectionInterval(idx, idx);
-                selectedFavGm = true;
-                return idx;
-            }
-        }
-        setFeed(row, 'a');
+    private int setRow(int row, String league) {
+        if (league.equals("NHL")) {
+            if ((!Props.getNHLTeam().equals("") || !Props.getNHLTeam().equals("None")) && !NHLSelectedFavGm) {
+                String index = getFavTeamIndex(Props.getNHLTeam(), league);
+                int idx = Integer.parseInt(index.substring(0, index.length() - 1));
+                char homeOrAway = index.charAt(index.length() - 1);
 
-        gameTable.setRowSelectionInterval(row, row);
-        
+                if (idx != -1) {
+                    getAvailableStreams(idx, league);
+                    setFeed(idx, homeOrAway, league);
+                    NHLGameTable.setRowSelectionInterval(idx, idx);
+                    NHLSelectedFavGm = true;
+                    return idx;
+                }
+            }
+            getAvailableStreams(row, league);
+            setFeed(row, 'a', league);
+
+            NHLGameTable.setRowSelectionInterval(row, row);
+        } else {
+            if ((!Props.getMLBTeam().equals("") || !Props.getMLBTeam().equals("None")) && !MLBSelectedFavGm) {
+                String index = getFavTeamIndex(Props.getMLBTeam(), league);
+                int idx = Integer.parseInt(index.substring(0, index.length() - 1));
+                char homeOrAway = index.charAt(index.length() - 1);
+
+                if (idx != -1) {
+                    getAvailableStreams(idx, league);
+                    setFeed(idx, homeOrAway, league);
+                    MLBGameTable.setRowSelectionInterval(idx, idx);
+                    MLBSelectedFavGm = true;
+                    return idx;
+                }
+            }
+            getAvailableStreams(row, league);
+            setFeed(row, 'a', league);
+
+            MLBGameTable.setRowSelectionInterval(row, row);
+        }
+
         return row;
     }
 
-    private void setFeed(int idx, char homeOrAway) {
-        if (selectedFavGm) {
-            return;
-        }
-        switch (homeOrAway) {
-            case 'a':
-                if (!"0".equals(Props.getPreferFrench()) && g[idx].getFrenchMediaID() != null) {
-                    frRdBtn.setSelected(true);
-                } else if (g[idx].getAwayMediaID() != null) {
-                    awayRdBtn.setSelected(true);
-                } else {
-                    homeRdBtn.setSelected(true);
-                }
-                break;
-            case 'h':
-                if (!"0".equals(Props.getPreferFrench()) && g[idx].getFrenchMediaID() != null) {
-                    frRdBtn.setSelected(true);
-                } else {
-                    homeRdBtn.setSelected(true);
-                }
+    private void setFeed(int idx, char homeOrAway, String league) {
+        if (league.equals("NHL")) {
+            if (NHLSelectedFavGm) {
+                return;
+            }
+            switch (homeOrAway) {
+                case 'a':
+                    if (!"0".equals(Props.getPreferFrench()) && nhl[idx].contains("FRENCH")) {
+                        NHLFeedCB.setSelectedIndex(nhl[idx].getFeedIndex("FRENCH"));
+                    } else if (nhl[idx].contains("AWAY")) {
+                        NHLFeedCB.setSelectedIndex(1);
+                    } else {
+                        NHLFeedCB.setSelectedIndex(0);
+                    }
+                    break;
+                case 'h':
+                    if (!"0".equals(Props.getPreferFrench()) && nhl[idx].contains("FRENCH")) {
+                        NHLFeedCB.setSelectedIndex(nhl[idx].getFeedIndex("FRENCH"));
+                    } else {
+                        NHLFeedCB.setSelectedIndex(0);
+                    }
+            }
+        } else {
+            if (MLBSelectedFavGm) {
+                return;
+            }
+            switch (homeOrAway) {
+                case 'a':
+                    if (mlb[idx].contains("AWAY")) {
+                        NHLFeedCB.setSelectedIndex(1);
+                    } else {
+                        NHLFeedCB.setSelectedIndex(0);
+                    }
+                    break;
+                case 'h':
+                    NHLFeedCB.setSelectedIndex(0);
+            }
         }
     }
 
-    private void getAvailableStreams() {
-        if (g==null) {
-            awayRdBtn.setText("Away");
-            homeRdBtn.setText("Home");
-            frRdBtn.setText("French");
-            ma1RdBtn.setText("Multi-Angle 1");
-            ma2RdBtn.setText("Multi-Angle 2");
-            ma3RdBtn.setText("Multi-Angle 3");
-            return;
-        }
-        int index = selectedGame;
-        if (g[index].getAwayMediaID() == null) {
-            awayRdBtn.setEnabled(false);
-            homeRdBtn.setSelected(true);
-            awayRdBtn.setText("Away");
-        } else {
-            awayRdBtn.setEnabled(true);
-            if (g[index].getAwayTVStation() != null && !g[index].getAwayTVStation().isEmpty()) {
-                awayRdBtn.setText("Away (" + g[index].getAwayTVStation() + ")");
-            } else {
-                awayRdBtn.setText("Away");
-            }
-        }
-
-        if (g[index].getNationalMediaID() != null) {
-            if ((g[index].getNationalTVStation() != null && !g[index].getNationalTVStation().isEmpty())) {
-                homeRdBtn.setText("National (" + g[index].getNationalTVStation() + ")");
-                homeRdBtn.setMnemonic(KeyEvent.VK_N);
-                if (g[index].getNationalMediaID() == null) {
-                    homeRdBtn.setEnabled(false);
-                    if (homeRdBtn.isSelected()) {
-                        if (awayRdBtn.isEnabled()) {
-                            awayRdBtn.setSelected(true);
-                        }
-                    }
-                } else {
-                    homeRdBtn.setEnabled(true);
-                }
-            } else {
-                homeRdBtn.setText("National");
-                homeRdBtn.setMnemonic(KeyEvent.VK_N);
-                if (g[index].getNationalMediaID() == null) {
-                    homeRdBtn.setEnabled(false);
-                    if (homeRdBtn.isSelected()) {
-                        if (awayRdBtn.isEnabled()) {
-                            awayRdBtn.setSelected(true);
-                        }
-                    }
-                } else {
-                    homeRdBtn.setEnabled(true);
-                }
-            }
-        } else if (g[index].getHomeTVStation() != null && !g[index].getHomeTVStation().isEmpty()) {
-            homeRdBtn.setText("Home (" + g[index].getHomeTVStation() + ")");
-            homeRdBtn.setMnemonic(KeyEvent.VK_H);
-            if (g[index].getHomeMediaID() == null) {
-                homeRdBtn.setEnabled(false);
-                if (homeRdBtn.isSelected()) {
-                    if (awayRdBtn.isEnabled()) {
-                        awayRdBtn.setSelected(true);
+    private void getAvailableStreams(int row, String league) {
+        if (league.equals("NHL")) {
+            NHLFeedCB.removeAllItems();
+            if (nhl[row].getNumOfFeeds() > 0) {
+                for (int i = 0; i < nhl[row].getNumOfFeeds(); i++) {
+                    if (!nhl[row].getFeedTV(i).isEmpty()) {
+                        NHLFeedCB.addItem(nhl[row].getFeedName(i) + " (" + nhl[row].getFeedTV(i) + ")");
+                    } else {
+                        NHLFeedCB.addItem(nhl[row].getFeedName(i));
                     }
                 }
-            } else {
-                homeRdBtn.setEnabled(true);
             }
         } else {
-            homeRdBtn.setText("Home");
-            homeRdBtn.setMnemonic(KeyEvent.VK_H);
-            if (g[index].getHomeMediaID() == null) {
-                homeRdBtn.setEnabled(false);
-                if (awayRdBtn.isEnabled()) {
-                    awayRdBtn.setSelected(true);
-                }
-            } else if (g != null) {
-                homeRdBtn.setEnabled(true);
-            } else {
-                homeRdBtn.setEnabled(false);
-            }
-        }
+            NHLFeedCB.removeAllItems();
 
-        if (g[index].getFrenchMediaID() == null) {
-            frRdBtn.setEnabled(false);
-            frRdBtn.setText("French");
-            if (awayRdBtn.isEnabled() && frRdBtn.isSelected()) {
-                awayRdBtn.setSelected(true);
-            } else if (frRdBtn.isSelected()) {
-                homeRdBtn.setSelected(true);
+            for (int i = 0; i < mlb[row].getNumOfFeeds(); i++) {
+                NHLFeedCB.addItem(mlb[row].getFeedName(i) + " (" + mlb[row].getFeedTV(i) + ")");
             }
-        } else {
-            frRdBtn.setEnabled(true);
-            if (g[index].getFrenchTVStation() != null && !g[index].getFrenchTVStation().isEmpty()) {
-                frRdBtn.setText("French (" + g[index].getFrenchTVStation() + ")");
-            } else {
-                frRdBtn.setText("French");
-            }
-        }
-
-        threeCamRdBtn.setEnabled(g[index].getThreeCamMID() != null);
-        if (threeCamRdBtn.isSelected()) {
-            if (awayRdBtn.isEnabled()) {
-                awayRdBtn.setSelected(true);
-            } else {
-                homeRdBtn.setSelected(true);
-            }
-        }
-        sixCamRdBtn.setEnabled(g[index].getSixCamMID() != null);
-        if (sixCamRdBtn.isSelected() && g[index].getSixCamMID() == null) {
-            if (awayRdBtn.isEnabled()) {
-                awayRdBtn.setSelected(true);
-            } else {
-                homeRdBtn.setSelected(true);
-            }
-        }
-
-        ma1RdBtn.setEnabled(g[index].getIsoStream(0) != null);
-        if (g[index].getIsoStream(0) != null) {
-            ma1RdBtn.setText(g[index].getIsoStreamNames(0));
-        } else {
-            if (ma1RdBtn.isSelected()) {
-                if (awayRdBtn.isEnabled()) {
-                    awayRdBtn.setSelected(true);
-                } else {
-                    homeRdBtn.setSelected(true);
-                }
-            }
-            ma1RdBtn.setText("Multi-Angle 1");
-        }
-
-        ma2RdBtn.setEnabled(g[index].getIsoStream(1) != null);
-        if (g[index].getIsoStream(1) != null) {
-            ma2RdBtn.setText(g[index].getIsoStreamNames(1));
-        } else {
-            if (ma2RdBtn.isSelected()) {
-                if (awayRdBtn.isEnabled()) {
-                    awayRdBtn.setSelected(true);
-                } else {
-                    homeRdBtn.setSelected(true);
-                }
-            }
-            ma2RdBtn.setText("Multi-Angle 2");
-        }
-        ma3RdBtn.setEnabled(g[index].getIsoStream(2) != null);
-        if (g[index].getIsoStream(2) != null) {
-            ma3RdBtn.setText(g[index].getIsoStreamNames(2));
-        } else {
-            if (ma3RdBtn.isSelected()) {
-                if (awayRdBtn.isEnabled()) {
-                    awayRdBtn.setSelected(true);
-                } else {
-                    homeRdBtn.setSelected(true);
-                }
-            }
-            ma3RdBtn.setText("Multi-Angle 3");
         }
     }
 
-    private boolean checkID(Game game) {
+    private boolean checkID(Game game, String league) {
         BufferedReader br = null;
         boolean idExists = false;
         try {
@@ -1375,26 +1358,31 @@ public final class MainGUI extends javax.swing.JFrame {
             } catch (URISyntaxException ex) {
                 ex.printStackTrace();
             }
-            File ids = new File(base + System.getProperty("file.separator") + "ids.txt");
+            File ids;
+            if (league.equals("NHL")) {
+                ids = new File(base + System.getProperty("file.separator") + "ids.txt");
+            } else {
+                ids = new File(base + System.getProperty("file.separator") + "mlbids.txt");
+            }
             if (!ids.exists()) {
-                fillIDs();
+                fillIDs(ids, league);
             }
 
             br = new BufferedReader(new FileReader(ids));
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.matches(game.getAwayMediaID() + "|" + game.getHomeMediaID() + "|" + game.getNationalMediaID() + "|" + game.getFrenchMediaID())) {
+                if (line.matches(game.getFeedID(0) + "|" + game.getFeedID(1))) {
                     idExists = true;
                     break;
                 }
             }
             if (!idExists) {
-                fillIDs();
+                fillIDs(ids, league);
 
                 br = new BufferedReader(new FileReader(ids));
 
                 while ((line = br.readLine()) != null) {
-                    if (line.matches(game.getAwayMediaID() + "|" + game.getHomeMediaID() + "|" + game.getFrenchMediaID())) {
+                    if (line.matches(game.getFeedID(0) + "|" + game.getFeedID(1))) {
                         idExists = true;
                         break;
                     }
@@ -1417,57 +1405,126 @@ public final class MainGUI extends javax.swing.JFrame {
         return idExists;
     }
 
-    private void fillIDs() {
-        if (!playbackIDs.isEmpty()) {
-            playbackIDs.clear();
-        }
-
-        String base = "";
-
-        try {
-            Collections.addAll(playbackIDs, Web.getContent("http://mf.svc.nhl.com/static/ids.txt").replace("akc", "").replace("l3c", "").split("\n"));
-
-            base = Paths.get(Props.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toFile().getParent();
-        } catch (URISyntaxException ex) {
-            ex.printStackTrace();
-        } catch (UnknownHostException uhe) {
-            MessageBox.show("The server may be down.", "Error", 2);
-        }
-        try (FileWriter writer = new FileWriter(new File(base + System.getProperty("file.separator") + "ids.txt"), false)) {
-            for (String str : playbackIDs) {
-                writer.write(str + "\r\n");
+    private void fillIDs(File ids, String league) {
+        if (league.equals("NHL")) {
+            if (!NHLPlaybackIDs.isEmpty()) {
+                NHLPlaybackIDs.clear();
             }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } finally {
-            playbackIDs.clear();
+        } else if (!MLBPlaybackIDs.isEmpty()) {
+            MLBPlaybackIDs.clear();
+        }
+
+        if (league.equals("NHL")) {
+            try {
+                Collections.addAll(NHLPlaybackIDs, Web.getContent("http://mf.svc.nhl.com/static/ids.txt").replace("akc", "").replace("l3c", "").split("\n"));
+            } catch (UnknownHostException uhe) {
+                MessageBox.show("The server may be down.", "Error", 2);
+            }
+            try (FileWriter writer = new FileWriter(ids, false)) {
+                for (String str : NHLPlaybackIDs) {
+                    writer.write(str + "\r\n");
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } finally {
+                NHLPlaybackIDs.clear();
+            }
+        } else {
+            try {
+                Collections.addAll(MLBPlaybackIDs, Web.getContent("http://mf.svc.nhl.com/static/mlbids.txt").replace("akc", "").replace("l3c", "").split("\n"));
+            } catch (UnknownHostException uhe) {
+                MessageBox.show("The server may be down.", "Error", 2);
+            }
+            try (FileWriter writer = new FileWriter(ids, false)) {
+                for (String str : MLBPlaybackIDs) {
+                    writer.write(str + "\r\n");
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } finally {
+                MLBPlaybackIDs.clear();
+            }
         }
     }
 
-    private void enablePlayBtn() {
-        if (g==null) {
-            playBtn.setEnabled(false);
-            return;
-        }
-        int idx = selectedGame;
-        String d = Time.toLocalTZ(date, "America/Los_Angeles", "yyyy-MM-dd", "yyyy-MM-dd");
-        
-        boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(g[idx].getTime(), "UTC", "H:mm"), 50) && checkID(g[idx]);
+    private void enablePlayBtn(String league) {
+        if (league.equals("NHL")) {
+            if (nhl == null) {
+                NHLPlayBtn.setEnabled(false);
+                NHLSaveStreamCB.setEnabled(false);
 
-        playBtn.setEnabled(e);
+                if (NHLSaveStreamCB.isSelected()) {
+                    NHLSaveStreamCB.setSelected(false);
+                    NHLPlayBtn.setText("Play");
+                    streamlink.record = false;
+                }
+                return;
+            }
+            if (NHLStreamlinkSwitch < 1) {
+                int idx = NHLSelectedGame;
 
-        if (!e && saveStreamCB.isSelected()) {
-            saveStreamCB.setSelected(false);
-            streamlink.record = false;
-        }
-        saveStreamCB.setEnabled(e);
+                String d = Time.toLocalTZ(NHLDate, "America/Los_Angeles", "yyyy-MM-dd", "yyyy-MM-dd");
 
-        if (!playbackIDs.isEmpty()) {
-            playbackIDs.clear();
+                boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(nhl[idx].getTime(), "UTC", "H:mm"), 50) && checkID(nhl[idx], league);
+
+                NHLPlayBtn.setEnabled(e);
+
+                if (!e && NHLSaveStreamCB.isSelected()) {
+                    NHLSaveStreamCB.setSelected(false);
+                    NHLPlayBtn.setText("Play");
+                    streamlink.record = false;
+                }
+                NHLSaveStreamCB.setEnabled(e);
+            } else {
+                NHLPlayBtn.setText("Stop Recording");
+                NHLPlayBtn.setEnabled(true);
+                NHLSaveStreamCB.setEnabled(true);
+                NHLSaveStreamCB.setSelected(true);
+            }
+
+            if (!NHLPlaybackIDs.isEmpty()) {
+                NHLPlaybackIDs.clear();
+            }
+        } else {
+            if (mlb == null) {
+                NHLPlayBtn.setEnabled(false);
+                NHLSaveStreamCB.setEnabled(false);
+
+                if (NHLSaveStreamCB.isSelected()) {
+                    NHLSaveStreamCB.setSelected(false);
+                    NHLPlayBtn.setText("Play");
+                    streamlink.record = false;
+                }
+                return;
+            }
+            if (MLBStreamlinkSwitch < 1) {
+                int idx = MLBSelectedGame;
+                String d = Time.toLocalTZ(MLBDate, "America/Los_Angeles", "yyyy-MM-dd", "yyyy-MM-dd");
+
+                boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(mlb[idx].getTime(), "UTC", "H:mm"), 50) && checkID(mlb[idx], league);
+
+                NHLPlayBtn.setEnabled(e);
+
+                if (!e && NHLSaveStreamCB.isSelected()) {
+                    NHLSaveStreamCB.setSelected(false);
+                    NHLPlayBtn.setText("Play");
+                    streamlink.record = false;
+                }
+                NHLSaveStreamCB.setEnabled(e);
+            } else {
+                NHLPlayBtn.setText("Stop Recording");
+                NHLPlayBtn.setEnabled(true);
+                NHLSaveStreamCB.setEnabled(true);
+                NHLSaveStreamCB.setSelected(true);
+            }
+
+            if (!MLBPlaybackIDs.isEmpty()) {
+                MLBPlaybackIDs.clear();
+            }
         }
     }
 
-    private SwingWorker<Void, Void> playLive() {
+    private SwingWorker<Void, Void> playGame(String league) {
 
         SwingWorker<Void, Void> worker;
         worker = new SwingWorker<Void, Void>() {
@@ -1476,8 +1533,13 @@ public final class MainGUI extends javax.swing.JFrame {
             protected Void doInBackground() {
                 try {
                     if (!Props.getVlcloc().equals("")) {
-                        int idx = selectedGame;
-                        Process l = streamlink.run(g[idx], gwi);
+                        Process l;
+                        int idx = NHLSelectedGame;
+                        if (league.equals("NHL")) {
+                            l = streamlink.run(nhl[idx], NHLGWI);
+                        } else {
+                            l = streamlink.run(mlb[idx], NHLGWI);
+                        }
                         if (l != null) {
                             SwingWorker<Void, Void> go = getSLOutput(l);
                             go.execute();
@@ -1487,8 +1549,11 @@ public final class MainGUI extends javax.swing.JFrame {
 
                             while (l.isAlive()) {
                                 Thread.sleep(700);
-
-                                if (streamlinkSwitch == -1) {
+                                if (league.equals("NHL")) {
+                                    if (NHLStreamlinkSwitch == -1) {
+                                        l.destroy();
+                                    }
+                                } else if (MLBStreamlinkSwitch == -1) {
                                     l.destroy();
                                 }
                             }
@@ -1498,19 +1563,31 @@ public final class MainGUI extends javax.swing.JFrame {
                             if (!consoleTA.getText().substring(li, consoleTA.getText().length()).contains("Opening")) {
                                 MessageBox.show("Stream unavailable. Please report the game you are trying to play.", "Error", 2);
                             }
-                        } else if (playBtn.getText().equals("Stop Recording")) {
-                            streamlinkSwitch = -1;
+                        } else if (league.equals("NHL") && NHLPlayBtn.getText().equals("Stop Recording")) {
+                            NHLStreamlinkSwitch = -1;
 
-                            if (saveStreamCB.isSelected()) {
-                                playBtn.setText("Record");
+                            if (NHLSaveStreamCB.isSelected()) {
+                                NHLPlayBtn.setText("Record");
                             } else {
-                                playBtn.setText("Play");
+                                NHLPlayBtn.setText("Play");
+                            }
+                        } else if (league.equals("MLB") && NHLPlayBtn.getText().equals("Stop Recording")) {
+                            MLBStreamlinkSwitch = -1;
+
+                            if (NHLSaveStreamCB.isSelected()) {
+                                NHLPlayBtn.setText("Record");
+                            } else {
+                                NHLPlayBtn.setText("Play");
                             }
                         }
                     } else {
                         String message = "Please set the location to your media player executable.";
                         MessageBox.show(message, "Error", 2);
-                        playBtn.setEnabled(true);
+                        if (league.equals("NHL")) {
+                            NHLPlayBtn.setEnabled(true);
+                        } else {
+                            NHLPlayBtn.setEnabled(true);
+                        }
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -1521,46 +1598,6 @@ public final class MainGUI extends javax.swing.JFrame {
 
         };
         return worker;
-    }
-
-    private void getVLCLoc() {
-        String loc;
-        java.io.File file;
-        loc = Props.getVlcloc();
-        if (!loc.equals("")) {
-            return;
-        }
-        if (System.getProperty("os.name").toLowerCase().contains("win")) {
-            loc = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
-            file = new java.io.File(loc);
-            if (file.exists()) {
-                Props.setVlcloc(loc);
-            } else {
-                loc = "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe";
-                file = new java.io.File(loc);
-                if (file.exists()) {
-                    Props.setVlcloc(loc);
-                } else {
-                    vlcLbl.setText("Location not set.");
-                }
-            }
-        } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-            loc = "/Applications/VLC.app/Contents/MacOS/VLC";
-            file = new java.io.File(loc);
-            if (file.exists()) {
-                Props.setVlcloc(loc);
-            } else {
-                vlcLbl.setText("Location not set.");
-            }
-        } else {
-            loc = "/usr/bin/vlc";
-            file = new java.io.File(loc);
-            if (file.exists()) {
-                Props.setVlcloc(loc);
-            } else {
-                vlcLbl.setText("Location not set.");
-            }
-        }
     }
 
     private void getSLLoc() {
@@ -1606,64 +1643,35 @@ public final class MainGUI extends javax.swing.JFrame {
     private void setButtons() {
         String bitrate = Props.getBitrate(), cdn = Props.getCDN();
 
-        switch (bitrate) {
-            case "360p":
-                RdBtn360p.setSelected(true);
-                gwi.setQuality(bitrate);
-                break;
-            case "540p":
-                RdBtn540p.setSelected(true);
-                gwi.setQuality(bitrate);
-                break;
-            case "720p":
-                RdBtn720p.setSelected(true);
-                gwi.setQuality(bitrate);
-                break;
-            case "best":
-                RdBtn720p60.setSelected(true);
-                gwi.setQuality(bitrate);
-                break;
-            default:
-                gwi.setQuality("best");
-                break;
+        if (!bitrate.equals("")) {
+            if (!bitrate.equals("best")) {
+                NHLQualityCB.setSelectedItem(bitrate);
+            } else {
+                NHLQualityCB.setSelectedItem("720p60");
+            }
+
+            NHLGWI.setQuality(bitrate);
+        } else {
+            NHLGWI.setQuality("720p");
         }
 
-        switch (cdn) {
-            case "Level 3":
-                level3RdBtn.setSelected(true);
-                gwi.setCdn("l3c");
-                break;
-            case "Akamai":
-                akamailRdBtn.setSelected(true);
-                gwi.setCdn("akc");
-                break;
-            default:
-                gwi.setCdn("l3c");
-                break;
+        if (!cdn.equals("")) {
+            NHLCDNCB.setSelectedItem(cdn);
+            if (cdn.equals("Akamai")) {
+                NHLGWI.setCdn("akc");
+            } else {
+                NHLGWI.setCdn("l3c");
+            }
+        } else {
+            NHLGWI.setCdn("akc");
         }
     }
 
-    private String getMediaID() {
-        int idx = selectedGame;
-        if (awayRdBtn.isSelected()) {
-            return g[idx].getAwayMediaID();
-        } else if (frRdBtn.isSelected()) {
-            return g[idx].getFrenchMediaID();
-        } else if (threeCamRdBtn.isSelected()) {
-            return g[idx].getThreeCamMID();
-        } else if (sixCamRdBtn.isSelected()) {
-            return g[idx].getSixCamMID();
-        } else if (ma1RdBtn.isSelected()) {
-            return g[idx].getIsoStream(0);
-        } else if (ma2RdBtn.isSelected()) {
-            return g[idx].getIsoStream(1);
-        } else if (ma3RdBtn.isSelected()) {
-            return g[idx].getIsoStream(2);
+    private String getMediaID(String league) {
+        if (league.equals("NHL")) {
+            return nhl[NHLSelectedGame].getFeedID(NHLFeedCB.getSelectedIndex());
         } else {
-            if (homeRdBtn.getText().contains("National")) {
-                return g[idx].getNationalMediaID();
-            }
-            return g[idx].getHomeMediaID();
+            return mlb[MLBSelectedGame].getFeedID(NHLFeedCB.getSelectedIndex());
         }
     }
 
@@ -1716,11 +1724,21 @@ public final class MainGUI extends javax.swing.JFrame {
 
     class Refresh extends TimerTask {
 
+        private final String league;
+
+        public Refresh(String league) {
+            this.league = league;
+        }
+
         @Override
         public void run() {
-            System.out.println("lazyman.MainGUI.Refresh.run()");
-            SwingWorker<Void, Void> gg = getNHLGames(selectedGame);
-            gg.execute();
+            if (league.equals("NHL")) {
+                SwingWorker<Void, Void> gg = getGames(-1, NHLGameTable, "NHL");
+                gg.execute();
+            } else {
+                SwingWorker<Void, Void> gg = getGames(-1, NHLGameTable, "MLB");
+                gg.execute();
+            }
         }
     }
 
