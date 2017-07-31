@@ -10,7 +10,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Comparator;
 
 
 public class GetMLBInfo {
@@ -54,6 +53,8 @@ public class GetMLBInfo {
                     g1.setTimeRemaining("Final");
                 } else if (g1.getGameState().equals("Postponed")) {
                     g1.setTimeRemaining("PPD");
+                } else if (g1.getGameState().equals("Delayed")) {
+                    g1.setTimeRemaining("Delayed");
                 } else {
                     g1.setTimeRemaining("n/a");
                 }
@@ -75,6 +76,8 @@ public class GetMLBInfo {
                     return 0;
                 else if ((o1.getGameState().equals("In Progress") || o1.getGameState().equals("Delayed")) && !(o2.getGameState().equals("In Progress") || o2.getGameState().equals("Delayed")))
                     return -1;
+                else if (!(o1.getGameState().equals("In Progress") || o1.getGameState().equals("Delayed")) && (o2.getGameState().equals("In Progress") || o2.getGameState().equals("Delayed")))
+                    return 1;
                 else if ((o1.getGameState().equals("Final") || o1.getGameState().equals("Postponed")) && !(o2.getGameState().equals("Final") || o2.getGameState().equals("Postponed")))
                     return 1;
                 else if (o1.getGameState().equals("Pre-Game") && o2.getGameState().equals("Final"))

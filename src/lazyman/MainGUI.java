@@ -530,6 +530,12 @@ public final class MainGUI extends javax.swing.JFrame {
 
                 jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Feed"));
 
+                NHLFeedCB.addItemListener(new java.awt.event.ItemListener() {
+                    public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                        NHLFeedCBItemStateChanged(evt);
+                    }
+                });
+
                 javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
                 jPanel2.setLayout(jPanel2Layout);
                 jPanel2Layout.setHorizontalGroup(
@@ -730,12 +736,6 @@ public final class MainGUI extends javax.swing.JFrame {
 
         NHLSelectedGame = NHLGameTable.getSelectedRow();
         getAvailableStreams(NHLSelectedGame, "NHL");
-
-        if (evt != null && evt.getClickCount() == 2) {
-            NHLPlayBtnActionPerformed(null);
-        } else {
-            enablePlayBtn("NHL");
-        }
     }//GEN-LAST:event_NHLGameTableMouseClicked
 
     private void NHLGameTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_NHLGameTableKeyReleased
@@ -785,10 +785,11 @@ public final class MainGUI extends javax.swing.JFrame {
         NHLGWI.setUrl(NHLDate, getMediaID(league), league);
 
         if (NHLPlayBtn.getText().equals("Stop Recording")) {
-            if (league.equals("NHL"))
+            if (league.equals("NHL")) {
                 NHLStreamlinkSwitch = -1;
-            else
+            } else {
                 MLBStreamlinkSwitch = -1;
+            }
 
             if (NHLSaveStreamCB.isSelected()) {
                 NHLPlayBtn.setText("Record");
@@ -799,16 +800,16 @@ public final class MainGUI extends javax.swing.JFrame {
         }
 
         if (NHLSaveStreamCB.isSelected()) {
-            if (league.equals("NHL"))
+            if (league.equals("NHL")) {
                 NHLStreamlinkSwitch = 1;
-            else
+            } else {
                 MLBStreamlinkSwitch = 1;
+            }
             NHLPlayBtn.setText("Stop Recording");
+        } else if (league.equals("NHL")) {
+            NHLStreamlinkSwitch = 0;
         } else {
-            if (league.equals("NHL"))
-                NHLStreamlinkSwitch = 0;
-            else
-                MLBStreamlinkSwitch = 0;
+            MLBStreamlinkSwitch = 0;
         }
         SwingWorker<Void, Void> pl = playGame(league);
         pl.execute();
@@ -960,8 +961,6 @@ public final class MainGUI extends javax.swing.JFrame {
 
         if (evt != null && evt.getClickCount() == 2) {
             NHLPlayBtnActionPerformed(null);
-        } else {
-            enablePlayBtn("MLB");
         }
     }//GEN-LAST:event_MLBGameTableMouseClicked
 
@@ -1004,14 +1003,9 @@ public final class MainGUI extends javax.swing.JFrame {
         if (nhl == null && mlb == null) {
             return;
         }
-        switch (jTabbedPane1.getSelectedIndex()) {
-            case 1:
-                league = jTabbedPane1.getTitleAt(1);
-                break;
-            case 0:
-            default:
-                league = jTabbedPane1.getTitleAt(0);
-        }
+
+        league = jTabbedPane1.getTitleAt(jTabbedPane1.getSelectedIndex());
+
         if (league.contains("NHL")) {
             if (nhl != null) {
                 setRow(NHLSelectedGame, league);
@@ -1025,6 +1019,12 @@ public final class MainGUI extends javax.swing.JFrame {
         }
         enablePlayBtn(league);
     }//GEN-LAST:event_jTabbedPane1StateChanged
+
+    private void NHLFeedCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_NHLFeedCBItemStateChanged
+        if (NHLFeedCB.getItemCount() >= 1) {
+            enablePlayBtn(league);
+        }
+    }//GEN-LAST:event_NHLFeedCBItemStateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1348,7 +1348,7 @@ public final class MainGUI extends javax.swing.JFrame {
         }
     }
 
-    private boolean checkID(Game game, String league) {
+    private boolean checkID(String id, String league) {
         BufferedReader br = null;
         boolean idExists = false;
         try {
@@ -1371,7 +1371,7 @@ public final class MainGUI extends javax.swing.JFrame {
             br = new BufferedReader(new FileReader(ids));
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.matches(game.getFeedID(0) + "|" + game.getFeedID(1))) {
+                if (line.equals(id)) {
                     idExists = true;
                     break;
                 }
@@ -1382,7 +1382,7 @@ public final class MainGUI extends javax.swing.JFrame {
                 br = new BufferedReader(new FileReader(ids));
 
                 while ((line = br.readLine()) != null) {
-                    if (line.matches(game.getFeedID(0) + "|" + game.getFeedID(1))) {
+                    if (line.equals(id)) {
                         idExists = true;
                         break;
                     }
@@ -1465,7 +1465,7 @@ public final class MainGUI extends javax.swing.JFrame {
 
                 String d = Time.toLocalTZ(NHLDate, "America/Los_Angeles", "yyyy-MM-dd", "yyyy-MM-dd");
 
-                boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(nhl[idx].getTime(), "UTC", "H:mm"), 50) && checkID(nhl[idx], league);
+                boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(nhl[idx].getTime(), "UTC", "H:mm"), 50) && checkID(nhl[idx].getFeedID(NHLFeedCB.getSelectedIndex()), league);
 
                 NHLPlayBtn.setEnabled(e);
 
@@ -1501,7 +1501,7 @@ public final class MainGUI extends javax.swing.JFrame {
                 int idx = MLBSelectedGame;
                 String d = Time.toLocalTZ(MLBDate, "America/Los_Angeles", "yyyy-MM-dd", "yyyy-MM-dd");
 
-                boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(mlb[idx].getTime(), "UTC", "H:mm"), 50) && checkID(mlb[idx], league);
+                boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(mlb[idx].getTime(), "UTC", "H:mm"), 50) && checkID(mlb[idx].getFeedID(NHLFeedCB.getSelectedIndex()), league);
 
                 NHLPlayBtn.setEnabled(e);
 

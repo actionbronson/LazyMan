@@ -7,6 +7,13 @@ public class GameStream {
     private final ArrayList<ArrayList<String>> feeds = new ArrayList<>();
 
     public void addFeed(String name, String id, String tv) {
+        for (int i = 0; i < feeds.size(); i++) {
+            if (feeds.get(i).contains(name)) {
+                feeds.get(i).remove(1);
+                feeds.get(i).add(1, id);
+                return;
+            }
+        }
         ArrayList<String> feed = new ArrayList<>();
         feed.add(name);
         feed.add(id);
@@ -18,7 +25,7 @@ public class GameStream {
         return feeds.get(idx).get(0);
     }
 
-    public String getFeedID(int idx) {
+    public String getFeedID(int idx) throws java.lang.IndexOutOfBoundsException {
         return feeds.get(idx).get(1);
     }
 
