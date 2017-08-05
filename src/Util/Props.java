@@ -69,13 +69,11 @@ public class Props {
 
         } catch (IOException e) {
             e.printStackTrace();
-            e.printStackTrace();
         } finally {
             if (output != null) {
                 try {
                     output.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
                     e.printStackTrace();
                 }
             }

@@ -1,7 +1,7 @@
 package lazyman;
 
 import GameObj.Game;
-import GameObj.GameWatchInfo;
+import GameObj.League;
 import Objects.Streamlink;
 import Objects.Time;
 import Objects.Web;
@@ -29,36 +29,39 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 import java.util.TimerTask;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import java.util.Timer;
-import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 public final class MainGUI extends javax.swing.JFrame {
 
-    private String NHLDate, MLBDate, league;
-    private Game[] nhl, mlb;
-    private final ArrayList<String> NHLPlaybackIDs = new ArrayList<>(), MLBPlaybackIDs = new ArrayList<>();
     private final Streamlink streamlink;
-    private final GameWatchInfo NHLGWI;
-    private boolean NHLHostsEdited, MLBHostsEdited, NHLSelectedFavGm, MLBSelectedFavGm;
-    private int NHLStreamlinkSwitch = 0, MLBStreamlinkSwitch = 0, NHLSelectedGame, MLBSelectedGame, z = 0;
-    private Timer NHLTimer, MLBTimer;
+    private int z = 0;
+    private final League[] leagues;
 
     public MainGUI() {
-        league = "NHL";
-        NHLHostsEdited = false;
-        MLBHostsEdited = false;
-        NHLSelectedFavGm = false;
-        MLBSelectedFavGm = false;
         streamlink = new Streamlink();
         initComponents();
+        leagues = new League[jTabbedPane1.getTabCount()];
+        for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
+            leagues[i] = new League();
+        }
+        leagues[0].setTable(NHLGameTable);
+        leagues[0].setDateTF(NHLDateTF);
+        leagues[0].setKeyURL("mf.svc.nhl.com");
+        leagues[1].setTable(MLBGameTable);
+        leagues[1].setDateTF(MLBDateTF);
+        leagues[1].setKeyURL("mlb-ws-mf.media.mlb.com");
         checkUpdate();
+        for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
+            leagues[i].setName(jTabbedPane1.getTitleAt(i));
+            leagues[i].setDate(Time.getPSTDate("yyyy-MM-dd"));
+            leagues[i].getDateTF().setDate(Time.getPSTDate1("MMM dd, yyyy"));
+        }
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             changePasswordMI.setVisible(false);
         } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
@@ -69,25 +72,18 @@ public final class MainGUI extends javax.swing.JFrame {
             exitMI.setVisible(false);
         }
         getSLLoc();
-        NHLGWI = new GameWatchInfo();
         setButtons();
         new newDay().start();
-        checkHosts("NHL");
-        checkHosts("MLB");
-        NHLDate = Time.getPSTDate("yyyy-MM-dd");
-        NHLDateTF.setDate(Time.getPSTDate1("MMM dd, yyyy"));
-        MLBDateTF.setDate(Time.getPSTDate1("MMM dd, yyyy"));
-        MLBDate = Time.getPSTDate("yyyy-MM-dd");
 
         MessageConsole console = new MessageConsole(consoleTA);
         console.redirectOut();
         console.redirectErr(Color.RED, null);
     }
 
-    private void checkHosts(String league) {
+    private void checkHosts(String url, League l) {
         EditHosts eh = new EditHosts();
-        if (!eh.hostsFileEdited(league)) {
-            if (eh.isIpNotFound(league)) {
+        if (!eh.hostsFileEdited(url)) {
+            if (eh.isIpNotFound()) {
                 return;
             }
             if (!System.getProperty("os.name").toLowerCase().contains("win") && Props.getPW().equals("")) {
@@ -95,25 +91,15 @@ public final class MainGUI extends javax.swing.JFrame {
                 gp.setLocationRelativeTo(this);
                 gp.setVisible(true);
             }
-            if (eh.isWrongIP(league)) {
-                if (eh.modifyHosts(league)) {
-                    if (league.equals("NHL")) {
-                        NHLHostsEdited = true;
-                    } else {
-                        MLBHostsEdited = true;
-                    }
+            if (!eh.isWrongIP()) {
+                if (!eh.hostsFileEdited(url)) {
+                    l.setHostsFileEdited(eh.editHosts(url));
                 }
-            } else if (eh.editHosts(league)) {
-                if (league.equals("NHL")) {
-                    NHLHostsEdited = true;
-                } else {
-                    MLBHostsEdited = true;
-                }
+            } else {
+                l.setHostsFileEdited(eh.editHosts(url));
             }
-        } else if (league.equals("NHL")) {
-            NHLHostsEdited = true;
         } else {
-            MLBHostsEdited = true;
+            l.setHostsFileEdited(true);
         }
     }
 
@@ -329,10 +315,10 @@ public final class MainGUI extends javax.swing.JFrame {
                     z++;
                     if (z == 2) //game liat populates twice on start without this
                     return;
-                    NHLSelectedFavGm = false;
-                    NHLDate = Time.formatDateSched( ((JTextField)NHLDateTF.getDateEditor().getUiComponent()).getText() );
+                    leagues[0].setFavGameSelected(false);
+                    leagues[0].setDate(Time.formatDateSched( ((JTextField)NHLDateTF.getDateEditor().getUiComponent()).getText() ));
 
-                    SwingWorker<Void, Void> gg = getGames(0, NHLGameTable, "NHL");
+                    SwingWorker<Void, Void> gg = getGames(0, 0);
                     gg.execute();
                 }
             });
@@ -454,13 +440,10 @@ public final class MainGUI extends javax.swing.JFrame {
                 "date", new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent e) {
-                        z++;
-                        //  if (z == 2) //game liat populates twice on start without this
-                        // return;
-                        MLBSelectedFavGm = false;
-                        MLBDate = Time.formatDateSched( ((JTextField)MLBDateTF.getDateEditor().getUiComponent()).getText() );
+                        leagues[1].setFavGameSelected(false);
+                        leagues[1].setDate(Time.formatDateSched( ((JTextField)MLBDateTF.getDateEditor().getUiComponent()).getText() ));
 
-                        SwingWorker<Void, Void> gg = getGames(0, MLBGameTable, "MLB");
+                        SwingWorker<Void, Void> gg = getGames(0, 1);
                         gg.execute();
                     }
                 });
@@ -734,8 +717,8 @@ public final class MainGUI extends javax.swing.JFrame {
             return;
         }
 
-        NHLSelectedGame = NHLGameTable.getSelectedRow();
-        getAvailableStreams(NHLSelectedGame, "NHL");
+        leagues[0].setSelectedGame(NHLGameTable.getSelectedRow());
+        getAvailableStreams(leagues[0].getSelectedGame());
     }//GEN-LAST:event_NHLGameTableMouseClicked
 
     private void NHLGameTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_NHLGameTableKeyReleased
@@ -761,15 +744,10 @@ public final class MainGUI extends javax.swing.JFrame {
             return;
         }
 
-        checkHosts(league);
+        checkHosts(leagues[jTabbedPane1.getSelectedIndex()].getKeyURL(), leagues[jTabbedPane1.getSelectedIndex()]);
 
-        if (league.equals("NHL")) {
-            if (!NHLHostsEdited) {
-                MessageBox.show("You are not completely set up! Your hosts file needs to be edited for " + league + ".", "Hosts file not edited", 2);
-                return;
-            }
-        } else if (!MLBHostsEdited) {
-            MessageBox.show("You are not completely set up! Your hosts file needs to be edited for " + league + ".", "Hosts file not edited", 2);
+        if (!leagues[jTabbedPane1.getSelectedIndex()].isHostsFileEdited()) {
+            MessageBox.show("You are not completely set up! Your hosts file needs to be edited for " + leagues[jTabbedPane1.getSelectedIndex()].getName() + ".", "Hosts file not edited", 2);
             return;
         }
 
@@ -782,14 +760,10 @@ public final class MainGUI extends javax.swing.JFrame {
             }
         }
 
-        NHLGWI.setUrl(NHLDate, getMediaID(league), league);
+        leagues[jTabbedPane1.getSelectedIndex()].getGwi().setUrl(getMediaID(), leagues[jTabbedPane1.getSelectedIndex()].getName());
 
         if (NHLPlayBtn.getText().equals("Stop Recording")) {
-            if (league.equals("NHL")) {
-                NHLStreamlinkSwitch = -1;
-            } else {
-                MLBStreamlinkSwitch = -1;
-            }
+            leagues[jTabbedPane1.getSelectedIndex()].setStreamlinkSwitch(-1);
 
             if (NHLSaveStreamCB.isSelected()) {
                 NHLPlayBtn.setText("Record");
@@ -800,18 +774,13 @@ public final class MainGUI extends javax.swing.JFrame {
         }
 
         if (NHLSaveStreamCB.isSelected()) {
-            if (league.equals("NHL")) {
-                NHLStreamlinkSwitch = 1;
-            } else {
-                MLBStreamlinkSwitch = 1;
-            }
+            leagues[jTabbedPane1.getSelectedIndex()].setStreamlinkSwitch(1);
             NHLPlayBtn.setText("Stop Recording");
-        } else if (league.equals("NHL")) {
-            NHLStreamlinkSwitch = 0;
         } else {
-            MLBStreamlinkSwitch = 0;
+            leagues[jTabbedPane1.getSelectedIndex()].setStreamlinkSwitch(0);
         }
-        SwingWorker<Void, Void> pl = playGame(league);
+
+        SwingWorker<Void, Void> pl = playGame();
         pl.execute();
     }//GEN-LAST:event_NHLPlayBtnActionPerformed
 
@@ -822,44 +791,26 @@ public final class MainGUI extends javax.swing.JFrame {
         op.setLocationRelativeTo(this);
         op.setVisible(true);
 
-        if (!NHLGameTable.getModel().getValueAt(0, 0).equals("None")) {
-            int idx = NHLSelectedGame;
-            setRow(idx, "NHL");
-            setFeed(idx, 'a', "NHL");
-
-            if (Props.getRefreshRate() != refresh) {
-                refresh = Props.getRefreshRate();
-
-                if (refresh == 0 && NHLTimer != null) {
-                    NHLTimer.cancel();
-                    NHLTimer = null;
-                } else if (refresh > 0 && NHLTimer != null) {
-                    NHLTimer.cancel();
-                    NHLTimer.scheduleAtFixedRate(new Refresh("NHL"), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
-                } else if (refresh > 0 && NHLTimer == null) {
-                    NHLTimer = new Timer();
-                    NHLTimer.scheduleAtFixedRate(new Refresh("NHL"), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
+        for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
+            if (!leagues[i].getTable().getModel().getValueAt(0, 0).equals("None")) {
+                if (leagues[i].getName().equals(jTabbedPane1.getTitleAt(jTabbedPane1.getSelectedIndex()))) {
+                    int idx = leagues[i].getSelectedGame();
+                    setRow(idx, i);
+                    setFeed(idx, 'a');
                 }
-            }
-        }
+                if (Props.getRefreshRate() != refresh) {
+                    refresh = Props.getRefreshRate();
 
-        if (!MLBGameTable.getModel().getValueAt(0, 0).equals("None")) {
-            int idx = MLBSelectedGame;
-            setRow(idx, "MLB");
-            setFeed(idx, 'a', "MLB");
-
-            if (Props.getRefreshRate() != refresh) {
-                refresh = Props.getRefreshRate();
-
-                if (refresh == 0 && NHLTimer != null) {
-                    NHLTimer.cancel();
-                    NHLTimer = null;
-                } else if (refresh > 0 && NHLTimer != null) {
-                    NHLTimer.cancel();
-                    NHLTimer.scheduleAtFixedRate(new Refresh("MLB"), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
-                } else if (refresh > 0 && NHLTimer == null) {
-                    NHLTimer = new Timer();
-                    NHLTimer.scheduleAtFixedRate(new Refresh("MLB"), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
+                    if (refresh == 0 && leagues[i].getTimer() != null) {
+                        leagues[i].getTimer().cancel();
+                        leagues[i].setTimer(null);
+                    } else if (refresh > 0 && leagues[i].getTimer() != null) {
+                        leagues[i].getTimer().cancel();
+                        leagues[i].getTimer().scheduleAtFixedRate(new Refresh(i), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
+                    } else if (refresh > 0 && leagues[i].getTimer() == null) {
+                        leagues[i].setTimer(new Timer());
+                        leagues[i].getTimer().scheduleAtFixedRate(new Refresh(i), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
+                    }
                 }
             }
         }
@@ -895,10 +846,11 @@ public final class MainGUI extends javax.swing.JFrame {
 
     private void NHLRefreshBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLRefreshBtnActionPerformed
         SwingWorker<Void, Void> gg;
-        if (league.equals("NHL")) {
-            gg = getGames(NHLSelectedGame, NHLGameTable, "NHL");
-        } else {
-            gg = getGames(MLBSelectedGame, MLBGameTable, "MLB");
+        gg = getGames(-1, jTabbedPane1.getSelectedIndex());
+        if (leagues[jTabbedPane1.getSelectedIndex()].getTimer() != null) {
+            leagues[jTabbedPane1.getSelectedIndex()].getTimer().cancel();
+            leagues[jTabbedPane1.getSelectedIndex()].setTimer(new Timer());
+            leagues[jTabbedPane1.getSelectedIndex()].getTimer().scheduleAtFixedRate(new Refresh(jTabbedPane1.getSelectedIndex()), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
         }
         gg.execute();
     }//GEN-LAST:event_NHLRefreshBtnActionPerformed
@@ -910,15 +862,15 @@ public final class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_maximizeConsoleButtonActionPerformed
 
     private void NHLPrevDayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLPrevDayBtnActionPerformed
-        NHLSelectedFavGm = false;
-        NHLDate = Time.getPrevDay(NHLDate);
-        NHLDateTF.setDate(Time.getDate(NHLDate, "yyyy-MM-dd"));
+        leagues[jTabbedPane1.getSelectedIndex()].setFavGameSelected(false);
+        leagues[jTabbedPane1.getSelectedIndex()].setDate(Time.getPrevDay(leagues[jTabbedPane1.getSelectedIndex()].getDate()));
+        leagues[jTabbedPane1.getSelectedIndex()].getDateTF().setDate(Time.getDate(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "yyyy-MM-dd"));
     }//GEN-LAST:event_NHLPrevDayBtnActionPerformed
 
     private void NHLNextDayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLNextDayBtnActionPerformed
-        NHLSelectedFavGm = false;
-        NHLDate = Time.getNextDay(NHLDate);
-        NHLDateTF.setDate(Time.getDate(NHLDate, "yyyy-MM-dd"));
+        leagues[jTabbedPane1.getSelectedIndex()].setFavGameSelected(false);
+        leagues[jTabbedPane1.getSelectedIndex()].setDate(Time.getNextDay(leagues[jTabbedPane1.getSelectedIndex()].getDate()));
+        leagues[jTabbedPane1.getSelectedIndex()].getDateTF().setDate(Time.getDate(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "yyyy-MM-dd"));
     }//GEN-LAST:event_NHLNextDayBtnActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
@@ -930,7 +882,7 @@ public final class MainGUI extends javax.swing.JFrame {
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         EditHosts eh = new EditHosts();
 
-        if (eh.clearHosts()) {
+        if (eh.clearHosts(leagues)) {
             MessageBox.show("Hosts file cleared from LazyMan edits.", "Hosts File Cleared", 0);
         } else {
             MessageBox.show("Hosts file not cleared from LazyMan edits. Please check the console area.", "Hosts Not File Cleared", 2);
@@ -938,17 +890,17 @@ public final class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void MLBPrevDayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MLBPrevDayBtnActionPerformed
-        MLBSelectedFavGm = false;
-        MLBDate = Time.getPrevDay(MLBDate);
-        MLBDateTF.setDate(Time.getDate(MLBDate, "yyyy-MM-dd"));
-        NHLGWI.setDate(MLBDate);
+        leagues[jTabbedPane1.getSelectedIndex()].setFavGameSelected(false);
+        leagues[jTabbedPane1.getSelectedIndex()].setDate(Time.getPrevDay(leagues[jTabbedPane1.getSelectedIndex()].getDate()));
+        leagues[jTabbedPane1.getSelectedIndex()].getDateTF().setDate(Time.getDate(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "yyyy-MM-dd"));
+        leagues[jTabbedPane1.getSelectedIndex()].getGwi().setDate(leagues[jTabbedPane1.getSelectedIndex()].getDate());
     }//GEN-LAST:event_MLBPrevDayBtnActionPerformed
 
     private void MLBNextDayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MLBNextDayBtnActionPerformed
-        MLBSelectedFavGm = false;
-        MLBDate = Time.getNextDay(MLBDate);
-        MLBDateTF.setDate(Time.getDate(MLBDate, "yyyy-MM-dd"));
-        NHLGWI.setDate(MLBDate);
+        leagues[jTabbedPane1.getSelectedIndex()].setFavGameSelected(false);
+        leagues[jTabbedPane1.getSelectedIndex()].setDate(Time.getNextDay(leagues[jTabbedPane1.getSelectedIndex()].getDate()));
+        leagues[jTabbedPane1.getSelectedIndex()].getDateTF().setDate(Time.getDate(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "yyyy-MM-dd"));
+        leagues[jTabbedPane1.getSelectedIndex()].getGwi().setDate(leagues[jTabbedPane1.getSelectedIndex()].getDate());
     }//GEN-LAST:event_MLBNextDayBtnActionPerformed
 
     private void MLBGameTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MLBGameTableMouseClicked
@@ -956,8 +908,9 @@ public final class MainGUI extends javax.swing.JFrame {
             return;
         }
 
-        MLBSelectedGame = MLBGameTable.getSelectedRow();
-        getAvailableStreams(MLBSelectedGame, "MLB");
+        leagues[jTabbedPane1.getSelectedIndex()].setSelectedGame(MLBGameTable.getSelectedRow());
+        getAvailableStreams(leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame());
+        enablePlayBtn();
 
         if (evt != null && evt.getClickCount() == 2) {
             NHLPlayBtnActionPerformed(null);
@@ -971,58 +924,53 @@ public final class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_MLBGameTableKeyReleased
 
     private void NHLQualityCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_NHLQualityCBItemStateChanged
-        if (nhl == null && mlb == null) {
+        if (leagues[jTabbedPane1.getSelectedIndex()].getGames() == null) {
             return;
         }
+
         String quality = (String) NHLQualityCB.getSelectedItem();
 
         if (quality.equals("720p60")) {
             quality = "best";
         }
 
-        NHLGWI.setQuality(quality);
+        leagues[jTabbedPane1.getSelectedIndex()].getGwi().setQuality(quality);
         Props.setBitrate(quality);
     }//GEN-LAST:event_NHLQualityCBItemStateChanged
 
     private void NHLCDNCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_NHLCDNCBItemStateChanged
-        if (nhl == null && mlb == null) {
+        if (leagues[jTabbedPane1.getSelectedIndex()].getGames() == null) {
             return;
         }
+
         String cdn = (String) NHLCDNCB.getSelectedItem();
 
         if (cdn.equals("Akamai")) {
-            NHLGWI.setCdn("akc");
+            leagues[jTabbedPane1.getSelectedIndex()].getGwi().setCdn("akc");
         } else {
-            NHLGWI.setCdn("l3c");
+            leagues[jTabbedPane1.getSelectedIndex()].getGwi().setCdn("l3c");
         }
 
         Props.setCDN(cdn);
     }//GEN-LAST:event_NHLCDNCBItemStateChanged
 
     private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
-        if (nhl == null && mlb == null) {
+        if (leagues == null) {
             return;
         }
 
-        league = jTabbedPane1.getTitleAt(jTabbedPane1.getSelectedIndex());
-
-        if (league.contains("NHL")) {
-            if (nhl != null) {
-                setRow(NHLSelectedGame, league);
-            } else {
-                NHLFeedCB.removeAllItems();
-            }
-        } else if (mlb != null) {
-            setRow(MLBSelectedGame, league);
+        if (leagues[jTabbedPane1.getSelectedIndex()].getGames() != null) {
+            setRow(leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame(), jTabbedPane1.getSelectedIndex());
+            leagues[jTabbedPane1.getSelectedIndex()].getGwi().setDate(leagues[jTabbedPane1.getSelectedIndex()].getDate());
         } else {
             NHLFeedCB.removeAllItems();
         }
-        enablePlayBtn(league);
+        enablePlayBtn();
     }//GEN-LAST:event_jTabbedPane1StateChanged
 
     private void NHLFeedCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_NHLFeedCBItemStateChanged
         if (NHLFeedCB.getItemCount() >= 1) {
-            enablePlayBtn(league);
+            enablePlayBtn();
         }
     }//GEN-LAST:event_NHLFeedCBItemStateChanged
 
@@ -1086,12 +1034,11 @@ public final class MainGUI extends javax.swing.JFrame {
             while (true) {
                 try {
                     Thread.sleep(Time.nextDay());
-                    NHLDate = Time.getPSTDate("yyyy-MM-dd");
-                    NHLDateTF.setDate(Time.getPSTDate1("MMM dd, yyyy"));
-                    NHLGWI.setDate(NHLDate);
-
-                    MLBDate = Time.getPSTDate("yyyy-MM-dd");
-                    MLBDateTF.setDate(Time.getPSTDate1("MMM dd, yyyy"));
+                    for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
+                        leagues[i].setDate(Time.getPSTDate("yyyy-MM-dd"));
+                        leagues[i].getDateTF().setDate(Time.getPSTDate1("MMM dd, yyyy"));
+                        leagues[i].getGwi().setDate(leagues[i].getDate());
+                    }
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
@@ -1100,98 +1047,56 @@ public final class MainGUI extends javax.swing.JFrame {
 
     }
 
-    private SwingWorker<Void, Void> getGames(final int row, JTable table, String lg) {
+    private SwingWorker<Void, Void> getGames(final int row, int lg) {
 
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 
             @Override
             protected Void doInBackground() throws Exception {
                 try {
-                    if (lg.equals("NHL")) {
-                        if (Time.isToday(NHLDate) && Props.getRefreshRate() > 0 && NHLTimer == null) {
-                            NHLTimer = new Timer();
-                            NHLTimer.scheduleAtFixedRate(new Refresh(lg), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
-                        } else if (NHLTimer != null && !Time.isToday(NHLDate)) {
-                            NHLTimer.cancel();
-                            NHLTimer = null;
-                        }
-                    } else if (Time.isToday(MLBDate) && Props.getRefreshRate() > 0 && MLBTimer == null) {
-                        MLBTimer = new Timer();
-                        MLBTimer.scheduleAtFixedRate(new Refresh(lg), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
-                    } else if (MLBTimer != null && !Time.isToday(MLBDate)) {
-                        MLBTimer.cancel();
-                        MLBTimer = null;
-                    }
-                    String time;
-
-                    DefaultTableModel model = (DefaultTableModel) table.getModel();
+                    DefaultTableModel model = (DefaultTableModel) leagues[lg].getTable().getModel();
                     model.setRowCount(0);
 
-                    if (lg.equals("NHL")) {
-                        nhl = GetNHLInfo.getGames(NHLDate);
+                    leagues[lg].setGames(leagues[lg].getDate());
 
-                        if (nhl != null && nhl.length > 0) {
-                            for (Game g1 : nhl) {
-                                if (g1.getTimeRemaining().equalsIgnoreCase("n/a")) {
-                                    time = Time.toLocalTZ(NHLDate + " " + g1.getTime(), "UTC", "yyyy-MM-dd H:mm");
-                                } else {
-                                    time = g1.getTimeRemaining();
-                                }
-                                model.addRow(new Object[]{g1.getAwayTeam() + "-" + g1.getAwayTeamFull(),
-                                    g1.getHomeTeam() + "-" + g1.getHomeTeamFull(),
-                                    time});
-                            }
-                            table.setModel(model);
-
-                            if (row != -1 && league.equals("NHL")) {
-                                NHLSelectedGame = setRow(row, lg);
-                            }
-                            if (league.equals("NHL")) {
-                                enablePlayBtn("NHL");
-                            }
-                            NHLGWI.setDate(NHLDate);
-                            table.requestFocus();
-                        } else if (nhl == null) {
-                            model.setRowCount(0);
-                            model.addRow(new Object[]{"None", "None", "None"});
-                            if (NHLTimer != null) {
-                                NHLTimer.cancel();
-                                NHLTimer = null;
-                            }
-                            if (lg.equals("NHL")) {
-                                NHLPlayBtn.setEnabled(false);
-                            }
+                    if (leagues[lg].getGames() != null && leagues[lg].getGames().length > 0) {
+                        if (Time.isToday(leagues[lg].getDate()) && Props.getRefreshRate() > 0 && leagues[lg].getTimer() == null) {
+                            leagues[lg].setTimer(new Timer());
+                            leagues[lg].getTimer().scheduleAtFixedRate(new Refresh(lg), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
+                        } else if (leagues[lg].getTimer() != null && !Time.isToday(leagues[lg].getDate())) {
+                            leagues[lg].getTimer().cancel();
+                            leagues[lg].setTimer(null);
                         }
-                    } else {
-                        mlb = GetMLBInfo.getGames(MLBDate);
-                        if (mlb != null && mlb.length > 0) {
-                            for (Game g1 : mlb) {
-                                if (g1.getTimeRemaining().equalsIgnoreCase("n/a")) {
-                                    time = Time.toLocalTZ(MLBDate + " " + g1.getTime(), "UTC", "yyyy-MM-dd H:mm");
-                                } else {
-                                    time = g1.getTimeRemaining();
-                                }
-                                model.addRow(new Object[]{g1.getAwayTeam() + "-" + g1.getAwayTeamFull(),
-                                    g1.getHomeTeam() + "-" + g1.getHomeTeamFull(),
-                                    time});
-                            }
-                            table.setModel(model);
+                        String time;
 
-                            if (row != -1 && league.equals("MLB")) {
-                                MLBSelectedGame = setRow(row, lg);
+                        for (Game g1 : leagues[lg].getGames()) {
+                            if (g1.getTimeRemaining().equalsIgnoreCase("n/a")) {
+                                time = Time.toLocalTZ(leagues[lg].getDate() + " " + g1.getTime(), "UTC", "yyyy-MM-dd H:mm");
+                            } else {
+                                time = g1.getTimeRemaining();
                             }
-                            if (league.equals("MLB")) {
-                                enablePlayBtn("MLB");
-                            }
-                            NHLGWI.setDate(MLBDate);
-                            table.requestFocus();
-                        } else if (mlb == null) {
-                            model.setRowCount(0);
-                            model.addRow(new Object[]{"None", "None", "None"});
-                            if (MLBTimer != null) {
-                                MLBTimer.cancel();
-                                MLBTimer = null;
-                            }
+                            model.addRow(new Object[]{g1.getAwayTeam() + "-" + g1.getAwayTeamFull(),
+                                g1.getHomeTeam() + "-" + g1.getHomeTeamFull(),
+                                time});
+                        }
+                        leagues[lg].getTable().setModel(model);
+
+                        if (row != -1 && jTabbedPane1.getTitleAt(lg).equals(leagues[jTabbedPane1.getSelectedIndex()].getName())) {
+                            leagues[lg].setSelectedGame(setRow(row, lg));
+                        } else if (jTabbedPane1.getTitleAt(lg).equals(leagues[jTabbedPane1.getSelectedIndex()].getName())) {
+                            setRow(row, lg);
+                            enablePlayBtn();
+                        }
+
+                        leagues[lg].getGwi().setDate(leagues[lg].getDate());
+                    } else if (leagues[lg].getGames() == null) {
+                        model.setRowCount(0);
+                        model.addRow(new Object[]{"None", "None", "None"});
+                        if (leagues[jTabbedPane1.getSelectedIndex()].getTimer() != null) {
+                            leagues[jTabbedPane1.getSelectedIndex()].getTimer().cancel();
+                            leagues[jTabbedPane1.getSelectedIndex()].setTimer(null);
+                        }
+                        if (jTabbedPane1.getTitleAt(jTabbedPane1.getSelectedIndex()).equals(leagues[jTabbedPane1.getSelectedIndex()].getName())) {
                             NHLPlayBtn.setEnabled(false);
                         }
                     }
@@ -1209,146 +1114,88 @@ public final class MainGUI extends javax.swing.JFrame {
         return worker;
     }
 
-    private String getFavTeamIndex(String team, String league) {
-        if (league.equals("NHL")) {
-            for (int i = 0; i < nhl.length; i++) {
-                if ((nhl[i].getAwayTeam()).equals(team)) {
-                    if (nhl[i].getGameState().contains("Pre") || nhl[i].getGameState().contains("In Progress") || nhl[i].getGameState().contains("Final")) {
-                        return i + "a";
-                    }
-                    return "-1n";
+    private String getFavTeamIndex(String team, int lg) {
+        for (int i = 0; i < leagues[lg].getGames().length; i++) {
+            if ((leagues[lg].getGames()[i].getAwayTeam()).equals(team)) {
+                if (leagues[lg].getGames()[i].getGameState().contains("Pre") || leagues[lg].getGames()[i].getGameState().contains("In Progress") || leagues[lg].getGames()[i].getGameState().contains("Final")) {
+                    return i + "a";
                 }
-                if (nhl[i].getHomeTeam().equals(team)) {
-                    if (nhl[i].getGameState().contains("Pre") || nhl[i].getGameState().contains("In Progress") || nhl[i].getGameState().contains("Final")) {
-                        return i + "h";
-                    }
-                    return "-1n";
-                }
+                return "-1n";
             }
-            return "-1n";
-        } else {
-            for (int i = 0; i < mlb.length; i++) {
-                if ((mlb[i].getAwayTeam()).equals(team)) {
-                    if (mlb[i].getGameState().contains("War") || mlb[i].getGameState().contains("In Progress") || mlb[i].getGameState().contains("Final")) {
-                        return i + "a";
-                    }
-                    return "-1n";
+            if (leagues[lg].getGames()[i].getHomeTeam().equals(team)) {
+                if (leagues[lg].getGames()[i].getGameState().contains("Pre") || leagues[lg].getGames()[i].getGameState().contains("In Progress") || leagues[lg].getGames()[i].getGameState().contains("Final")) {
+                    return i + "h";
                 }
-                if (mlb[i].getHomeTeam().equals(team)) {
-                    if (mlb[i].getGameState().contains("War") || mlb[i].getGameState().contains("In Progress") || mlb[i].getGameState().contains("Final")) {
-                        return i + "h";
-                    }
-                    return "-1n";
-                }
+                return "-1n";
             }
-            return "-1n";
         }
+        return "-1n";
     }
 
-    private int setRow(int row, String league) {
-        if (league.equals("NHL")) {
-            if ((!Props.getNHLTeam().equals("") || !Props.getNHLTeam().equals("None")) && !NHLSelectedFavGm) {
-                String index = getFavTeamIndex(Props.getNHLTeam(), league);
+    private int setRow(int row, int lg) {
+        if (row != -1) {
+            if ((!Props.getNHLTeam().equals("") || !Props.getNHLTeam().equals("None")) && !leagues[lg].isFavGameSelected()) {
+                String index = getFavTeamIndex(Props.getNHLTeam(), lg);
                 int idx = Integer.parseInt(index.substring(0, index.length() - 1));
                 char homeOrAway = index.charAt(index.length() - 1);
 
                 if (idx != -1) {
-                    getAvailableStreams(idx, league);
-                    setFeed(idx, homeOrAway, league);
-                    NHLGameTable.setRowSelectionInterval(idx, idx);
-                    NHLSelectedFavGm = true;
+                    getAvailableStreams(idx);
+                    setFeed(idx, homeOrAway);
+                    leagues[lg].getTable().setRowSelectionInterval(idx, idx);
+                    leagues[lg].setFavGameSelected(true);
                     return idx;
                 }
             }
-            getAvailableStreams(row, league);
-            setFeed(row, 'a', league);
 
-            NHLGameTable.setRowSelectionInterval(row, row);
+            getAvailableStreams(row);
+            setFeed(row, 'a');
+
+            leagues[lg].getTable().setRowSelectionInterval(row, row);
         } else {
-            if ((!Props.getMLBTeam().equals("") || !Props.getMLBTeam().equals("None")) && !MLBSelectedFavGm) {
-                String index = getFavTeamIndex(Props.getMLBTeam(), league);
-                int idx = Integer.parseInt(index.substring(0, index.length() - 1));
-                char homeOrAway = index.charAt(index.length() - 1);
-
-                if (idx != -1) {
-                    getAvailableStreams(idx, league);
-                    setFeed(idx, homeOrAway, league);
-                    MLBGameTable.setRowSelectionInterval(idx, idx);
-                    MLBSelectedFavGm = true;
-                    return idx;
-                }
-            }
-            getAvailableStreams(row, league);
-            setFeed(row, 'a', league);
-
-            MLBGameTable.setRowSelectionInterval(row, row);
+            leagues[lg].getTable().setRowSelectionInterval(leagues[lg].getSelectedGame(), leagues[lg].getSelectedGame());
         }
 
         return row;
     }
 
-    private void setFeed(int idx, char homeOrAway, String league) {
-        if (league.equals("NHL")) {
-            if (NHLSelectedFavGm) {
-                return;
-            }
-            switch (homeOrAway) {
-                case 'a':
-                    if (!"0".equals(Props.getPreferFrench()) && nhl[idx].contains("FRENCH")) {
-                        NHLFeedCB.setSelectedIndex(nhl[idx].getFeedIndex("FRENCH"));
-                    } else if (nhl[idx].contains("AWAY")) {
-                        NHLFeedCB.setSelectedIndex(1);
-                    } else {
-                        NHLFeedCB.setSelectedIndex(0);
-                    }
-                    break;
-                case 'h':
-                    if (!"0".equals(Props.getPreferFrench()) && nhl[idx].contains("FRENCH")) {
-                        NHLFeedCB.setSelectedIndex(nhl[idx].getFeedIndex("FRENCH"));
-                    } else {
-                        NHLFeedCB.setSelectedIndex(0);
-                    }
-            }
-        } else {
-            if (MLBSelectedFavGm) {
-                return;
-            }
-            switch (homeOrAway) {
-                case 'a':
-                    if (mlb[idx].contains("AWAY")) {
-                        NHLFeedCB.setSelectedIndex(1);
-                    } else {
-                        NHLFeedCB.setSelectedIndex(0);
-                    }
-                    break;
-                case 'h':
+    private void setFeed(int idx, char homeOrAway) {
+        if (leagues[jTabbedPane1.getSelectedIndex()].isFavGameSelected() || leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getNumOfFeeds() < 1) {
+            return;
+        }
+        switch (homeOrAway) {
+            case 'a':
+                if (!"0".equals(Props.getPreferFrench()) && leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].contains("FRENCH")) {
+                    NHLFeedCB.setSelectedIndex(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedIndex("FRENCH"));
+                } else if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].contains("AWAY")) {
+                    NHLFeedCB.setSelectedIndex(1);
+                } else {
                     NHLFeedCB.setSelectedIndex(0);
-            }
+                }
+                break;
+            case 'h':
+                if (!"0".equals(Props.getPreferFrench()) && leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].contains("FRENCH")) {
+                    NHLFeedCB.setSelectedIndex(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedIndex("FRENCH"));
+                } else {
+                    NHLFeedCB.setSelectedIndex(0);
+                }
         }
     }
 
-    private void getAvailableStreams(int row, String league) {
-        if (league.equals("NHL")) {
-            NHLFeedCB.removeAllItems();
-            if (nhl[row].getNumOfFeeds() > 0) {
-                for (int i = 0; i < nhl[row].getNumOfFeeds(); i++) {
-                    if (!nhl[row].getFeedTV(i).isEmpty()) {
-                        NHLFeedCB.addItem(nhl[row].getFeedName(i) + " (" + nhl[row].getFeedTV(i) + ")");
-                    } else {
-                        NHLFeedCB.addItem(nhl[row].getFeedName(i));
-                    }
+    private void getAvailableStreams(int row) {
+        NHLFeedCB.removeAllItems();
+        if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getNumOfFeeds() > 0) {
+            for (int i = 0; i < leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getNumOfFeeds(); i++) {
+                if (!leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getFeedTV(i).isEmpty()) {
+                    NHLFeedCB.addItem(leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getFeedName(i) + " (" + leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getFeedTV(i) + ")");
+                } else {
+                    NHLFeedCB.addItem(leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getFeedName(i));
                 }
             }
-        } else {
-            NHLFeedCB.removeAllItems();
-
-            for (int i = 0; i < mlb[row].getNumOfFeeds(); i++) {
-                NHLFeedCB.addItem(mlb[row].getFeedName(i) + " (" + mlb[row].getFeedTV(i) + ")");
-            }
         }
     }
 
-    private boolean checkID(String id, String league) {
+    private boolean checkID(String id) {
         BufferedReader br = null;
         boolean idExists = false;
         try {
@@ -1359,25 +1206,25 @@ public final class MainGUI extends javax.swing.JFrame {
                 ex.printStackTrace();
             }
             File ids;
-            if (league.equals("NHL")) {
+            if (leagues[jTabbedPane1.getSelectedIndex()].getName().equals("NHL")) {
                 ids = new File(base + System.getProperty("file.separator") + "ids.txt");
             } else {
                 ids = new File(base + System.getProperty("file.separator") + "mlbids.txt");
             }
             if (!ids.exists()) {
-                fillIDs(ids, league);
+                fillIDs(ids);
             }
 
             br = new BufferedReader(new FileReader(ids));
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.equals(id)) {
+                if (line.contains(id)) {
                     idExists = true;
                     break;
                 }
             }
             if (!idExists) {
-                fillIDs(ids, league);
+                fillIDs(ids);
 
                 br = new BufferedReader(new FileReader(ids));
 
@@ -1405,126 +1252,71 @@ public final class MainGUI extends javax.swing.JFrame {
         return idExists;
     }
 
-    private void fillIDs(File ids, String league) {
-        if (league.equals("NHL")) {
-            if (!NHLPlaybackIDs.isEmpty()) {
-                NHLPlaybackIDs.clear();
-            }
-        } else if (!MLBPlaybackIDs.isEmpty()) {
-            MLBPlaybackIDs.clear();
+    private void fillIDs(File ids) {
+        String file = "ids";
+        if (!leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs().isEmpty()) {
+            leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs().clear();
+        }
+        if (!leagues[jTabbedPane1.getSelectedIndex()].getName().equals("NHL")) {
+            file = "mlbids";
         }
 
-        if (league.equals("NHL")) {
-            try {
-                Collections.addAll(NHLPlaybackIDs, Web.getContent("http://mf.svc.nhl.com/static/ids.txt").replace("akc", "").replace("l3c", "").split("\n"));
-            } catch (UnknownHostException uhe) {
-                MessageBox.show("The server may be down.", "Error", 2);
+        try {
+            Collections.addAll(leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs(), Web.getContent("http://nhl.freegamez.gq/static/" + file + ".txt").replace("akc", "").replace("l3c", "").split("\n"));
+        } catch (UnknownHostException uhe) {
+            MessageBox.show("The server may be down.", "Error", 2);
+        }
+        try (FileWriter writer = new FileWriter(ids, false)) {
+            for (String str : leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs()) {
+                writer.write(str + "\r\n");
             }
-            try (FileWriter writer = new FileWriter(ids, false)) {
-                for (String str : NHLPlaybackIDs) {
-                    writer.write(str + "\r\n");
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } finally {
-                NHLPlaybackIDs.clear();
-            }
-        } else {
-            try {
-                Collections.addAll(MLBPlaybackIDs, Web.getContent("http://mf.svc.nhl.com/static/mlbids.txt").replace("akc", "").replace("l3c", "").split("\n"));
-            } catch (UnknownHostException uhe) {
-                MessageBox.show("The server may be down.", "Error", 2);
-            }
-            try (FileWriter writer = new FileWriter(ids, false)) {
-                for (String str : MLBPlaybackIDs) {
-                    writer.write(str + "\r\n");
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } finally {
-                MLBPlaybackIDs.clear();
-            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs().clear();
         }
     }
 
-    private void enablePlayBtn(String league) {
-        if (league.equals("NHL")) {
-            if (nhl == null) {
-                NHLPlayBtn.setEnabled(false);
-                NHLSaveStreamCB.setEnabled(false);
+    private void enablePlayBtn() {
+        if (leagues[jTabbedPane1.getSelectedIndex()].getGames() == null) {
+            NHLPlayBtn.setEnabled(false);
+            NHLSaveStreamCB.setEnabled(false);
 
-                if (NHLSaveStreamCB.isSelected()) {
-                    NHLSaveStreamCB.setSelected(false);
-                    NHLPlayBtn.setText("Play");
-                    streamlink.record = false;
-                }
-                return;
+            if (NHLSaveStreamCB.isSelected()) {
+                NHLSaveStreamCB.setSelected(false);
+                NHLPlayBtn.setText("Play");
+                streamlink.record = false;
             }
-            if (NHLStreamlinkSwitch < 1) {
-                int idx = NHLSelectedGame;
+            return;
+        }
+        if (leagues[jTabbedPane1.getSelectedIndex()].getStreamlinkSwitch() < 1) {
+            int idx = leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame();
 
-                String d = Time.toLocalTZ(NHLDate, "America/Los_Angeles", "yyyy-MM-dd", "yyyy-MM-dd");
+            String d = Time.toLocalTZ(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "America/Los_Angeles", "yyyy-MM-dd", "yyyy-MM-dd");
 
-                boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(nhl[idx].getTime(), "UTC", "H:mm"), 50) && checkID(nhl[idx].getFeedID(NHLFeedCB.getSelectedIndex()), league);
+            boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getTime(), "UTC", "H:mm"), 50) && checkID(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedID(NHLFeedCB.getSelectedIndex()));
 
-                NHLPlayBtn.setEnabled(e);
+            NHLPlayBtn.setEnabled(e);
 
-                if (!e && NHLSaveStreamCB.isSelected()) {
-                    NHLSaveStreamCB.setSelected(false);
-                    NHLPlayBtn.setText("Play");
-                    streamlink.record = false;
-                }
-                NHLSaveStreamCB.setEnabled(e);
-            } else {
-                NHLPlayBtn.setText("Stop Recording");
-                NHLPlayBtn.setEnabled(true);
-                NHLSaveStreamCB.setEnabled(true);
-                NHLSaveStreamCB.setSelected(true);
+            if (!e && NHLSaveStreamCB.isSelected()) {
+                NHLSaveStreamCB.setSelected(false);
+                NHLPlayBtn.setText("Play");
+                streamlink.record = false;
             }
-
-            if (!NHLPlaybackIDs.isEmpty()) {
-                NHLPlaybackIDs.clear();
-            }
+            NHLSaveStreamCB.setEnabled(e);
         } else {
-            if (mlb == null) {
-                NHLPlayBtn.setEnabled(false);
-                NHLSaveStreamCB.setEnabled(false);
+            NHLPlayBtn.setText("Stop Recording");
+            NHLPlayBtn.setEnabled(true);
+            NHLSaveStreamCB.setEnabled(true);
+            NHLSaveStreamCB.setSelected(true);
+        }
 
-                if (NHLSaveStreamCB.isSelected()) {
-                    NHLSaveStreamCB.setSelected(false);
-                    NHLPlayBtn.setText("Play");
-                    streamlink.record = false;
-                }
-                return;
-            }
-            if (MLBStreamlinkSwitch < 1) {
-                int idx = MLBSelectedGame;
-                String d = Time.toLocalTZ(MLBDate, "America/Los_Angeles", "yyyy-MM-dd", "yyyy-MM-dd");
-
-                boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(mlb[idx].getTime(), "UTC", "H:mm"), 50) && checkID(mlb[idx].getFeedID(NHLFeedCB.getSelectedIndex()), league);
-
-                NHLPlayBtn.setEnabled(e);
-
-                if (!e && NHLSaveStreamCB.isSelected()) {
-                    NHLSaveStreamCB.setSelected(false);
-                    NHLPlayBtn.setText("Play");
-                    streamlink.record = false;
-                }
-                NHLSaveStreamCB.setEnabled(e);
-            } else {
-                NHLPlayBtn.setText("Stop Recording");
-                NHLPlayBtn.setEnabled(true);
-                NHLSaveStreamCB.setEnabled(true);
-                NHLSaveStreamCB.setSelected(true);
-            }
-
-            if (!MLBPlaybackIDs.isEmpty()) {
-                MLBPlaybackIDs.clear();
-            }
+        if (!leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs().isEmpty()) {
+            leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs().clear();
         }
     }
 
-    private SwingWorker<Void, Void> playGame(String league) {
+    private SwingWorker<Void, Void> playGame() {
 
         SwingWorker<Void, Void> worker;
         worker = new SwingWorker<Void, Void>() {
@@ -1534,12 +1326,10 @@ public final class MainGUI extends javax.swing.JFrame {
                 try {
                     if (!Props.getVlcloc().equals("")) {
                         Process l;
-                        int idx = NHLSelectedGame;
-                        if (league.equals("NHL")) {
-                            l = streamlink.run(nhl[idx], NHLGWI);
-                        } else {
-                            l = streamlink.run(mlb[idx], NHLGWI);
-                        }
+                        int idx = leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame();
+                        l = streamlink.run(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx], leagues[jTabbedPane1.getSelectedIndex()].getGwi()
+                        );
+
                         if (l != null) {
                             SwingWorker<Void, Void> go = getSLOutput(l);
                             go.execute();
@@ -1549,11 +1339,7 @@ public final class MainGUI extends javax.swing.JFrame {
 
                             while (l.isAlive()) {
                                 Thread.sleep(700);
-                                if (league.equals("NHL")) {
-                                    if (NHLStreamlinkSwitch == -1) {
-                                        l.destroy();
-                                    }
-                                } else if (MLBStreamlinkSwitch == -1) {
+                                if (leagues[jTabbedPane1.getSelectedIndex()].getStreamlinkSwitch() == -1) {
                                     l.destroy();
                                 }
                             }
@@ -1563,16 +1349,8 @@ public final class MainGUI extends javax.swing.JFrame {
                             if (!consoleTA.getText().substring(li, consoleTA.getText().length()).contains("Opening")) {
                                 MessageBox.show("Stream unavailable. Please report the game you are trying to play.", "Error", 2);
                             }
-                        } else if (league.equals("NHL") && NHLPlayBtn.getText().equals("Stop Recording")) {
-                            NHLStreamlinkSwitch = -1;
-
-                            if (NHLSaveStreamCB.isSelected()) {
-                                NHLPlayBtn.setText("Record");
-                            } else {
-                                NHLPlayBtn.setText("Play");
-                            }
-                        } else if (league.equals("MLB") && NHLPlayBtn.getText().equals("Stop Recording")) {
-                            MLBStreamlinkSwitch = -1;
+                        } else if (NHLPlayBtn.getText().equals("Stop Recording")) {
+                            leagues[jTabbedPane1.getSelectedIndex()].setStreamlinkSwitch(-1);
 
                             if (NHLSaveStreamCB.isSelected()) {
                                 NHLPlayBtn.setText("Record");
@@ -1581,14 +1359,10 @@ public final class MainGUI extends javax.swing.JFrame {
                             }
                         }
                     } else {
-                        String message = "Please set the location to your media player executable.";
+                        String message = "Please set the location to your media player executable in Edit > Preferences.";
                         MessageBox.show(message, "Error", 2);
-                        if (league.equals("NHL")) {
-                            NHLPlayBtn.setEnabled(true);
-                        } else {
-                            NHLPlayBtn.setEnabled(true);
-                        }
                     }
+                    NHLPlayBtn.setEnabled(true);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -1649,44 +1423,47 @@ public final class MainGUI extends javax.swing.JFrame {
             } else {
                 NHLQualityCB.setSelectedItem("720p60");
             }
-
-            NHLGWI.setQuality(bitrate);
-        } else {
-            NHLGWI.setQuality("720p");
         }
-
         if (!cdn.equals("")) {
             NHLCDNCB.setSelectedItem(cdn);
-            if (cdn.equals("Akamai")) {
-                NHLGWI.setCdn("akc");
-            } else {
-                NHLGWI.setCdn("l3c");
-            }
         } else {
-            NHLGWI.setCdn("akc");
+            NHLCDNCB.setSelectedItem("720p");
+        }
+        for (League l : leagues) {
+            if (!bitrate.equals("")) {
+                l.getGwi().setQuality(bitrate);
+            } else {
+                l.getGwi().setQuality("720p");
+            }
+
+            if (!cdn.equals("")) {
+                if (cdn.equals("Akamai")) {
+                    l.getGwi().setCdn("akc");
+                } else {
+                    l.getGwi().setCdn("l3c");
+                }
+            } else {
+                l.getGwi().setCdn("akc");
+            }
         }
     }
 
-    private String getMediaID(String league) {
-        if (league.equals("NHL")) {
-            return nhl[NHLSelectedGame].getFeedID(NHLFeedCB.getSelectedIndex());
-        } else {
-            return mlb[MLBSelectedGame].getFeedID(NHLFeedCB.getSelectedIndex());
-        }
+    private String getMediaID() {
+        return leagues[jTabbedPane1.getSelectedIndex()].getGames()[leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame()].getFeedID(NHLFeedCB.getSelectedIndex());
     }
 
     private void checkUpdate() {
         try (Scanner s = new Scanner(getClass().getResourceAsStream("/VERSION.txt"))) {
             String[] ver = s.nextLine().split("\\.");
             int major = Integer.parseInt(ver[0]), minor = Integer.parseInt(ver[1]), patch = Integer.parseInt(ver[2]), build = Integer.parseInt(ver[3].replace(" BETA", ""));
-            int curMajor = 0, curMinor = 0, curPatch = 0, curBuild = 0;
+            int curMajor, curMinor, curPatch, curBuild;
             try {
                 String[] curVer = Web.getContent("https://bitbucket.org/ntyler92/lazyman-v2/raw/master/VERSION").split("\\.");
                 curMajor = Integer.parseInt(curVer[0]);
                 curMinor = Integer.parseInt(curVer[1]);
                 curPatch = Integer.parseInt(curVer[2]);
                 curBuild = Integer.parseInt(curVer[3]);
-            } catch (Exception ex) {
+            } catch (UnknownHostException | NumberFormatException ex) {
                 return;
             }
 
@@ -1724,21 +1501,17 @@ public final class MainGUI extends javax.swing.JFrame {
 
     class Refresh extends TimerTask {
 
-        private final String league;
+        private final int lg;
 
-        public Refresh(String league) {
-            this.league = league;
+        public Refresh(int lg) {
+            this.lg = lg;
         }
 
         @Override
         public void run() {
-            if (league.equals("NHL")) {
-                SwingWorker<Void, Void> gg = getGames(-1, NHLGameTable, "NHL");
-                gg.execute();
-            } else {
-                SwingWorker<Void, Void> gg = getGames(-1, NHLGameTable, "MLB");
-                gg.execute();
-            }
+            SwingWorker<Void, Void> gg;
+            gg = getGames(-1, lg);
+            gg.execute();
         }
     }
 

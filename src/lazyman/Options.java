@@ -12,9 +12,11 @@ public class Options extends javax.swing.JDialog {
 
     private Map<String, String> nhl, mlb;
     private String fcb;
+    private boolean go;
 
     public Options(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
+        go = false;
         initComponents();
 
         nhl = new java.util.TreeMap();
@@ -66,8 +68,7 @@ public class Options extends javax.swing.JDialog {
                 mpArgTB.setText(Props.getMediaPlayerrArgs());
             }
             else if (Props.getVlcloc().equals("")) {
-                 mpArgTB.setEditable(false);
-                mpArgTB.setText("Please set your media player location.");
+                 mpLocTB.setText("Please set your media player location.");
             } 
             mpArgTB.setCaretPosition(0);
             mpArgTB.getInputMap().put(KeyStroke.getKeyStroke("ENTER"),"doNothing");
@@ -77,6 +78,8 @@ public class Options extends javax.swing.JDialog {
             if (!mpLocTB.getText().equals("")) {
                 mpLocTB.setText(Props.getVlcloc());
             }
+            
+            go = true;
     }
 
     /**
@@ -129,6 +132,7 @@ public class Options extends javax.swing.JDialog {
         });
 
         applyBtn.setText("Apply");
+        applyBtn.setEnabled(false);
         applyBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 applyBtnActionPerformed(evt);
@@ -521,6 +525,8 @@ public class Options extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     private void enableApply() {
+        if (!go)
+            return;
         boolean enable;
         enable = !Props.getNHLTeam().equals(nhl.get(NHLCB.getSelectedItem())) ||
                 !Props.getMLBTeam().equals(mlb.get(MLBCB.getSelectedItem())) ||

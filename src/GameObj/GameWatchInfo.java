@@ -57,41 +57,41 @@ public class GameWatchInfo {
         return url;
     }
     
-    public void setUrl(String date, String mediaID, String league) {
+    public void setUrl(String mediaID, String league) {
         if (league.equals("NHL")) {
             if (!Time.isToday(date)) {
-                if (Web.testURL("http://freegamez.gq/m3u8/" + date + "/" + mediaID + "akc")) {
+                if (Web.testURL("http://nhl.freegamez.gq/m3u8/" + date + "/" + mediaID + "akc")) {
                     try {
-                        url = Web.getContent("http://freegamez.gq/m3u8/" + date + "/" + mediaID + "akc");
+                        url = Web.getContent("http://nhl.freegamez.gq/m3u8/" + date + "/" + mediaID + "akc");
                     } catch (UnknownHostException ex) {
                         ex.printStackTrace();
                     }
                 } else {
                     try {
-                        url = Web.getContent("http://freegamez.gq/m3u8/" + date + "/" + mediaID);
+                        url = Web.getContent("http://nhl.freegamez.gq/m3u8/" + date + "/" + mediaID);
                     } catch (UnknownHostException ex) {
                         ex.printStackTrace();
                     }
                 }
             } else {
                 try {
-                    url = Web.getContent("http://freegamez.gq/m3u8/" + date + "/" + mediaID + cdn);
+                    url = Web.getContent("http://nhl.freegamez.gq/m3u8/" + date + "/" + mediaID + cdn);
                 } catch (UnknownHostException ex) {
                     ex.printStackTrace();
                 }
             }
         } else {
             if (!Time.isToday(date)) {
-                if (Web.testURL("http://freegamez.gq/mlb/m3u8/" + date + "/" + mediaID + "akc")) {
+                if (Web.testURL("http://nhl.freegamez.gq/mlb/m3u8/" + date + "/" + mediaID + "akc")) {
                     try {
-                        url = Web.getContent("http://freegamez.gq/mlb/m3u8/" + date + "/" + mediaID + "akc");
+                        url = Web.getContent("http://nhl.freegamez.gq/mlb/m3u8/" + date + "/" + mediaID + "akc");
                     } catch (UnknownHostException ex) {
                         ex.printStackTrace();
                     }
                 }
             } else {
                 try {
-                    url = Web.getContent("http://freegamez.gq/mlb/m3u8/" + date + "/" + mediaID + cdn);
+                    url = Web.getContent("http://nhl.freegamez.gq/mlb/m3u8/" + date + "/" + mediaID + cdn);
                 } catch (UnknownHostException ex) {
                     ex.printStackTrace();
                 }

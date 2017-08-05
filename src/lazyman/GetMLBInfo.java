@@ -72,27 +72,12 @@ public class GetMLBInfo {
                 i++;
             }
             Arrays.sort(g, (Game o1, Game o2) -> {
+                String index = "nearcoi";
                 if (o1.getGameState().equals(o2.getGameState()))
                     return 0;
-                else if ((o1.getGameState().equals("In Progress") || o1.getGameState().equals("Delayed")) && !(o2.getGameState().equals("In Progress") || o2.getGameState().equals("Delayed")))
-                    return -1;
-                else if (!(o1.getGameState().equals("In Progress") || o1.getGameState().equals("Delayed")) && (o2.getGameState().equals("In Progress") || o2.getGameState().equals("Delayed")))
-                    return 1;
-                else if ((o1.getGameState().equals("Final") || o1.getGameState().equals("Postponed")) && !(o2.getGameState().equals("Final") || o2.getGameState().equals("Postponed")))
-                    return 1;
-                else if (o1.getGameState().equals("Pre-Game") && o2.getGameState().equals("Final"))
-                    return -1;
-                else if (o1.getGameState().equals("Warmup") && o2.getGameState().equals("Final"))
-                    return -1;
-                else if (o1.getGameState().equals("Pre-Game") && o2.getGameState().equals("Warmup"))
-                    return 1;
-                else if (o1.getGameState().equals("Warmup") && o2.getGameState().equals("Pre-Game"))
-                    return -1;
-                else if (o1.getGameState().equals("Scheduled") && o2.getGameState().equals("Final"))
-                    return -1;
-                else if (o1.getGameState().equals("Scheduled") && !o2.getGameState().equals("Scheduled"))
-                    return 1;
-                return 0;
+                char s1 = o1.getGameState().charAt(1), s2 = o2.getGameState().charAt(1);
+                
+                return index.indexOf(s1) - index.indexOf(s2);
             });
             return g;
         } catch (JsonSyntaxException ex) {
