@@ -46,6 +46,7 @@ public final class MainGUI extends javax.swing.JFrame {
     public MainGUI() {
         streamlink = new Streamlink();
         initComponents();
+        getVLCLocation();
         leagues = new League[jTabbedPane1.getTabCount()];
         for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
             leagues[i] = new League();
@@ -61,6 +62,7 @@ public final class MainGUI extends javax.swing.JFrame {
             leagues[i].setName(jTabbedPane1.getTitleAt(i));
             leagues[i].setDate(Time.getPSTDate("yyyy-MM-dd"));
             leagues[i].getDateTF().setDate(Time.getPSTDate1("MMM dd, yyyy"));
+            leagues[i].setFavoriteTeam(Props.getFavTeam(leagues[i].getName()));
         }
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             changePasswordMI.setVisible(false);
@@ -792,6 +794,8 @@ public final class MainGUI extends javax.swing.JFrame {
         op.setVisible(true);
 
         for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
+            leagues[i].setFavoriteTeam(Props.getFavTeam(leagues[i].getName()));
+
             if (!leagues[i].getTable().getModel().getValueAt(0, 0).equals("None")) {
                 if (leagues[i].getName().equals(jTabbedPane1.getTitleAt(jTabbedPane1.getSelectedIndex()))) {
                     int idx = leagues[i].getSelectedGame();
@@ -1081,7 +1085,7 @@ public final class MainGUI extends javax.swing.JFrame {
                         }
                         leagues[lg].getTable().setModel(model);
 
-                        if (row != -1 && jTabbedPane1.getTitleAt(lg).equals(leagues[jTabbedPane1.getSelectedIndex()].getName())) {
+                        if (row != -1) {
                             leagues[lg].setSelectedGame(setRow(row, lg));
                         } else if (jTabbedPane1.getTitleAt(lg).equals(leagues[jTabbedPane1.getSelectedIndex()].getName())) {
                             setRow(row, lg);
@@ -1134,25 +1138,33 @@ public final class MainGUI extends javax.swing.JFrame {
 
     private int setRow(int row, int lg) {
         if (row != -1) {
-            if ((!Props.getNHLTeam().equals("") || !Props.getNHLTeam().equals("None")) && !leagues[lg].isFavGameSelected()) {
-                String index = getFavTeamIndex(Props.getNHLTeam(), lg);
+            if ((!leagues[lg].getFavoriteTeam().equals("") || !leagues[lg].getFavoriteTeam().equals("None")) && !leagues[lg].isFavGameSelected()) {
+                String index = getFavTeamIndex(leagues[lg].getFavoriteTeam(), lg);
                 int idx = Integer.parseInt(index.substring(0, index.length() - 1));
                 char homeOrAway = index.charAt(index.length() - 1);
 
                 if (idx != -1) {
-                    getAvailableStreams(idx);
-                    setFeed(idx, homeOrAway);
-                    leagues[lg].getTable().setRowSelectionInterval(idx, idx);
-                    leagues[lg].setFavGameSelected(true);
+                    if (jTabbedPane1.getTitleAt(lg).equals(leagues[jTabbedPane1.getSelectedIndex()].getName())) {
+                        getAvailableStreams(idx);
+                        setFeed(idx, homeOrAway);
+                    }
+                    if (jTabbedPane1.getTitleAt(lg).equals(leagues[jTabbedPane1.getSelectedIndex()].getName())) {
+                        leagues[lg].getTable().setRowSelectionInterval(idx, idx);
+                        leagues[lg].setFavGameSelected(true);
+                    }
                     return idx;
                 }
             }
 
-            getAvailableStreams(row);
-            setFeed(row, 'a');
+            if (jTabbedPane1.getTitleAt(lg).equals(leagues[jTabbedPane1.getSelectedIndex()].getName())) {
+                getAvailableStreams(row);
+                setFeed(row, 'a');
+            }
 
-            leagues[lg].getTable().setRowSelectionInterval(row, row);
-        } else {
+            if (jTabbedPane1.getTitleAt(lg).equals(leagues[jTabbedPane1.getSelectedIndex()].getName())) {
+                leagues[lg].getTable().setRowSelectionInterval(row, row);
+            }
+        } else if (jTabbedPane1.getTitleAt(lg).equals(leagues[jTabbedPane1.getSelectedIndex()].getName())) {
             leagues[lg].getTable().setRowSelectionInterval(leagues[lg].getSelectedGame(), leagues[lg].getSelectedGame());
         }
 
@@ -1376,8 +1388,7 @@ public final class MainGUI extends javax.swing.JFrame {
 
     private void getSLLoc() {
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
-            Path currentRelativePath = Paths.get("");
-            String ls = currentRelativePath.toAbsolutePath().toString() + "\\streamlink\\streamlink.exe";
+            String ls = "streamlink\\streamlink.exe";
             java.io.File f = new java.io.File(ls);
             if (f.exists()) {
                 streamlink.setLocation(ls);
@@ -1458,7 +1469,7 @@ public final class MainGUI extends javax.swing.JFrame {
             int major = Integer.parseInt(ver[0]), minor = Integer.parseInt(ver[1]), patch = Integer.parseInt(ver[2]), build = Integer.parseInt(ver[3].replace(" BETA", ""));
             int curMajor, curMinor, curPatch, curBuild;
             try {
-                String[] curVer = Web.getContent("https://bitbucket.org/ntyler92/lazyman-v2/raw/master/VERSION").split("\\.");
+                String[] curVer = Web.getContent("https://raw.githubusercontent.com/StevensNJD4/LazyMan/master/VERSION").split("\\.");
                 curMajor = Integer.parseInt(curVer[0]);
                 curMinor = Integer.parseInt(curVer[1]);
                 curPatch = Integer.parseInt(curVer[2]);
@@ -1477,7 +1488,7 @@ public final class MainGUI extends javax.swing.JFrame {
                     updateMI.setVisible(false);
                 }
             } else {
-                String[] curVerB = Web.getContent("https://bitbucket.org/ntyler92/lazyman-v2/raw/master/VERSIONBETA").split("\\.");
+                String[] curVerB = Web.getContent("https://raw.githubusercontent.com/StevensNJD4/LazyMan/master/VERSIONBETA").split("\\.");
                 int curMajorB = Integer.parseInt(curVerB[0]), curMinorB = Integer.parseInt(curVerB[1]), curPatchB = Integer.parseInt(curVerB[2]), curBuildB = Integer.parseInt(curVerB[3].replace(" BETA", ""));
 
                 if (curMajor > major || (curMajor == major && curMinor > minor) || (curMajor == major && curMinor >= minor && curPatch > patch) || (curMajor == major && curMinor >= minor && curPatch >= patch && curBuild > build)) {
@@ -1535,4 +1546,37 @@ public final class MainGUI extends javax.swing.JFrame {
         return worker;
     }
 
+    public void getVLCLocation() {
+        String loc;
+        java.io.File file;
+        loc = Props.getVlcloc();
+
+        if (loc.equals("")) {
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                loc = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
+                file = new java.io.File(loc);
+                if (file.exists()) {
+                    Props.setVlcloc(loc);
+                } else {
+                    loc = "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe";
+                    file = new java.io.File(loc);
+                    if (file.exists()) {
+                        Props.setVlcloc(loc);
+                    }
+                }
+            } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+                loc = "/Applications/VLC.app/Contents/MacOS/VLC";
+                file = new java.io.File(loc);
+                if (file.exists()) {
+                    Props.setVlcloc(loc);
+                }
+            } else {
+                loc = "/usr/bin/vlc";
+                file = new java.io.File(loc);
+                if (file.exists()) {
+                    Props.setVlcloc(loc);
+                }
+            }
+        }
+    }
 }

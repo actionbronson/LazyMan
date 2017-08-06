@@ -1,4 +1,3 @@
-
 package Util;
 
 import java.io.File;
@@ -14,7 +13,7 @@ public class Props {
 
     private static final Properties PROP = new Properties();
 
-    private static String getConfigLoc() {
+    private static String getConfigLoc() throws IOException {
         String loc;
         File f, wrongf;
 
@@ -25,6 +24,7 @@ public class Props {
         }
 
         f = new File(loc);
+        
         wrongf = new File(f.getParent() + "LazyMan2.execonfig");
 
         if (f.exists() && wrongf.exists()) {
@@ -37,6 +37,11 @@ public class Props {
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+        }
+        
+        if (!f.canWrite()) {
+            MessageBox.show("I can't write to the properties file. Please give the folder containing LazyMan write permissions.", "Can't write", 2);
+            System.exit(-1);
         }
 
         return loc;
@@ -199,6 +204,17 @@ public class Props {
         }
         return "";
     }
+    
+    public static String getFavTeam(String league) {
+        switch (league) {
+            case "MLB":
+                return getMLBTeam();
+            case "NHL":
+                return getNHLTeam();
+            default: 
+                return "";
+        }
+    }
 
     public static String getNHLTeam() {
         try {
@@ -239,7 +255,7 @@ public class Props {
             }
         }
     }
-    
+
     public static String getMLBTeam() {
         try {
             InputStream input;
@@ -376,7 +392,7 @@ public class Props {
             input.close();
             if (PROP.containsKey("LivestreamerArgs")) {
                 setStreamlinkArgs(PROP.getProperty("LivestreamerArgs"));
-              //  PROP.remove("LivestreamerArgs");
+                //  PROP.remove("LivestreamerArgs");
                 return PROP.getProperty("StreamlinkArgs");
             } else if (PROP.containsKey("StreamlinkArgs")) {
                 return PROP.getProperty("StreamlinkArgs");
@@ -411,8 +427,9 @@ public class Props {
             output = new FileOutputStream(getConfigLoc());
 
             PROP.setProperty("StreamlinkArgs", lsArgs);
-            if (PROP.containsKey("LivestreamerArgs"))
+            if (PROP.containsKey("LivestreamerArgs")) {
                 PROP.remove("LivestreamerArgs");
+            }
             PROP.store(output, "");
 
         } catch (IOException e) {
@@ -529,7 +546,7 @@ public class Props {
             return 0;
         }
     }
-    
+
     public static void setIP(String ip) {
         OutputStream output = null;
         try {

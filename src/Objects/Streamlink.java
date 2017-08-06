@@ -27,7 +27,11 @@ public class Streamlink {
      * @param location the location to set
      */
     public void setLocation(String location) {
-        this.location = location;
+        if (System.getProperty("os.name").contains("Win")) {
+            this.location = "\"" + location + "\"";
+        } else {
+            this.location = location;
+        }
     }
 
     public Process run(Game g, GameWatchInfo gwi) {
@@ -74,7 +78,7 @@ public class Streamlink {
                 args.add(Props.getVlcloc() + arg);
                    
             } else {
-                args.add(Props.getVlcloc() + " --http-header-fields='Cookie: mediaAuth='" + Encryption.getSaltString() + "' --user-agent='" + ua + "' " + arg);
+                args.add(Props.getVlcloc() + " --http-header-fields='Cookie: mediaAuth='" + Encryption.getSaltString() + "'' --user-agent='" + ua + "' " + arg);
                 args.add("--player-passthrough");
                 args.add("hls");
             }

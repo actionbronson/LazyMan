@@ -17,7 +17,7 @@ public class League {
     private ArrayList<String> playbackIDs = new ArrayList<>();
     private JTable table;
     private Timer timer;
-    private String date, name, keyURL;
+    private String date, name, keyURL, favoriteTeam;
     private JDateChooser dateTF;
     
     public League() {
@@ -133,5 +133,13 @@ public class League {
 
     public void setKeyURL(String keyURL) {
         this.keyURL = keyURL;
+    }
+
+    public String getFavoriteTeam() {
+        return favoriteTeam;
+    }
+
+    public void setFavoriteTeam(String favoriteTeam) {
+        this.favoriteTeam = favoriteTeam;
     }
 }

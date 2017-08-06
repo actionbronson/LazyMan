@@ -55,7 +55,10 @@ public class GetMLBInfo {
                     g1.setTimeRemaining("PPD");
                 } else if (g1.getGameState().equals("Delayed")) {
                     g1.setTimeRemaining("Delayed");
-                } else {
+                } else if (jo.getAsJsonObject().get("gameNumber").getAsInt() > 1) {
+                    g1.setTimeRemaining("TBD");
+                }
+                else {
                     g1.setTimeRemaining("n/a");
                 }
                 
