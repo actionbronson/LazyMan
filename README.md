@@ -1,6 +1,6 @@
 # LazyMan
 
-A simple program that lets you stream every NHL game from your favorite media player for free.
+A simple program that lets you stream every NHL and MLB game from your favorite media player for free.
 
 ## Contribute 
 
@@ -16,6 +16,6 @@ LazyMan is free and frequently updated. Out of pocket costs are required to keep
 
 * Donate via [Paypal](https://www.donation-tracker.de/donate/stevensnjd4)
 
-* Donate via BitCoin `19V1BAifx9DBeW5igL5HLLytYfEjkzSJjD`
+* Donate via BitCoin `1QHhn9wFZAPtuGaZQpYwHEUu5xrboN3ayi`
 
 * PM me an US Amazon giftcard (/u/StevensNJD4)
