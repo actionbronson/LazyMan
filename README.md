@@ -4,14 +4,15 @@ A simple program that lets you stream every NHL and MLB game from your favorite 
 
 ## Requirements
 
-**Windows XP and older NOT supported**
+* Windows 7 SP1, onward
+* Mac/Linux: Must support Python 2.7+ or 3.3+ and Java 8+
 
 * Java JRE 8+
 * VLC 2.2+ x64
 * Python (Mac/Linux)
 * Python-setuptools (Linux)
 * Python-dev (Linux)
-* .NET 4.6+ (Windows 7 and 8)
+* .NET 4.6+ (Windows 7 SP1 and 8 must install it)
 
 ## Contribute 
 
