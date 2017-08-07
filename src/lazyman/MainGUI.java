@@ -1469,7 +1469,7 @@ public final class MainGUI extends javax.swing.JFrame {
             int major = Integer.parseInt(ver[0]), minor = Integer.parseInt(ver[1]), patch = Integer.parseInt(ver[2]), build = Integer.parseInt(ver[3].replace(" BETA", ""));
             int curMajor, curMinor, curPatch, curBuild;
             try {
-                String[] curVer = Web.getContent("https://raw.githubusercontent.com/StevensNJD4/LazyMan/master/VERSION").split("\\.");
+                String[] curVer = Web.getContent("https://raw.githubusercontent.com/StevensNJD4/LazyMan/master/VERSION").trim().split("\\.");
                 curMajor = Integer.parseInt(curVer[0]);
                 curMinor = Integer.parseInt(curVer[1]);
                 curPatch = Integer.parseInt(curVer[2]);
@@ -1488,7 +1488,7 @@ public final class MainGUI extends javax.swing.JFrame {
                     updateMI.setVisible(false);
                 }
             } else {
-                String[] curVerB = Web.getContent("https://raw.githubusercontent.com/StevensNJD4/LazyMan/master/VERSIONBETA").split("\\.");
+                String[] curVerB = Web.getContent("https://raw.githubusercontent.com/StevensNJD4/LazyMan/master/VERSIONBETA").trim().split("\\.");
                 int curMajorB = Integer.parseInt(curVerB[0]), curMinorB = Integer.parseInt(curVerB[1]), curPatchB = Integer.parseInt(curVerB[2]), curBuildB = Integer.parseInt(curVerB[3].replace(" BETA", ""));
 
                 if (curMajor > major || (curMajor == major && curMinor > minor) || (curMajor == major && curMinor >= minor && curPatch > patch) || (curMajor == major && curMinor >= minor && curPatch >= patch && curBuild > build)) {
