@@ -2,6 +2,17 @@
 
 A simple program that lets you stream every NHL and MLB game from your favorite media player for free.
 
+##Requirements
+
+**Windows XP and older NOT supported**
+
+* Java JRE 8+
+* VLC 2.2+ x64
+* Python (Mac/Linux)
+* Python-setuptools (Linux)
+* Python-dev (Linux)
+* .NET 4.6+ (Windows 7 and 8)
+
 ## Contribute 
 
 LazyMan is written in Java. We use NetBeans to edit the code and GUI.
