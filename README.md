@@ -2,7 +2,7 @@
 
 A simple program that lets you stream every NHL and MLB game from your favorite media player for free.
 
-##Requirements
+## Requirements
 
 **Windows XP and older NOT supported**
 
