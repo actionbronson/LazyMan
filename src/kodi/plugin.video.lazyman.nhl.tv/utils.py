@@ -48,6 +48,6 @@ def salt():
   garbled = garble()
   return ''.join([garbled[int(i * random.random()) % len(garbled)]  for i in range(0,241)])
 
-def head(url,cookies):
+def head(url,cookies = dict()):
   print "Checking url %s" % (url)
   return requests.request('HEAD',url,cookies = cookies).status_code < 400
