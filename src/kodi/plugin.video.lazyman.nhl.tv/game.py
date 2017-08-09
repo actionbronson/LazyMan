@@ -178,7 +178,6 @@ class GameBuilder:
     if data["totalItems"] <= 0 or len(data["dates"]) == 0:
       return []
     games = data["dates"][0]["games"]
-    xbmc.log("Got " + str(len(games)) + " games.", level=xbmc.LOGNOTICE)
     def asGame(g):
       away = g["teams"]["away"]["team"]
       home = g["teams"]["home"]["team"]
