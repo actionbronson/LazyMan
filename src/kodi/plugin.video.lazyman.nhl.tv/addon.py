@@ -97,7 +97,7 @@ def listgames(date,provider,previous = False):
     items.append((url, listItem, True))
   ok = xbmcplugin.addDirectoryItems(addonHandle, items, len(items)) 
   xbmcplugin.endOfDirectory(addonHandle)
-  print "Added %d games" % len(items)
+  xbmc.log("Added %d games" % len(items))
 
 def listfeeds(game,date,provider):
   items = []
@@ -126,27 +126,35 @@ def playgame(date,feedId,provider):
       return masterUrl.rsplit('/',1)[0] + "/" + m3u8Path
 
   def xbmcPlayer(url,mediaAuth):
-    print "XBMC trying to play URL [%s]" % (url)
+    xbmc.log("XBMC trying to play URL [%s]" % (url), xbmc.LOGNOTICE)
     completeUrl = url + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth))
     xbmc.Player().play(adjustQuality(url) + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth)))
-    
-  cdn = 'akc' if addon.getSetting("cdn") == "Akamai" else 'l3c'
-  contentUrl = None
-  if provider == "NHL.tv":
-    contentUrl = "http://freegamez.gq/m3u8/%s/%s%s" % (date,feedId,cdn)
-  else:
-    contentUrl = "http://freegamez.gq/mlb/m3u8/%s/%s%s" % (date,feedId,cdn)
 
-  print "Content url [%s]" % (contentUrl)
+  cdn = 'akc' if addon.getSetting("cdn") == "Akamai" else 'l3c'
+
+  def getContentUrl(withCdn = True):
+    actualCdn = cdn if withCdn else ""
+    if provider == "NHL.tv":
+      return "http://freegamez.gq/m3u8/%s/%s%s" % (date,feedId,actualCdn)
+    else:
+      return "http://freegamez.gq/mlb/m3u8/%s/%s%s" % (date,feedId,actualCdn)
+
+  contentUrl = getContentUrl()
+  xbmc.log("Trying to resolve from content-url: '" + contentUrl  + "'", xbmc.LOGNOTICE)
+  if not utils.head(contentUrl):
+    contentUrl = getContentUrl(False)
+    if not utils.head(contentUrl):
+      xbmc.log("Cannot resolve content-url '" + contentUrl + "'", xbmc.LOGERROR)
+      raise ValueError("Invalid content-url '" + contentUrl + "'") 
   response = urllib.urlopen(contentUrl)
   playUrl = response.read().replace('l3c',cdn)
-  print "Using CDN %s, play url is [%s]" % (cdn,playUrl)
+  xbmc.log("Play URL resolved to : '" + playUrl  + "'", xbmc.LOGNOTICE)
   mediaAuthSalt = utils.salt()
   if utils.head(playUrl,dict(mediaAuth=mediaAuthSalt)):
     xbmcPlayer(playUrl,mediaAuthSalt)
   else:
     otherCdn = 'akc' if cdn == 'l3c' else 'l3c' 
-    print "URL [%s] failed on HEAD, switching CDN from %s to %s" % (playUrl,cdn,otherCdn)
+    xbmc.log("URL [%s] failed on HEAD, switching CDN from %s to %s" % (playUrl,cdn,otherCdn), xbmc.LOGNOTICE)
     xbmcPlayer(playUrl.replace(cdn,otherCdn), mediaAuthSalt)
 
 def router(paramstring):
@@ -177,7 +185,6 @@ def sanityCheck():
     providers = config.get("LazyMan","Providers").split(",")
     for service in providers:
       xbmc.executebuiltin("Notification(LazyMan,Verifying " + service + ")")
-      print "service [" + service + "]"
       hostName = config.get(service,"Host")
       lazymanServer = config.get(service,"LazyManIP")
       resolved = socket.gethostbyname(hostName)

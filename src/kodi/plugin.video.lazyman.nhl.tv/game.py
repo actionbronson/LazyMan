@@ -1,4 +1,5 @@
 import urllib, json
+import xbmc
 
 class FeedBuilder:
 
@@ -171,17 +172,18 @@ class GameBuilder:
     
   @staticmethod
   def fromDate(config,date,remaining,provider):
+    xbmc.log("Fetching games from: '" + config.get(provider,"GameScheduleUrl") % (date,date) + "'", level=xbmc.LOGNOTICE)
     response = urllib.urlopen(config.get(provider,"GameScheduleUrl") % (date,date))
     data = json.loads(response.read())
     if data["totalItems"] <= 0 or len(data["dates"]) == 0:
       return []
     games = data["dates"][0]["games"]
+    xbmc.log("Got " + len(games) + " games.", level=xbmc.LOGNOTICE)
     def asGame(g):
       away = g["teams"]["away"]["team"]
       home = g["teams"]["home"]["team"]
       time = g["gameDate"][11:].replace("Z", "") 
       state = g["status"]["detailedState"]
-      #def __init__(self,id,away,home,time,gameState,awayFull,homeFull,remaining,feeds = [])
       return Game(g["gamePk"], away["abbreviation"], home["abbreviation"], "TBD" if time == "04:00:00" else time, state,away["name"],home["name"],remaining(state,g),FeedBuilder.fromContent(g["content"],config.get(provider,"Provider")))
     return map(asGame, games)
 
