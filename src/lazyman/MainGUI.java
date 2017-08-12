@@ -27,7 +27,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Scanner;
@@ -40,7 +39,6 @@ import javax.swing.table.DefaultTableModel;
 public final class MainGUI extends javax.swing.JFrame {
 
     private final Streamlink streamlink;
-    private int z = 0;
     private final League[] leagues;
 
     public MainGUI() {
@@ -129,7 +127,8 @@ public final class MainGUI extends javax.swing.JFrame {
         NHLNextDayBtn = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         NHLDateTF = new com.toedter.calendar.JDateChooser();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        jPanel9 = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
         NHLGameTable = new javax.swing.JTable();
         jPanel6 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
@@ -139,15 +138,15 @@ public final class MainGUI extends javax.swing.JFrame {
         MLBDateTF = new com.toedter.calendar.JDateChooser();
         MLBPrevDayBtn = new javax.swing.JButton();
         MLBNextDayBtn = new javax.swing.JButton();
-        NHLPlayBtn = new javax.swing.JButton();
-        NHLSaveStreamCB = new javax.swing.JCheckBox();
+        playBtn = new javax.swing.JButton();
+        saveStreamCB = new javax.swing.JCheckBox();
         jPanel4 = new javax.swing.JPanel();
-        NHLCDNCB = new javax.swing.JComboBox<>();
+        CDNCB = new javax.swing.JComboBox<>();
         jPanel3 = new javax.swing.JPanel();
-        NHLQualityCB = new javax.swing.JComboBox<>();
+        qualityCB = new javax.swing.JComboBox<>();
         jPanel2 = new javax.swing.JPanel();
-        NHLFeedCB = new javax.swing.JComboBox<>();
-        NHLRefreshBtn = new javax.swing.JButton();
+        feedCB = new javax.swing.JComboBox<>();
+        refreshBtn = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         changePasswordMI = new javax.swing.JMenuItem();
@@ -234,6 +233,17 @@ public final class MainGUI extends javax.swing.JFrame {
         NHLDateTF.setDateFormatString("MMM d, yyyy");
         NHLDateTF.setInheritsPopupMenu(true);
 
+        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
+        jPanel9.setLayout(jPanel9Layout);
+        jPanel9Layout.setHorizontalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 522, Short.MAX_VALUE)
+        );
+        jPanel9Layout.setVerticalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 312, Short.MAX_VALUE)
+        );
+
         NHLGameTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null}
@@ -257,6 +267,7 @@ public final class MainGUI extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        NHLGameTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         NHLGameTable.setRowHeight(26);
         NHLGameTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         NHLGameTable.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -269,12 +280,15 @@ public final class MainGUI extends javax.swing.JFrame {
                 NHLGameTableKeyReleased(evt);
             }
         });
-        jScrollPane1.setViewportView(NHLGameTable);
+        jScrollPane5.setViewportView(NHLGameTable);
         if (NHLGameTable.getColumnModel().getColumnCount() > 0) {
             NHLGameTable.getColumnModel().getColumn(0).setCellRenderer(new IconTextCellRemderer());
             NHLGameTable.getColumnModel().getColumn(1).setCellRenderer(new IconTextCellRemderer());
             NHLGameTable.getColumnModel().getColumn(2).setCellRenderer(new CenterTextCellRenderer());
         }
+        NHLGameTable.getColumnModel().getColumn(0).setPreferredWidth(200);
+        NHLGameTable.getColumnModel().getColumn(1).setPreferredWidth(200);
+        NHLGameTable.getColumnModel().getColumn(2).setPreferredWidth(100);
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -282,17 +296,23 @@ public final class MainGUI extends javax.swing.JFrame {
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 314, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(NHLDateTF, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(NHLPrevDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(NHLNextDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(NHLDateTF, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(NHLPrevDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(NHLNextDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 522, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel5Layout.createSequentialGroup()
+                    .addGap(9, 9, 9)
+                    .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -306,17 +326,20 @@ public final class MainGUI extends javax.swing.JFrame {
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(NHLPrevDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(NHLDateTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(11, 11, 11)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel5Layout.createSequentialGroup()
+                    .addGap(19, 19, 19)
+                    .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(23, Short.MAX_VALUE)))
         );
 
         NHLDateTF.getDateEditor().addPropertyChangeListener(
             "date", new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent e) {
-                    z++;
-                    if (z == 2) //game liat populates twice on start without this
-                    return;
                     leagues[0].setFavGameSelected(false);
                     leagues[0].setDate(Time.formatDateSched( ((JTextField)NHLDateTF.getDateEditor().getUiComponent()).getText() ));
 
@@ -350,6 +373,7 @@ public final class MainGUI extends javax.swing.JFrame {
                     return canEdit [columnIndex];
                 }
             });
+            MLBGameTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
             MLBGameTable.setRowHeight(26);
             MLBGameTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
             MLBGameTable.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -368,18 +392,21 @@ public final class MainGUI extends javax.swing.JFrame {
                 MLBGameTable.getColumnModel().getColumn(1).setCellRenderer(new IconTextCellRemderer());
                 MLBGameTable.getColumnModel().getColumn(2).setCellRenderer(new CenterTextCellRenderer());
             }
+            MLBGameTable.getColumnModel().getColumn(0).setPreferredWidth(200);
+            MLBGameTable.getColumnModel().getColumn(1).setPreferredWidth(200);
+            MLBGameTable.getColumnModel().getColumn(2).setPreferredWidth(100);
 
             javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
             jPanel7.setLayout(jPanel7Layout);
             jPanel7Layout.setHorizontalGroup(
                 jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel7Layout.createSequentialGroup()
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 311, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 522, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 0, Short.MAX_VALUE))
             );
             jPanel7Layout.setVerticalGroup(
                 jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
             );
 
             jLabel2.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
@@ -406,12 +433,10 @@ public final class MainGUI extends javax.swing.JFrame {
             jPanel6.setLayout(jPanel6Layout);
             jPanel6Layout.setHorizontalGroup(
                 jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addGroup(jPanel6Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addGroup(jPanel6Layout.createSequentialGroup()
-                            .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGap(177, 177, 177))
+                    .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(jPanel6Layout.createSequentialGroup()
                             .addComponent(jLabel2)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -419,8 +444,8 @@ public final class MainGUI extends javax.swing.JFrame {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(MLBPrevDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(MLBNextDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(MLBNextDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGap(0, 0, Short.MAX_VALUE))
             );
             jPanel6Layout.setVerticalGroup(
                 jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -452,31 +477,31 @@ public final class MainGUI extends javax.swing.JFrame {
 
                 jTabbedPane1.addTab("MLB", jPanel6);
 
-                NHLPlayBtn.setMnemonic(KeyEvent.VK_P);
-                NHLPlayBtn.setText("Play");
-                NHLPlayBtn.setEnabled(false);
-                NHLPlayBtn.addActionListener(new java.awt.event.ActionListener() {
+                playBtn.setMnemonic(KeyEvent.VK_P);
+                playBtn.setText("Play");
+                playBtn.setEnabled(false);
+                playBtn.addActionListener(new java.awt.event.ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        NHLPlayBtnActionPerformed(evt);
+                        playBtnActionPerformed(evt);
                     }
                 });
 
-                NHLSaveStreamCB.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
-                NHLSaveStreamCB.setMnemonic(KeyEvent.VK_V);
-                NHLSaveStreamCB.setText("Save stream");
-                NHLSaveStreamCB.setEnabled(false);
-                NHLSaveStreamCB.addActionListener(new java.awt.event.ActionListener() {
+                saveStreamCB.setFont(new java.awt.Font("Monospaced", 0, 11)); // NOI18N
+                saveStreamCB.setMnemonic(KeyEvent.VK_V);
+                saveStreamCB.setText("Save stream");
+                saveStreamCB.setEnabled(false);
+                saveStreamCB.addActionListener(new java.awt.event.ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        NHLSaveStreamCBActionPerformed(evt);
+                        saveStreamCBActionPerformed(evt);
                     }
                 });
 
                 jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("CDN"));
 
-                NHLCDNCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Akamai", "Level 3" }));
-                NHLCDNCB.addItemListener(new java.awt.event.ItemListener() {
+                CDNCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Akamai", "Level 3" }));
+                CDNCB.addItemListener(new java.awt.event.ItemListener() {
                     public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                        NHLCDNCBItemStateChanged(evt);
+                        CDNCBItemStateChanged(evt);
                     }
                 });
 
@@ -484,21 +509,21 @@ public final class MainGUI extends javax.swing.JFrame {
                 jPanel4.setLayout(jPanel4Layout);
                 jPanel4Layout.setHorizontalGroup(
                     jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(NHLCDNCB, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(CDNCB, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
                 );
                 jPanel4Layout.setVerticalGroup(
                     jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(NHLCDNCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 12, Short.MAX_VALUE))
+                        .addComponent(CDNCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
 
                 jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Quality"));
 
-                NHLQualityCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "360p", "540p", "720p", "720p60" }));
-                NHLQualityCB.addItemListener(new java.awt.event.ItemListener() {
+                qualityCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "360p", "540p", "720p", "720p60" }));
+                qualityCB.addItemListener(new java.awt.event.ItemListener() {
                     public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                        NHLQualityCBItemStateChanged(evt);
+                        qualityCBItemStateChanged(evt);
                     }
                 });
 
@@ -506,18 +531,21 @@ public final class MainGUI extends javax.swing.JFrame {
                 jPanel3.setLayout(jPanel3Layout);
                 jPanel3Layout.setHorizontalGroup(
                     jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(NHLQualityCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(qualityCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
                 jPanel3Layout.setVerticalGroup(
                     jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(NHLQualityCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(qualityCB, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 );
 
                 jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Feed"));
 
-                NHLFeedCB.addItemListener(new java.awt.event.ItemListener() {
+                feedCB.addItemListener(new java.awt.event.ItemListener() {
                     public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                        NHLFeedCBItemStateChanged(evt);
+                        feedCBItemStateChanged(evt);
                     }
                 });
 
@@ -526,18 +554,18 @@ public final class MainGUI extends javax.swing.JFrame {
                 jPanel2Layout.setHorizontalGroup(
                     jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(NHLFeedCB, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(feedCB, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
                 );
                 jPanel2Layout.setVerticalGroup(
                     jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(NHLFeedCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(feedCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 );
 
-                NHLRefreshBtn.setText("Refresh");
-                NHLRefreshBtn.addActionListener(new java.awt.event.ActionListener() {
+                refreshBtn.setText("Refresh");
+                refreshBtn.addActionListener(new java.awt.event.ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        NHLRefreshBtnActionPerformed(evt);
+                        refreshBtnActionPerformed(evt);
                     }
                 });
 
@@ -657,48 +685,58 @@ public final class MainGUI extends javax.swing.JFrame {
                 layout.setHorizontalGroup(
                     layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(NHLRefreshBtn)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(NHLPlayBtn)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(NHLSaveStreamCB))))
-                            .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(maximizeConsoleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addContainerGap(30, Short.MAX_VALUE))
+                                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(135, 135, 135))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(33, 33, 33)))
+                                .addComponent(playBtn)
+                                .addGap(18, 18, 18)
+                                .addComponent(saveStreamCB)
+                                .addGap(30, 30, 30))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(refreshBtn)
+                        .addGap(0, 0, Short.MAX_VALUE))
                 );
                 layout.setVerticalGroup(
                     layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTabbedPane1)
+                            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 377, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(31, 31, 31)
-                                .addComponent(NHLRefreshBtn)
-                                .addGap(18, 18, 18)
-                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(50, 50, 50)
+                                .addComponent(refreshBtn)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(NHLPlayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(NHLSaveStreamCB))))
-                        .addGap(18, 18, 18)
+                                    .addComponent(playBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(saveStreamCB))
+                                .addGap(18, 18, 18)))
                         .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -714,35 +752,20 @@ public final class MainGUI extends javax.swing.JFrame {
         System.exit(0);
     }//GEN-LAST:event_exitMIActionPerformed
 
-    private void NHLGameTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_NHLGameTableMouseClicked
-        if (NHLGameTable.getModel().getValueAt(0, 0).equals("None")) {
-            return;
-        }
-
-        leagues[0].setSelectedGame(NHLGameTable.getSelectedRow());
-        getAvailableStreams(leagues[0].getSelectedGame());
-    }//GEN-LAST:event_NHLGameTableMouseClicked
-
-    private void NHLGameTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_NHLGameTableKeyReleased
-        if (evt.getKeyCode() == KeyEvent.VK_UP || KeyEvent.VK_DOWN == evt.getKeyCode()) {
-            NHLGameTableMouseClicked(null);
-        }
-    }//GEN-LAST:event_NHLGameTableKeyReleased
-
-    private void NHLSaveStreamCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLSaveStreamCBActionPerformed
-        if (!NHLPlayBtn.getText().equals("Stop Recording")) {
-            if (NHLSaveStreamCB.isSelected()) {
-                NHLPlayBtn.setText("Record");
+    private void saveStreamCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveStreamCBActionPerformed
+        if (!playBtn.getText().equals("Stop Recording")) {
+            if (saveStreamCB.isSelected()) {
+                playBtn.setText("Record");
             } else {
-                NHLPlayBtn.setText("Play");
+                playBtn.setText("Play");
             }
         }
 
-        streamlink.record = NHLSaveStreamCB.isSelected();
-    }//GEN-LAST:event_NHLSaveStreamCBActionPerformed
+        streamlink.record = saveStreamCB.isSelected();
+    }//GEN-LAST:event_saveStreamCBActionPerformed
 
-    private void NHLPlayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLPlayBtnActionPerformed
-        if (!NHLPlayBtn.isEnabled()) {
+    private void playBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playBtnActionPerformed
+        if (!playBtn.isEnabled()) {
             return;
         }
 
@@ -764,27 +787,27 @@ public final class MainGUI extends javax.swing.JFrame {
 
         leagues[jTabbedPane1.getSelectedIndex()].getGwi().setUrl(getMediaID(), leagues[jTabbedPane1.getSelectedIndex()].getName());
 
-        if (NHLPlayBtn.getText().equals("Stop Recording")) {
+        if (playBtn.getText().equals("Stop Recording")) {
             leagues[jTabbedPane1.getSelectedIndex()].setStreamlinkSwitch(-1);
 
-            if (NHLSaveStreamCB.isSelected()) {
-                NHLPlayBtn.setText("Record");
+            if (saveStreamCB.isSelected()) {
+                playBtn.setText("Record");
             } else {
-                NHLPlayBtn.setText("Play");
+                playBtn.setText("Play");
             }
             return;
         }
 
-        if (NHLSaveStreamCB.isSelected()) {
+        if (saveStreamCB.isSelected()) {
             leagues[jTabbedPane1.getSelectedIndex()].setStreamlinkSwitch(1);
-            NHLPlayBtn.setText("Stop Recording");
+            playBtn.setText("Stop Recording");
         } else {
             leagues[jTabbedPane1.getSelectedIndex()].setStreamlinkSwitch(0);
         }
 
         SwingWorker<Void, Void> pl = playGame();
         pl.execute();
-    }//GEN-LAST:event_NHLPlayBtnActionPerformed
+    }//GEN-LAST:event_playBtnActionPerformed
 
     private void preferencesMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferencesMIActionPerformed
         int refresh = Props.getRefreshRate();
@@ -848,7 +871,7 @@ public final class MainGUI extends javax.swing.JFrame {
         OpenURL.open("https://www.reddit.com/r/LazyMan/wiki/downloads");
     }//GEN-LAST:event_updateMIActionPerformed
 
-    private void NHLRefreshBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLRefreshBtnActionPerformed
+    private void refreshBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
         SwingWorker<Void, Void> gg;
         gg = getGames(-1, jTabbedPane1.getSelectedIndex());
         if (leagues[jTabbedPane1.getSelectedIndex()].getTimer() != null) {
@@ -857,7 +880,7 @@ public final class MainGUI extends javax.swing.JFrame {
             leagues[jTabbedPane1.getSelectedIndex()].getTimer().scheduleAtFixedRate(new Refresh(jTabbedPane1.getSelectedIndex()), Props.getRefreshRate() * 60 * 1000, Props.getRefreshRate() * 60 * 1000);
         }
         gg.execute();
-    }//GEN-LAST:event_NHLRefreshBtnActionPerformed
+    }//GEN-LAST:event_refreshBtnActionPerformed
 
     private void maximizeConsoleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maximizeConsoleButtonActionPerformed
         FullConsole fc = new FullConsole(this, true, consoleTA);
@@ -914,10 +937,11 @@ public final class MainGUI extends javax.swing.JFrame {
 
         leagues[jTabbedPane1.getSelectedIndex()].setSelectedGame(MLBGameTable.getSelectedRow());
         getAvailableStreams(leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame());
+        setFeed(MLBGameTable.getSelectedRow(), 'a');
         enablePlayBtn();
 
         if (evt != null && evt.getClickCount() == 2) {
-            NHLPlayBtnActionPerformed(null);
+            playBtnActionPerformed(null);
         }
     }//GEN-LAST:event_MLBGameTableMouseClicked
 
@@ -927,12 +951,12 @@ public final class MainGUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_MLBGameTableKeyReleased
 
-    private void NHLQualityCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_NHLQualityCBItemStateChanged
+    private void qualityCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_qualityCBItemStateChanged
         if (leagues[jTabbedPane1.getSelectedIndex()].getGames() == null) {
             return;
         }
 
-        String quality = (String) NHLQualityCB.getSelectedItem();
+        String quality = (String) qualityCB.getSelectedItem();
 
         if (quality.equals("720p60")) {
             quality = "best";
@@ -940,14 +964,14 @@ public final class MainGUI extends javax.swing.JFrame {
 
         leagues[jTabbedPane1.getSelectedIndex()].getGwi().setQuality(quality);
         Props.setBitrate(quality);
-    }//GEN-LAST:event_NHLQualityCBItemStateChanged
+    }//GEN-LAST:event_qualityCBItemStateChanged
 
-    private void NHLCDNCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_NHLCDNCBItemStateChanged
+    private void CDNCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_CDNCBItemStateChanged
         if (leagues[jTabbedPane1.getSelectedIndex()].getGames() == null) {
             return;
         }
 
-        String cdn = (String) NHLCDNCB.getSelectedItem();
+        String cdn = (String) CDNCB.getSelectedItem();
 
         if (cdn.equals("Akamai")) {
             leagues[jTabbedPane1.getSelectedIndex()].getGwi().setCdn("akc");
@@ -956,7 +980,7 @@ public final class MainGUI extends javax.swing.JFrame {
         }
 
         Props.setCDN(cdn);
-    }//GEN-LAST:event_NHLCDNCBItemStateChanged
+    }//GEN-LAST:event_CDNCBItemStateChanged
 
     private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
         if (leagues == null) {
@@ -967,34 +991,50 @@ public final class MainGUI extends javax.swing.JFrame {
             setRow(leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame(), jTabbedPane1.getSelectedIndex());
             leagues[jTabbedPane1.getSelectedIndex()].getGwi().setDate(leagues[jTabbedPane1.getSelectedIndex()].getDate());
         } else {
-            NHLFeedCB.removeAllItems();
+            feedCB.removeAllItems();
         }
         enablePlayBtn();
     }//GEN-LAST:event_jTabbedPane1StateChanged
 
-    private void NHLFeedCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_NHLFeedCBItemStateChanged
-        if (NHLFeedCB.getItemCount() >= 1) {
+    private void feedCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_feedCBItemStateChanged
+        if (feedCB.getItemCount() >= 1) {
             enablePlayBtn();
         }
-    }//GEN-LAST:event_NHLFeedCBItemStateChanged
+    }//GEN-LAST:event_feedCBItemStateChanged
+
+    private void NHLGameTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_NHLGameTableMouseClicked
+         if (NHLGameTable.getModel().getValueAt(0, 0).equals("None")) {
+            return;
+        }
+
+        leagues[jTabbedPane1.getSelectedIndex()].setSelectedGame(NHLGameTable.getSelectedRow());
+        getAvailableStreams(leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame());
+        setFeed(NHLGameTable.getSelectedRow(), 'a');
+        enablePlayBtn();
+
+        if (evt != null && evt.getClickCount() == 2) {
+            playBtnActionPerformed(null);
+        }
+    }//GEN-LAST:event_NHLGameTableMouseClicked
+
+    private void NHLGameTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_NHLGameTableKeyReleased
+        if (evt.getKeyCode() == KeyEvent.VK_UP || KeyEvent.VK_DOWN == evt.getKeyCode()) {
+            NHLGameTableMouseClicked(null);
+        }
+    }//GEN-LAST:event_NHLGameTableKeyReleased
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem AboutMI;
+    private javax.swing.JComboBox<String> CDNCB;
     private com.toedter.calendar.JDateChooser MLBDateTF;
     private javax.swing.JTable MLBGameTable;
     private javax.swing.JButton MLBNextDayBtn;
     private javax.swing.JButton MLBPrevDayBtn;
-    private javax.swing.JComboBox<String> NHLCDNCB;
     private com.toedter.calendar.JDateChooser NHLDateTF;
-    private javax.swing.JComboBox<String> NHLFeedCB;
     private javax.swing.JTable NHLGameTable;
     private javax.swing.JButton NHLNextDayBtn;
-    private javax.swing.JButton NHLPlayBtn;
     private javax.swing.JButton NHLPrevDayBtn;
-    private javax.swing.JComboBox<String> NHLQualityCB;
-    private javax.swing.JButton NHLRefreshBtn;
-    private javax.swing.JCheckBox NHLSaveStreamCB;
     private javax.swing.JMenuItem bitcoinMI;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
@@ -1003,6 +1043,7 @@ public final class MainGUI extends javax.swing.JFrame {
     private javax.swing.JPopupMenu consolePM;
     private javax.swing.JTextPane consoleTA;
     private javax.swing.JMenuItem exitMI;
+    private javax.swing.JComboBox<String> feedCB;
     private javax.swing.JMenuItem guidesMI;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -1020,14 +1061,19 @@ public final class MainGUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton maximizeConsoleButton;
+    private javax.swing.JButton playBtn;
     private javax.swing.JMenuItem ppMI;
     private javax.swing.JMenuItem preferencesMI;
+    private javax.swing.JComboBox<String> qualityCB;
+    private javax.swing.JButton refreshBtn;
+    private javax.swing.JCheckBox saveStreamCB;
     private javax.swing.JMenuItem updateMI;
     // End of variables declaration//GEN-END:variables
 
@@ -1079,8 +1125,8 @@ public final class MainGUI extends javax.swing.JFrame {
                             } else {
                                 time = g1.getTimeRemaining();
                             }
-                            model.addRow(new Object[]{g1.getAwayTeam() + "-" + g1.getAwayTeamFull(),
-                                g1.getHomeTeam() + "-" + g1.getHomeTeamFull(),
+                            model.addRow(new Object[]{g1.getAwayTeamFull(),
+                                g1.getHomeTeamFull(),
                                 time});
                         }
                         leagues[lg].getTable().setModel(model);
@@ -1101,7 +1147,7 @@ public final class MainGUI extends javax.swing.JFrame {
                             leagues[jTabbedPane1.getSelectedIndex()].setTimer(null);
                         }
                         if (jTabbedPane1.getTitleAt(jTabbedPane1.getSelectedIndex()).equals(leagues[jTabbedPane1.getSelectedIndex()].getName())) {
-                            NHLPlayBtn.setEnabled(false);
+                            playBtn.setEnabled(false);
                         }
                     }
 
@@ -1177,31 +1223,31 @@ public final class MainGUI extends javax.swing.JFrame {
         }
         switch (homeOrAway) {
             case 'a':
-                if (!"0".equals(Props.getPreferFrench()) && leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].contains("FRENCH")) {
-                    NHLFeedCB.setSelectedIndex(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedIndex("FRENCH"));
+                if ("1".equals(Props.getPreferFrench()) && leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].contains("FRENCH")) {
+                    feedCB.setSelectedIndex(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedIndex("FRENCH"));
                 } else if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].contains("AWAY")) {
-                    NHLFeedCB.setSelectedIndex(1);
+                    feedCB.setSelectedIndex(1);
                 } else {
-                    NHLFeedCB.setSelectedIndex(0);
+                    feedCB.setSelectedIndex(0);
                 }
                 break;
             case 'h':
-                if (!"0".equals(Props.getPreferFrench()) && leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].contains("FRENCH")) {
-                    NHLFeedCB.setSelectedIndex(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedIndex("FRENCH"));
+                if ("1".equals(Props.getPreferFrench()) && leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].contains("FRENCH")) {
+                    feedCB.setSelectedIndex(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedIndex("FRENCH"));
                 } else {
-                    NHLFeedCB.setSelectedIndex(0);
+                    feedCB.setSelectedIndex(0);
                 }
         }
     }
 
     private void getAvailableStreams(int row) {
-        NHLFeedCB.removeAllItems();
+        feedCB.removeAllItems();
         if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getNumOfFeeds() > 0) {
             for (int i = 0; i < leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getNumOfFeeds(); i++) {
                 if (!leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getFeedTV(i).isEmpty()) {
-                    NHLFeedCB.addItem(leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getFeedName(i) + " (" + leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getFeedTV(i) + ")");
+                    feedCB.addItem(leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getFeedName(i) + " (" + leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getFeedTV(i) + ")");
                 } else {
-                    NHLFeedCB.addItem(leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getFeedName(i));
+                    feedCB.addItem(leagues[jTabbedPane1.getSelectedIndex()].getGames()[row].getFeedName(i));
                 }
             }
         }
@@ -1274,7 +1320,7 @@ public final class MainGUI extends javax.swing.JFrame {
         }
 
         try {
-            Collections.addAll(leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs(), Web.getContent("http://nhl.freegamez.gq/static/" + file + ".txt").replace("akc", "").replace("l3c", "").split("\n"));
+            Collections.addAll(leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs(), Web.getContent("http://nhl.zipstreams.net/static/" + file + ".txt").replace("akc", "").replace("l3c", "").split("\n"));
         } catch (UnknownHostException uhe) {
             MessageBox.show("The server may be down.", "Error", 2);
         }
@@ -1291,12 +1337,12 @@ public final class MainGUI extends javax.swing.JFrame {
 
     private void enablePlayBtn() {
         if (leagues[jTabbedPane1.getSelectedIndex()].getGames() == null) {
-            NHLPlayBtn.setEnabled(false);
-            NHLSaveStreamCB.setEnabled(false);
+            playBtn.setEnabled(false);
+            saveStreamCB.setEnabled(false);
 
-            if (NHLSaveStreamCB.isSelected()) {
-                NHLSaveStreamCB.setSelected(false);
-                NHLPlayBtn.setText("Play");
+            if (saveStreamCB.isSelected()) {
+                saveStreamCB.setSelected(false);
+                playBtn.setText("Play");
                 streamlink.record = false;
             }
             return;
@@ -1306,21 +1352,21 @@ public final class MainGUI extends javax.swing.JFrame {
 
             String d = Time.toLocalTZ(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "America/Los_Angeles", "yyyy-MM-dd", "yyyy-MM-dd");
 
-            boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getTime(), "UTC", "H:mm"), 50) && checkID(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedID(NHLFeedCB.getSelectedIndex()));
+            boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getTime(), "UTC", "H:mm"), 40) && checkID(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedID(feedCB.getSelectedIndex()));
 
-            NHLPlayBtn.setEnabled(e);
+            playBtn.setEnabled(e);
 
-            if (!e && NHLSaveStreamCB.isSelected()) {
-                NHLSaveStreamCB.setSelected(false);
-                NHLPlayBtn.setText("Play");
+            if (!e && saveStreamCB.isSelected()) {
+                saveStreamCB.setSelected(false);
+                playBtn.setText("Play");
                 streamlink.record = false;
             }
-            NHLSaveStreamCB.setEnabled(e);
+            saveStreamCB.setEnabled(e);
         } else {
-            NHLPlayBtn.setText("Stop Recording");
-            NHLPlayBtn.setEnabled(true);
-            NHLSaveStreamCB.setEnabled(true);
-            NHLSaveStreamCB.setSelected(true);
+            playBtn.setText("Stop Recording");
+            playBtn.setEnabled(true);
+            saveStreamCB.setEnabled(true);
+            saveStreamCB.setSelected(true);
         }
 
         if (!leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs().isEmpty()) {
@@ -1361,20 +1407,20 @@ public final class MainGUI extends javax.swing.JFrame {
                             if (!consoleTA.getText().substring(li, consoleTA.getText().length()).contains("Opening")) {
                                 MessageBox.show("Stream unavailable. Please report the game you are trying to play.", "Error", 2);
                             }
-                        } else if (NHLPlayBtn.getText().equals("Stop Recording")) {
+                        } else if (playBtn.getText().equals("Stop Recording")) {
                             leagues[jTabbedPane1.getSelectedIndex()].setStreamlinkSwitch(-1);
 
-                            if (NHLSaveStreamCB.isSelected()) {
-                                NHLPlayBtn.setText("Record");
+                            if (saveStreamCB.isSelected()) {
+                                playBtn.setText("Record");
                             } else {
-                                NHLPlayBtn.setText("Play");
+                                playBtn.setText("Play");
                             }
                         }
                     } else {
                         String message = "Please set the location to your media player executable in Edit > Preferences.";
                         MessageBox.show(message, "Error", 2);
                     }
-                    NHLPlayBtn.setEnabled(true);
+                    playBtn.setEnabled(true);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -1430,15 +1476,15 @@ public final class MainGUI extends javax.swing.JFrame {
 
         if (!bitrate.equals("")) {
             if (!bitrate.equals("best")) {
-                NHLQualityCB.setSelectedItem(bitrate);
+                qualityCB.setSelectedItem(bitrate);
             } else {
-                NHLQualityCB.setSelectedItem("720p60");
+                qualityCB.setSelectedItem("720p60");
             }
         }
         if (!cdn.equals("")) {
-            NHLCDNCB.setSelectedItem(cdn);
+            CDNCB.setSelectedItem(cdn);
         } else {
-            NHLCDNCB.setSelectedItem("720p");
+            CDNCB.setSelectedItem("720p");
         }
         for (League l : leagues) {
             if (!bitrate.equals("")) {
@@ -1460,7 +1506,7 @@ public final class MainGUI extends javax.swing.JFrame {
     }
 
     private String getMediaID() {
-        return leagues[jTabbedPane1.getSelectedIndex()].getGames()[leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame()].getFeedID(NHLFeedCB.getSelectedIndex());
+        return leagues[jTabbedPane1.getSelectedIndex()].getGames()[leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame()].getFeedID(feedCB.getSelectedIndex());
     }
 
     private void checkUpdate() {
