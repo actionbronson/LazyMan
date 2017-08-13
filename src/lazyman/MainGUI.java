@@ -127,7 +127,6 @@ public final class MainGUI extends javax.swing.JFrame {
         NHLNextDayBtn = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         NHLDateTF = new com.toedter.calendar.JDateChooser();
-        jPanel9 = new javax.swing.JPanel();
         jScrollPane5 = new javax.swing.JScrollPane();
         NHLGameTable = new javax.swing.JTable();
         jPanel6 = new javax.swing.JPanel();
@@ -233,17 +232,6 @@ public final class MainGUI extends javax.swing.JFrame {
         NHLDateTF.setDateFormatString("MMM d, yyyy");
         NHLDateTF.setInheritsPopupMenu(true);
 
-        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
-        jPanel9.setLayout(jPanel9Layout);
-        jPanel9Layout.setHorizontalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 522, Short.MAX_VALUE)
-        );
-        jPanel9Layout.setVerticalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 312, Short.MAX_VALUE)
-        );
-
         NHLGameTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null}
@@ -282,13 +270,20 @@ public final class MainGUI extends javax.swing.JFrame {
         });
         jScrollPane5.setViewportView(NHLGameTable);
         if (NHLGameTable.getColumnModel().getColumnCount() > 0) {
+            NHLGameTable.getColumnModel().getColumn(0).setHeaderValue("Away");
             NHLGameTable.getColumnModel().getColumn(0).setCellRenderer(new IconTextCellRemderer());
+            NHLGameTable.getColumnModel().getColumn(1).setHeaderValue("Home");
             NHLGameTable.getColumnModel().getColumn(1).setCellRenderer(new IconTextCellRemderer());
+            NHLGameTable.getColumnModel().getColumn(2).setHeaderValue("Time");
             NHLGameTable.getColumnModel().getColumn(2).setCellRenderer(new CenterTextCellRenderer());
         }
         NHLGameTable.getColumnModel().getColumn(0).setPreferredWidth(200);
         NHLGameTable.getColumnModel().getColumn(1).setPreferredWidth(200);
         NHLGameTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+
+        NHLGameTable.getColumnModel().getColumn(0).setHeaderRenderer(new CenterTextCellRenderer());
+        NHLGameTable.getColumnModel().getColumn(1).setHeaderRenderer(new CenterTextCellRenderer());
+        NHLGameTable.getColumnModel().getColumn(2).setHeaderRenderer(new CenterTextCellRenderer());
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -308,11 +303,6 @@ public final class MainGUI extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 522, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel5Layout.createSequentialGroup()
-                    .addGap(9, 9, 9)
-                    .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -326,14 +316,9 @@ public final class MainGUI extends javax.swing.JFrame {
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(NHLPrevDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(NHLDateTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 6, Short.MAX_VALUE)
                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel5Layout.createSequentialGroup()
-                    .addGap(19, 19, 19)
-                    .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(23, Short.MAX_VALUE)))
         );
 
         NHLDateTF.getDateEditor().addPropertyChangeListener(
@@ -395,6 +380,10 @@ public final class MainGUI extends javax.swing.JFrame {
             MLBGameTable.getColumnModel().getColumn(0).setPreferredWidth(200);
             MLBGameTable.getColumnModel().getColumn(1).setPreferredWidth(200);
             MLBGameTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+
+            MLBGameTable.getColumnModel().getColumn(0).setHeaderRenderer(new CenterTextCellRenderer());
+            MLBGameTable.getColumnModel().getColumn(1).setHeaderRenderer(new CenterTextCellRenderer());
+            MLBGameTable.getColumnModel().getColumn(2).setHeaderRenderer(new CenterTextCellRenderer());
 
             javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
             jPanel7.setLayout(jPanel7Layout);
@@ -1061,7 +1050,6 @@ public final class MainGUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
-    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane5;

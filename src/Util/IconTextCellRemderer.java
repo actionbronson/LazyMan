@@ -1,6 +1,7 @@
 package Util;
 
 import java.awt.Component;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -19,15 +20,16 @@ public class IconTextCellRemderer extends DefaultTableCellRenderer {
         if (value != null) {
             try {
                 setIcon(new ImageIcon(getClass().getResource("/Logos/" + value.toString().replaceAll(" ", "").replaceAll("\\.", "").replaceAll("é", "e") + ".png")));
+                setBorder(BorderFactory.createEmptyBorder(0, 40, 0, 0));
             } catch (Exception ex) {
+                setHorizontalAlignment(CENTER);
                 setIcon(null);
             }
         } else {
+            setHorizontalAlignment(CENTER);
             setText("None");
             setIcon(null);
         }
-
-        setHorizontalAlignment(CENTER);
 
         return this;
     }
