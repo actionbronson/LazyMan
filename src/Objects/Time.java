@@ -95,14 +95,14 @@ public class Time {
     }
 
     public static long nextDay() {
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd h:mm a");
+        DateFormat pstdf = new SimpleDateFormat("yyyy-MM-dd h:mm a"), ldf = new SimpleDateFormat("yyyy-MM-dd h:mm a");
         Date now, threeAM;
-        df.setTimeZone(TimeZone.getTimeZone("America/Los_Angeles"));
+        pstdf.setTimeZone(TimeZone.getTimeZone("America/Los_Angeles"));
         try {
-            threeAM = df.parse(getPSTDate("yyyy-MM-dd") + " 3:00 am");
-            String three = df.format(threeAM);
-            df.setTimeZone(TimeZone.getDefault());
-            threeAM = df.parse(three);
+            threeAM = pstdf.parse(getPSTDate("yyyy-MM-dd") + " 3:00 am");
+            ldf.setTimeZone(TimeZone.getDefault());
+            String three = ldf.format(threeAM);
+            threeAM = ldf.parse(three);
             
             now = new Date();
             
@@ -113,7 +113,9 @@ public class Time {
             if (c.after(c2))
                 c2.add(Calendar.DAY_OF_MONTH, 1);
             
-            return c2.getTimeInMillis() - c.getTimeInMillis();
+            long sleep = c2.getTimeInMillis() - c.getTimeInMillis();
+            
+            return sleep;
         } catch (ParseException ex) {
             ex.printStackTrace();
         }

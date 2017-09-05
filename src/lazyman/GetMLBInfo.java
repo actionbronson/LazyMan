@@ -22,7 +22,7 @@ public class GetMLBInfo {
                 return null;
             }
 
-            int i = 0;
+            int i = 0, j = 0;
 
             Game[] g = new Game[t.getAsJsonArray("dates").get(0).getAsJsonObject().get("totalItems").getAsInt()];
             Game g1;
@@ -44,12 +44,12 @@ public class GetMLBInfo {
                 g1.setHomeTeam(jo.getAsJsonObject().getAsJsonObject("teams").getAsJsonObject("home").getAsJsonObject("team").get("abbreviation").getAsString());
 
                 g1.setGameState(jo.getAsJsonObject().getAsJsonObject("status").get("detailedState").getAsString());
-
+                
                 if (g1.getGameState().contains("In Progress")) {
                     String period = jo.getAsJsonObject().getAsJsonObject("linescore").get("currentInningOrdinal").getAsString();
                     String time = jo.getAsJsonObject().getAsJsonObject("linescore").get("inningHalf").getAsString();
                     g1.setTimeRemaining(period + " " + time);
-                } else if (g1.getGameState().equals("Final")) {
+                } else if (g1.getGameState().equals("Final") || g1.getGameState().equals("Game Over")) {
                     g1.setTimeRemaining("Final");
                 } else if (g1.getGameState().equals("Postponed")) {
                     g1.setTimeRemaining("PPD");
@@ -66,8 +66,13 @@ public class GetMLBInfo {
                     for (JsonElement stream : jo.getAsJsonObject().getAsJsonObject("content").getAsJsonObject("media").getAsJsonArray("epg")) {
                         if (stream.getAsJsonObject().get("title").getAsString().equals("MLBTV")) {
                             for (JsonElement innerStr : stream.getAsJsonObject().getAsJsonArray("items")) {
+                                if (stream.getAsJsonObject().getAsJsonArray("items").size() == 4 && j < 2) {
+                                    j++;
+                                    continue;
+                                }
                                 g1.addFeed(innerStr.getAsJsonObject().get("mediaFeedType").getAsString(), innerStr.getAsJsonObject().get("id").getAsString(), innerStr.getAsJsonObject().get("callLetters").getAsString());
                             }
+                            j = 0;
                         }
                     }
                 }

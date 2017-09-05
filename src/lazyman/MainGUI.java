@@ -5,6 +5,7 @@ import GameObj.League;
 import Objects.Streamlink;
 import Objects.Time;
 import Objects.Web;
+import Util.AutoUpdate;
 import Util.CenterTextCellRenderer;
 import Util.Console.FullConsole;
 import Util.EditHosts;
@@ -14,6 +15,7 @@ import Util.Console.MessageConsole;
 import Util.OpenURL;
 import Util.ProcessReader;
 import Util.Props;
+import Util.UpdateBar;
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
@@ -34,6 +36,8 @@ import java.util.TimerTask;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import java.util.Timer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.DefaultTableModel;
 
 public final class MainGUI extends javax.swing.JFrame {
@@ -881,12 +885,14 @@ public final class MainGUI extends javax.swing.JFrame {
         leagues[jTabbedPane1.getSelectedIndex()].setFavGameSelected(false);
         leagues[jTabbedPane1.getSelectedIndex()].setDate(Time.getPrevDay(leagues[jTabbedPane1.getSelectedIndex()].getDate()));
         leagues[jTabbedPane1.getSelectedIndex()].getDateTF().setDate(Time.getDate(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "yyyy-MM-dd"));
+        leagues[jTabbedPane1.getSelectedIndex()].setSelectedGame(0);
     }//GEN-LAST:event_NHLPrevDayBtnActionPerformed
 
     private void NHLNextDayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NHLNextDayBtnActionPerformed
         leagues[jTabbedPane1.getSelectedIndex()].setFavGameSelected(false);
         leagues[jTabbedPane1.getSelectedIndex()].setDate(Time.getNextDay(leagues[jTabbedPane1.getSelectedIndex()].getDate()));
         leagues[jTabbedPane1.getSelectedIndex()].getDateTF().setDate(Time.getDate(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "yyyy-MM-dd"));
+        leagues[jTabbedPane1.getSelectedIndex()].setSelectedGame(0);
     }//GEN-LAST:event_NHLNextDayBtnActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
@@ -910,6 +916,7 @@ public final class MainGUI extends javax.swing.JFrame {
         leagues[jTabbedPane1.getSelectedIndex()].setDate(Time.getPrevDay(leagues[jTabbedPane1.getSelectedIndex()].getDate()));
         leagues[jTabbedPane1.getSelectedIndex()].getDateTF().setDate(Time.getDate(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "yyyy-MM-dd"));
         leagues[jTabbedPane1.getSelectedIndex()].getGwi().setDate(leagues[jTabbedPane1.getSelectedIndex()].getDate());
+        leagues[jTabbedPane1.getSelectedIndex()].setSelectedGame(0);
     }//GEN-LAST:event_MLBPrevDayBtnActionPerformed
 
     private void MLBNextDayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MLBNextDayBtnActionPerformed
@@ -917,6 +924,7 @@ public final class MainGUI extends javax.swing.JFrame {
         leagues[jTabbedPane1.getSelectedIndex()].setDate(Time.getNextDay(leagues[jTabbedPane1.getSelectedIndex()].getDate()));
         leagues[jTabbedPane1.getSelectedIndex()].getDateTF().setDate(Time.getDate(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "yyyy-MM-dd"));
         leagues[jTabbedPane1.getSelectedIndex()].getGwi().setDate(leagues[jTabbedPane1.getSelectedIndex()].getDate());
+        leagues[jTabbedPane1.getSelectedIndex()].setSelectedGame(0);
     }//GEN-LAST:event_MLBNextDayBtnActionPerformed
 
     private void MLBGameTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MLBGameTableMouseClicked
@@ -941,17 +949,15 @@ public final class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_MLBGameTableKeyReleased
 
     private void qualityCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_qualityCBItemStateChanged
-        if (leagues[jTabbedPane1.getSelectedIndex()].getGames() == null) {
-            return;
-        }
-
         String quality = (String) qualityCB.getSelectedItem();
 
         if (quality.equals("720p60")) {
             quality = "best";
         }
 
-        leagues[jTabbedPane1.getSelectedIndex()].getGwi().setQuality(quality);
+        for (League l : leagues) {
+            l.getGwi().setQuality(quality);
+        }
         Props.setBitrate(quality);
     }//GEN-LAST:event_qualityCBItemStateChanged
 
@@ -992,7 +998,7 @@ public final class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_feedCBItemStateChanged
 
     private void NHLGameTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_NHLGameTableMouseClicked
-         if (NHLGameTable.getModel().getValueAt(0, 0).equals("None")) {
+        if (NHLGameTable.getModel().getValueAt(0, 0).equals("None")) {
             return;
         }
 
@@ -1085,8 +1091,23 @@ public final class MainGUI extends javax.swing.JFrame {
 
     }
 
-    private SwingWorker<Void, Void> getGames(final int row, int lg) {
+    private SwingWorker<Void, Void> updating() {
 
+        SwingWorker<Void, Void> worker;
+        worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                UpdateBar ub = new UpdateBar(null, true);
+                ub.setLocationRelativeTo(null);
+                ub.setVisible(true);
+                return null;
+            }
+        };
+        return worker;
+
+    }
+
+    private SwingWorker<Void, Void> getGames(final int row, int lg) {
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 
             @Override
@@ -1468,11 +1489,13 @@ public final class MainGUI extends javax.swing.JFrame {
             } else {
                 qualityCB.setSelectedItem("720p60");
             }
+        } else {
+            qualityCB.setSelectedItem("720p");
         }
         if (!cdn.equals("")) {
             CDNCB.setSelectedItem(cdn);
         } else {
-            CDNCB.setSelectedItem("720p");
+            CDNCB.setSelectedItem("Akamai");
         }
         for (League l : leagues) {
             if (!bitrate.equals("")) {
@@ -1502,8 +1525,10 @@ public final class MainGUI extends javax.swing.JFrame {
             String[] ver = s.nextLine().split("\\.");
             int major = Integer.parseInt(ver[0]), minor = Integer.parseInt(ver[1]), patch = Integer.parseInt(ver[2]), build = Integer.parseInt(ver[3].replace(" BETA", ""));
             int curMajor, curMinor, curPatch, curBuild;
+            String version;
             try {
-                String[] curVer = Web.getContent("https://raw.githubusercontent.com/StevensNJD4/LazyMan/master/VERSION").trim().split("\\.");
+                version = Web.getContent("https://raw.githubusercontent.com/StevensNJD4/LazyMan/master/VERSION").trim();
+                String[] curVer = version.split("\\.");
                 curMajor = Integer.parseInt(curVer[0]);
                 curMinor = Integer.parseInt(curVer[1]);
                 curPatch = Integer.parseInt(curVer[2]);
@@ -1514,33 +1539,94 @@ public final class MainGUI extends javax.swing.JFrame {
 
             if (!ver[3].contains("BETA")) {
                 if (curMajor > major || (curMajor == major && curMinor > minor) || (curMajor == major && curMinor >= minor && curPatch > patch) || (curMajor == major && curMinor >= minor && curPatch >= patch && curBuild > build)) {
-                    if (MessageBox.ask("New update available!\nWould you like to open the download page?", "New Update!") == MessageBox.yesOption()) {
-                        OpenURL.open("https://www.reddit.com/r/LazyMan/wiki/downloads");
-                        System.exit(0);
+                    if (MessageBox.ask("New update available!\nWould you like to update?", "New Update!") == MessageBox.yesOption()) {
+                        SwingWorker<Void, Void> u = updating();
+                        u.execute();
+                        if (AutoUpdate.download(version)) {
+                            if (AutoUpdate.unZipIt()) {
+                                String loc;
+
+                                if (!System.getProperty("os.name").toLowerCase().contains("linux")) {
+                                    loc = Paths.get(".").toAbsolutePath().normalize().toString() + System.getProperty("file.separator");
+                                    if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                                        loc += "LazyMan.exe";
+                                    } else {
+                                        loc += "LazyMan.jar";
+                                    }
+                                } else {
+                                    loc = new java.io.File(Props.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent() + System.getProperty("file.separator") + "LazyMan.jar";
+                                }
+                                Runtime.getRuntime().exec("java -jar " + loc);
+                                System.exit(0);
+                            }
+                        }
+                        MessageBox.show("Could not authentically update. Please manually update", version, build);
                     }
                 } else {
                     updateMI.setVisible(false);
                 }
             } else {
-                String[] curVerB = Web.getContent("https://raw.githubusercontent.com/StevensNJD4/LazyMan/master/VERSIONBETA").trim().split("\\.");
-                int curMajorB = Integer.parseInt(curVerB[0]), curMinorB = Integer.parseInt(curVerB[1]), curPatchB = Integer.parseInt(curVerB[2]), curBuildB = Integer.parseInt(curVerB[3].replace(" BETA", ""));
-
                 if (curMajor > major || (curMajor == major && curMinor > minor) || (curMajor == major && curMinor >= minor && curPatch > patch) || (curMajor == major && curMinor >= minor && curPatch >= patch && curBuild > build)) {
-                    if (MessageBox.ask("New stable update available!\nWould you like to open the download page?", "New Update!") == MessageBox.yesOption()) {
-                        OpenURL.open("https://www.reddit.com/r/LazyMan/wiki/downloads");
-                        System.exit(0);
-                    }
-                } else if (curMajorB > major || (curMajorB == major && curMinorB > minor) || (curMajorB == major && curMinorB >= minor && curPatchB > patch) || (curMajorB == major && curMinorB >= minor && curPatchB >= patch && curBuildB > build)) {
-                    if (MessageBox.ask("New beta update available!\nWould you like to open the download page?", "New Update!") == MessageBox.yesOption()) {
-                        OpenURL.open("https://www.reddit.com/r/LazyMan/");
-                        System.exit(0);
+                    if (MessageBox.ask("New stable update available!\nWould you like to update", "New Update!") == MessageBox.yesOption()) {
+                        SwingWorker<Void, Void> u = updating();
+                        u.execute();
+                        if (AutoUpdate.download(version)) {
+                            if (AutoUpdate.unZipIt()) {
+                                String loc;
+
+                                if (!System.getProperty("os.name").toLowerCase().contains("linux")) {
+                                    loc = Paths.get(".").toAbsolutePath().normalize().toString() + System.getProperty("file.separator");
+                                    if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                                        loc += "LazyMan.exe";
+                                    } else {
+                                        loc += "LazyMan.jar";
+                                    }
+                                } else {
+                                    loc = new java.io.File(Props.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent() + System.getProperty("file.separator") + "LazyMan.jar";
+                                }
+                                Runtime.getRuntime().exec("java -jar " + loc);
+                                System.exit(0);
+                            }
+                        }
+                        MessageBox.show("Could not authentically update. Please manually update", version, build);
                     }
                 } else {
-                    updateMI.setVisible(false);
+                    version = Web.getContent("https://raw.githubusercontent.com/StevensNJD4/LazyMan/master/VERSIONBETA").replace(" BETA", "").trim();
+                    String[] curVerB = version.split("\\.");
+                    int curMajorB = Integer.parseInt(curVerB[0]), curMinorB = Integer.parseInt(curVerB[1]), curPatchB = Integer.parseInt(curVerB[2]), curBuildB = Integer.parseInt(curVerB[3]);
+                    if (curMajorB > major || (curMajorB == major && curMinorB > minor) || (curMajorB == major && curMinorB >= minor && curPatchB > patch) || (curMajorB == major && curMinorB >= minor && curPatchB >= patch && curBuildB > build)) {
+                        if (MessageBox.ask("New beta update available!\nWould you like to update?", "New Update!") == MessageBox.yesOption()) {
+                            SwingWorker<Void, Void> u = updating();
+                            u.execute();
+                            if (AutoUpdate.download(version)) {
+                                if (AutoUpdate.unZipIt()) {
+                                    String loc;
+
+                                    if (!System.getProperty("os.name").toLowerCase().contains("linux")) {
+                                        loc = Paths.get(".").toAbsolutePath().normalize().toString() + System.getProperty("file.separator");
+                                        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                                            loc += "LazyMan.exe";
+                                        } else {
+                                            loc += "LazyMan.jar";
+                                        }
+                                    } else {
+                                        loc = new java.io.File(Props.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent() + System.getProperty("file.separator") + "LazyMan.jar";
+                                    }
+                                    Runtime.getRuntime().exec("java -jar " + loc);
+                                    System.exit(0);
+                                }
+                            }
+                            MessageBox.show("Could not authentically update. Please manually update", version, build);
+                        }
+                    } else {
+                        updateMI.setVisible(false);
+                    }
                 }
             }
         } catch (UnknownHostException uhe) {
             MessageBox.show("You are either offline or BitBucket is down to check for updates.", "Error", 2);
+        } catch (IOException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
