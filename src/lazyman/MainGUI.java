@@ -931,7 +931,7 @@ public final class MainGUI extends javax.swing.JFrame {
         if (MLBGameTable.getModel().getValueAt(0, 0).equals("None")) {
             return;
         }
-
+        
         leagues[jTabbedPane1.getSelectedIndex()].setSelectedGame(MLBGameTable.getSelectedRow());
         getAvailableStreams(leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame());
         setFeed(MLBGameTable.getSelectedRow(), 'a');
@@ -1361,7 +1361,7 @@ public final class MainGUI extends javax.swing.JFrame {
 
             String d = Time.toLocalTZ(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "America/Los_Angeles", "yyyy-MM-dd", "yyyy-MM-dd");
 
-            boolean e = Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getTime(), "UTC", "H:mm"), 40) && checkID(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedID(feedCB.getSelectedIndex()));
+            boolean hasid = checkID(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedID(feedCB.getSelectedIndex())), e = ((leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getGameState().contains("In Progress") || leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getGameState().equals("Final")) && hasid) || Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getTime(), "UTC", "H:mm"), 40) && hasid;
 
             playBtn.setEnabled(e);
 
@@ -1588,7 +1588,7 @@ public final class MainGUI extends javax.swing.JFrame {
                                 System.exit(0);
                             }
                         }
-                        MessageBox.show("Could not authentically update. Please manually update", version, build);
+                        MessageBox.show("Could not automatically update. Please manually update.", "Could not automatically update", 2);
                     }
                 } else {
                     version = Web.getContent("https://raw.githubusercontent.com/StevensNJD4/LazyMan/master/VERSIONBETA").replace(" BETA", "").trim();
@@ -1616,7 +1616,7 @@ public final class MainGUI extends javax.swing.JFrame {
                                     System.exit(0);
                                 }
                             }
-                            MessageBox.show("Could not authentically update. Please manually update", version, build);
+                            MessageBox.show("Could not automatically update. Please manually update.", "Could not automatically update", 2);
                         }
                     } else {
                         updateMI.setVisible(false);
