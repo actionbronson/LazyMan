@@ -1,6 +1,13 @@
 #!/bin/ksh
 
-TARGET=plugin.video.lazyman.nhl.tv.zip 
 ZIP=/usr/bin/zip
-rm $TARGET
-$ZIP -r $TARGET plugin.video.lazyman.nhl.tv/
+
+function create {
+  TARGET=$1.zip
+#TARGET=plugin.video.lazyman.nhl.tv.zip 
+  rm $1.zip
+  $ZIP -r $1.zip $1
+}
+
+create plugin.video.lazyman.nhl.tv
+create repository.lazyman

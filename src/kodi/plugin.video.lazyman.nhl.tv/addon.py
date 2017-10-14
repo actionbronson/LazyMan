@@ -1,22 +1,14 @@
-import xbmcaddon
-import xbmcgui
-import xbmcplugin
-import xbmc
+import xbmcaddon, xbmcgui, xbmcplugin, xbmc
 import sys
 import os
-import calendar
-import datetime
-import time
+import calendar, datetime, time
 import utils
 import ConfigParser
 import urllib, json
 import socket
 from datetime import datetime
-
-from game import Game,GameBuilder
 from urlparse import parse_qsl
-
-import game
+from game import *
 
 addonUrl = sys.argv[0]
 addonHandle = int(sys.argv[1])
@@ -30,7 +22,7 @@ config = ConfigParser.ConfigParser()
 config.read(iniFilePath)
 
 def games(date,provider): 
-  remaining = game.GameBuilder.nhlTvRemaining if provider == "NHL.tv" else game.GameBuilder.mlbTvRemaining
+  remaining = GameBuilder.nhlTvRemaining if provider == "NHL.tv" else GameBuilder.mlbTvRemaining
   return GameBuilder.fromDate(config,date,remaining,provider)
 
 def listyears(provider):
@@ -113,16 +105,19 @@ def listfeeds(game,date,provider):
 
 def playgame(date,feedId,provider):
   def adjustQuality(masterUrl):
-    bestQuality = "720p 60fps"
+    _720p60fps = "720p 60fps"
     qualityUrlDict = {
       "360p": "1200K/1200_complete.m3u8",
       "540p": "2500K/2500_complete.m3u8",
       "720p": "3500K/3500_complete.m3u8",
     }
-    if addon.getSetting("quality") == bestQuality: 
+    current = addon.getSetting("quality")
+    if current is None or current == _720p60fps or current == "": 
+      xbmc.log("Addon quality setting is at '{}', keeping the master url.".format(current), xbmc.LOGNOTICE)
       return masterUrl
     else:
-      m3u8Path = qualityUrlDict.get(addon.getSetting("quality"))
+      m3u8Path = qualityUrlDict.get(current, "3500K/3500_complete.m3u8")
+      xbmc.log("Quality adjusted to '{}', adjusting to {}.".format(current, m3u8Path), xbmc.LOGNOTICE)
       return masterUrl.rsplit('/',1)[0] + "/" + m3u8Path
 
   def xbmcPlayer(url,mediaAuth):
