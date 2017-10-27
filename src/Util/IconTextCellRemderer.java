@@ -20,7 +20,8 @@ public class IconTextCellRemderer extends DefaultTableCellRenderer {
         if (value != null) {
             try {
                 setIcon(new ImageIcon(getClass().getResource("/Logos/" + value.toString().replaceAll(" ", "").replaceAll("\\.", "").replaceAll("é", "e") + ".png")));
-                setBorder(BorderFactory.createEmptyBorder(0, 40, 0, 0));
+                setBorder(BorderFactory.createEmptyBorder(0, 25, 0, 0));
+                setHorizontalAlignment(LEFT);
             } catch (Exception ex) {
                 setHorizontalAlignment(CENTER);
                 setIcon(null);

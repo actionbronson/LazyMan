@@ -7,18 +7,15 @@ public class GameStream {
     private final ArrayList<ArrayList<String>> feeds = new ArrayList<>();
 
     public void addFeed(String name, String id, String tv) {
-        for (int i = 0; i < feeds.size(); i++) {
-            if (feeds.get(i).contains(name)) {
-                feeds.get(i).remove(1);
-                feeds.get(i).add(1, id);
-                return;
-            }
-        }
-        ArrayList<String> feed = new ArrayList<>();
+      ArrayList<String> feed = new ArrayList<>();
         feed.add(name);
         feed.add(id);
         feed.add(tv);
         feeds.add(feed);
+    }
+    
+    public int getNumOfStreams() {
+        return feeds.size();
     }
 
     public String getFeedName(int idx) {

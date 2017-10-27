@@ -68,13 +68,13 @@ public final class MainGUI extends javax.swing.JFrame {
         }
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             changePasswordMI.setVisible(false);
-        } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        } /*else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
             com.apple.eawt.Application application = com.apple.eawt.Application.getApplication();
             application.addPreferencesMenuItem();
             application.setEnabledPreferencesMenu(true);
             changePasswordMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.META_MASK));
             exitMI.setVisible(false);
-        }
+        }*/
         getSLLoc();
         setButtons();
         new newDay().start();
@@ -162,9 +162,6 @@ public final class MainGUI extends javax.swing.JFrame {
         guidesMI = new javax.swing.JMenuItem();
         AboutMI = new javax.swing.JMenuItem();
         updateMI = new javax.swing.JMenuItem();
-        jMenu4 = new javax.swing.JMenu();
-        ppMI = new javax.swing.JMenuItem();
-        bitcoinMI = new javax.swing.JMenuItem();
 
         consolePM.setLabel("popupMenu1");
 
@@ -175,7 +172,6 @@ public final class MainGUI extends javax.swing.JFrame {
         setResizable(false);
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Console"));
-        jPanel1.setForeground(new java.awt.Color(0, 0, 0));
         jPanel1.setMaximumSize(new java.awt.Dimension(32, 145));
 
         consoleTA.setEditable(false);
@@ -191,8 +187,8 @@ public final class MainGUI extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 568, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(jScrollPane3)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -320,7 +316,7 @@ public final class MainGUI extends javax.swing.JFrame {
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(NHLPrevDayBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(NHLDateTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 6, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -502,7 +498,9 @@ public final class MainGUI extends javax.swing.JFrame {
                 jPanel4.setLayout(jPanel4Layout);
                 jPanel4Layout.setHorizontalGroup(
                     jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CDNCB, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(CDNCB, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
                 );
                 jPanel4Layout.setVerticalGroup(
                     jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -648,29 +646,6 @@ public final class MainGUI extends javax.swing.JFrame {
 
                 jMenuBar1.add(jMenu3);
 
-                jMenu4.setMnemonic(KeyEvent.VK_D);
-                jMenu4.setText("Donate");
-
-                ppMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-                ppMI.setText("PayPal");
-                ppMI.addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        ppMIActionPerformed(evt);
-                    }
-                });
-                jMenu4.add(ppMI);
-
-                bitcoinMI.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-                bitcoinMI.setText("Bitcoin");
-                bitcoinMI.addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        bitcoinMIActionPerformed(evt);
-                    }
-                });
-                jMenu4.add(bitcoinMI);
-
-                jMenuBar1.add(jMenu4);
-
                 setJMenuBar(jMenuBar1);
 
                 javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -681,40 +656,37 @@ public final class MainGUI extends javax.swing.JFrame {
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(maximizeConsoleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(135, 135, 135))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addGap(1, 1, 1)
                                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(33, 33, 33)))
-                                .addComponent(playBtn)
-                                .addGap(18, 18, 18)
-                                .addComponent(saveStreamCB)
-                                .addGap(30, 30, 30))))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(playBtn)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(saveStreamCB))
+                                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addContainerGap())))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 555, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(refreshBtn)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addContainerGap())
                 );
                 layout.setVerticalGroup(
                     layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 377, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(50, 50, 50)
-                                .addComponent(refreshBtn)))
+                                .addGap(18, 18, 18)
+                                .addComponent(refreshBtn))
+                            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -722,14 +694,14 @@ public final class MainGUI extends javax.swing.JFrame {
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(playBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(saveStreamCB))
-                                .addGap(18, 18, 18)))
+                                .addGap(33, 33, 33)))
                         .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -852,14 +824,6 @@ public final class MainGUI extends javax.swing.JFrame {
         OpenURL.open("https://www.reddit.com/r/LazyMan/wiki/index");
     }//GEN-LAST:event_guidesMIActionPerformed
 
-    private void ppMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ppMIActionPerformed
-        OpenURL.open("https://www.donation-tracker.de/donate/stevensnjd4");
-    }//GEN-LAST:event_ppMIActionPerformed
-
-    private void bitcoinMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bitcoinMIActionPerformed
-        OpenURL.open("https://blockchain.info/address/1QHhn9wFZAPtuGaZQpYwHEUu5xrboN3ayi");
-    }//GEN-LAST:event_bitcoinMIActionPerformed
-
     private void updateMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateMIActionPerformed
         OpenURL.open("https://www.reddit.com/r/LazyMan/wiki/downloads");
     }//GEN-LAST:event_updateMIActionPerformed
@@ -931,7 +895,7 @@ public final class MainGUI extends javax.swing.JFrame {
         if (MLBGameTable.getModel().getValueAt(0, 0).equals("None")) {
             return;
         }
-        
+
         leagues[jTabbedPane1.getSelectedIndex()].setSelectedGame(MLBGameTable.getSelectedRow());
         getAvailableStreams(leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame());
         setFeed(MLBGameTable.getSelectedRow(), 'a');
@@ -1030,7 +994,6 @@ public final class MainGUI extends javax.swing.JFrame {
     private javax.swing.JTable NHLGameTable;
     private javax.swing.JButton NHLNextDayBtn;
     private javax.swing.JButton NHLPrevDayBtn;
-    private javax.swing.JMenuItem bitcoinMI;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.ButtonGroup buttonGroup3;
@@ -1045,7 +1008,6 @@ public final class MainGUI extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
@@ -1063,7 +1025,6 @@ public final class MainGUI extends javax.swing.JFrame {
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton maximizeConsoleButton;
     private javax.swing.JButton playBtn;
-    private javax.swing.JMenuItem ppMI;
     private javax.swing.JMenuItem preferencesMI;
     private javax.swing.JComboBox<String> qualityCB;
     private javax.swing.JButton refreshBtn;
@@ -1177,13 +1138,17 @@ public final class MainGUI extends javax.swing.JFrame {
         for (int i = 0; i < leagues[lg].getGames().length; i++) {
             if ((leagues[lg].getGames()[i].getAwayTeam()).equals(team)) {
                 if (leagues[lg].getGames()[i].getGameState().contains("Pre") || leagues[lg].getGames()[i].getGameState().contains("In Progress") || leagues[lg].getGames()[i].getGameState().contains("Final")) {
-                    return i + "a";
+                   if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[i].contains("AWAY"))
+                           return i + "a";
+                   return i + "n";
                 }
                 return "-1n";
             }
             if (leagues[lg].getGames()[i].getHomeTeam().equals(team)) {
                 if (leagues[lg].getGames()[i].getGameState().contains("Pre") || leagues[lg].getGames()[i].getGameState().contains("In Progress") || leagues[lg].getGames()[i].getGameState().contains("Final")) {
-                    return i + "h";
+                    if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[i].contains("HOME"))
+                        return i + "h";
+                    return i + "n";
                 }
                 return "-1n";
             }
@@ -1235,7 +1200,10 @@ public final class MainGUI extends javax.swing.JFrame {
                 if ("1".equals(Props.getPreferFrench()) && leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].contains("FRENCH")) {
                     feedCB.setSelectedIndex(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedIndex("FRENCH"));
                 } else if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].contains("AWAY")) {
-                    feedCB.setSelectedIndex(1);
+                    try {
+                        feedCB.setSelectedIndex(1);
+                    } catch (Exception e) {
+                    }
                 } else {
                     feedCB.setSelectedIndex(0);
                 }
@@ -1244,7 +1212,10 @@ public final class MainGUI extends javax.swing.JFrame {
                 if ("1".equals(Props.getPreferFrench()) && leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].contains("FRENCH")) {
                     feedCB.setSelectedIndex(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedIndex("FRENCH"));
                 } else {
-                    feedCB.setSelectedIndex(0);
+                    try {
+                        feedCB.setSelectedIndex(0);
+                    } catch (Exception e) {
+                    }
                 }
         }
     }
@@ -1329,7 +1300,7 @@ public final class MainGUI extends javax.swing.JFrame {
         }
 
         try {
-            Collections.addAll(leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs(), Web.getContent("http://nhl.zipstreams.net/static/" + file + ".txt").replace("akc", "").replace("l3c", "").split("\n"));
+            Collections.addAll(leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs(), Web.getContent("http://nhl.freegamez.gq/static/" + file + ".txt").replace("akc", "").replace("l3c", "").split("\n"));
         } catch (UnknownHostException uhe) {
             MessageBox.show("The server may be down.", "Error", 2);
         }
@@ -1356,12 +1327,18 @@ public final class MainGUI extends javax.swing.JFrame {
             }
             return;
         }
+        int idx = leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame();
+        if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getNumOfFeeds() < 1) {
+            playBtn.setEnabled(false);
+            return;
+        }
         if (leagues[jTabbedPane1.getSelectedIndex()].getStreamlinkSwitch() < 1) {
-            int idx = leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame();
-
             String d = Time.toLocalTZ(leagues[jTabbedPane1.getSelectedIndex()].getDate(), "America/Los_Angeles", "yyyy-MM-dd", "yyyy-MM-dd");
+            boolean e = (leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getGameState().contains("In Progress") || leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getGameState().equals("Final")) || Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getTime(), "UTC", "H:mm"), 40);
 
-            boolean hasid = checkID(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedID(feedCB.getSelectedIndex())), e = ((leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getGameState().contains("In Progress") || leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getGameState().equals("Final")) && hasid) || Time.isXMinBeforeGame(d + " " + Time.toLocalTZ(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getTime(), "UTC", "H:mm"), 40) && hasid;
+            if (e) {
+                e = e && checkID(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getFeedID(feedCB.getSelectedIndex()));
+            }
 
             playBtn.setEnabled(e);
 
