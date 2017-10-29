@@ -9,7 +9,8 @@ import socket
 from datetime import datetime
 from urlparse import parse_qsl
 from game import *
-import player
+from highlights import *
+#import player
 
 addonUrl = sys.argv[0]
 addonHandle = int(sys.argv[1])
@@ -26,6 +27,31 @@ def games(date,provider):
   remaining = GameBuilder.nhlTvRemaining if provider == "NHL.tv" else GameBuilder.mlbTvRemaining
   return GameBuilder.fromDate(config,date,remaining,provider)
 
+def listgrouphighlights(provider,group):
+  items = []
+  for hg in filter(lambda x: x.title == group, get_highlights(config,provider)):
+    for h in hg.highlights:
+      label = "{} ({})".format(h.blurb,h.duration)
+      listItem = xbmcgui.ListItem(label = label)
+      listItem.setInfo( type="Video", infoLabels={ "Title": label } )
+      #xbmc.log("Highlight URL [%s]" % (h.playbackUrl), xbmc.LOGNOTICE)
+      url = '{0}?action=playhighlight&url={1}'.format(addonUrl,h.playbackUrl)
+      items.append((url, listItem, True))
+
+  ok = xbmcplugin.addDirectoryItems(addonHandle, items, len(items)) 
+  xbmcplugin.endOfDirectory(addonHandle)
+
+def listhighlights(provider):
+  items = []
+  for hg in get_highlights(config,provider):
+    listItem = xbmcgui.ListItem(label = str(hg.title))
+    listItem.setInfo( type="Video", infoLabels={ "Title": str(hg.title) } )
+    url = '{0}?action=listgrouphighlights&group={1}&provider={2}'.format(addonUrl,hg.title,provider)
+    items.append((url, listItem, True))
+
+  ok = xbmcplugin.addDirectoryItems(addonHandle, items, len(items)) 
+  xbmcplugin.endOfDirectory(addonHandle)
+
 def listyears(provider):
   items = []
   for y in utils.years(provider):
@@ -36,6 +62,10 @@ def listyears(provider):
 
   ok = xbmcplugin.addDirectoryItems(addonHandle, items, len(items)) 
   xbmcplugin.endOfDirectory(addonHandle)
+
+def highlights(provider):
+  items = []
+
 
 def listmonths(year,provider):
   items = []
@@ -71,7 +101,7 @@ def listproviders():
   ok = xbmcplugin.addDirectoryItems(addonHandle, items, len(items)) 
   xbmcplugin.endOfDirectory(addonHandle)
 
-def listgames(date,provider,previous = False):
+def listgames(date,provider,previous = False,highlights = False):
   items = []
   dategames = games(date,provider) 
   for g in dategames: 
@@ -83,6 +113,12 @@ def listgames(date,provider,previous = False):
   if len(items) == 0:
     xbmcgui.Dialog().ok(addonName, "No games scheduled today")
     
+  if highlights:
+    listItem = xbmcgui.ListItem(label = "Highlights")
+    listItem.setInfo( type="Video", infoLabels={ "Title": "Highlights" } )
+    url = '{0}?action=listhighlights&provider={1}'.format(addonUrl,provider)
+    items.append((url, listItem, True))
+
   if previous:
     listItem = xbmcgui.ListItem(label = "Previous")
     listItem.setInfo( type="Video", infoLabels={ "Title": "Previous" } )
@@ -104,6 +140,14 @@ def listfeeds(game,date,provider):
   ok = xbmcplugin.addDirectoryItems(addonHandle, items, len(items)) 
   xbmcplugin.endOfDirectory(addonHandle)
 
+def playhighlight(url):
+  xbmc.log("XBMC trying to play URL [%s]" % (url), xbmc.LOGNOTICE)
+  mediaAuth = utils.salt()
+  if utils.head(url,dict(mediaAuth=mediaAuth)):
+    completeUrl = url + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth))
+    xbmc.Player().play(completeUrl)
+
+
 def playgame(date,feedId,provider):
   def adjustQuality(masterUrl):
     _720p60fps = "720p 60fps"
@@ -124,8 +168,8 @@ def playgame(date,feedId,provider):
   def xbmcPlayer(url,mediaAuth):
     xbmc.log("XBMC trying to play URL [%s]" % (url), xbmc.LOGNOTICE)
     completeUrl = url + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth))
-    #xbmc.Player().play(adjustQuality(url) + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth)))
-    player.LazyManPlayer().play(adjustQuality(url) + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth)))
+    xbmc.Player().play(adjustQuality(url) + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth)))
+    #player.LazyManPlayer().play(adjustQuality(url) + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth)))
 
   cdn = 'akc' if addon.getSetting("cdn") == "Akamai" else 'l3c'
 
@@ -165,6 +209,12 @@ def router(paramstring):
       playgame(params['date'],params['feedId'],params['provider'])
     elif params['action'] == 'listyears':
       listyears(params['provider'])
+    elif params['action'] == 'listhighlights':
+      listhighlights(params['provider'])
+    elif params['action'] == 'listgrouphighlights':
+      listgrouphighlights(params['provider'],params['group'])
+    elif params['action'] == 'playhighlight':
+      playhighlight(params['url'])
     elif params['action'] == 'listmonths':
       listmonths(params['year'],params['provider'])
     elif params['action'] == 'listdays':
@@ -172,7 +222,7 @@ def router(paramstring):
     elif params['action'] == 'listgames':
       listgames("%d-%02d-%02d" % (int(params['year']),int(params['month']),int(params['day'])),params['provider'])
     elif params['action'] == 'listtodaysgames':
-      listgames(utils.today().strftime("%Y-%m-%d"),params['provider'],True)
+      listgames(utils.today().strftime("%Y-%m-%d"),params['provider'],True,True)
   else:
     listproviders()
 
