@@ -100,7 +100,7 @@ public final class MainGUI extends javax.swing.JFrame {
                     l.setHostsFileEdited(eh.editHosts(url));
                 }
             } else {
-                l.setHostsFileEdited(eh.editHosts(url));
+                l.setHostsFileEdited(eh.modifyHosts(url));
             }
         } else {
             l.setHostsFileEdited(true);

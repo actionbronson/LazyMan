@@ -19,7 +19,7 @@ import java.util.Scanner;
 public class EditHosts {
 
     private String ip = getIP();
-    
+
     private boolean wrongIP = false, ipNotFound = false;
 
     public boolean hostsFileEdited(String url) {
@@ -167,7 +167,7 @@ public class EditHosts {
         FileReader fr = null;
         BufferedReader br = null;
         FileWriter fw = null;
-        boolean modified = false;
+        boolean modified = false, edited = false;
         try {
             fr = new FileReader(new File(System.getenv("WINDIR") + "\\system32\\drivers\\etc\\hosts"));
             String s;
@@ -175,7 +175,12 @@ public class EditHosts {
             br = new BufferedReader(fr);
             while ((s = br.readLine()) != null) {
                 if (s.contains(url)) {
-                    s = ip + " " + url;
+                    if (!edited) {
+                        s = ip + " " + url;
+                        edited = true;
+                    } else {
+                        continue;
+                    }
                 }
                 totalStr.append(s).append("\r\n");
             }
@@ -289,7 +294,8 @@ public class EditHosts {
     private String getIP() {
         try {
             return InetAddress.getByName(new URL("http://nhl.freegamez.gq").getHost()).getHostAddress();
-        } catch (UnknownHostException ex) {ex.printStackTrace();
+        } catch (UnknownHostException ex) {
+            ex.printStackTrace();
             MessageBox.show("It seems the server is down or blocked by a firewall.", "Error", 2);
             ipNotFound = true;
         } catch (MalformedURLException ex) {
