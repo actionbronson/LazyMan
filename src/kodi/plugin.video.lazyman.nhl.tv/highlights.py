@@ -1,9 +1,14 @@
 import urllib, json
 import xbmc
+from ConfigParser import NoOptionError
 
 def get_highlights(config,provider): 
-  response = urllib.urlopen(config.get(provider,"HighlightsUrl"))
-  data = json.loads(response.read())
+  data = None
+  try:
+    response = urllib.urlopen(config.get(provider,"HighlightsUrl"))
+    data = json.loads(response.read())
+  except NoOptionError:
+    return []
   highlights = []
   for t in data['topics']:
     title = t['title']
