@@ -9,6 +9,7 @@ import socket
 from datetime import datetime
 from urlparse import parse_qsl
 from game import *
+import player
 
 addonUrl = sys.argv[0]
 addonHandle = int(sys.argv[1])
@@ -123,7 +124,8 @@ def playgame(date,feedId,provider):
   def xbmcPlayer(url,mediaAuth):
     xbmc.log("XBMC trying to play URL [%s]" % (url), xbmc.LOGNOTICE)
     completeUrl = url + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth))
-    xbmc.Player().play(adjustQuality(url) + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth)))
+    #xbmc.Player().play(adjustQuality(url) + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth)))
+    player.LazyManPlayer().play(adjustQuality(url) + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth)))
 
   cdn = 'akc' if addon.getSetting("cdn") == "Akamai" else 'l3c'
 
