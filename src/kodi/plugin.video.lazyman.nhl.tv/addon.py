@@ -31,7 +31,7 @@ def listgrouphighlights(provider,group):
   items = []
   for hg in filter(lambda x: x.title == group, get_highlights(config,provider)):
     for h in hg.highlights:
-      label = "{} ({})".format(h.blurb,h.duration)
+      label = "{0} ({1})".format(h.blurb,h.duration)
       listItem = xbmcgui.ListItem(label = label)
       listItem.setInfo( type="Video", infoLabels={ "Title": label } )
       #xbmc.log("Highlight URL [%s]" % (h.playbackUrl), xbmc.LOGNOTICE)
@@ -158,11 +158,10 @@ def playgame(date,feedId,provider):
     }
     current = addon.getSetting("quality")
     if current is None or current == _720p60fps or current == "": 
-      xbmc.log("Addon quality setting is at '{}', keeping the master url.".format(current), xbmc.LOGNOTICE)
       return masterUrl
     else:
       m3u8Path = qualityUrlDict.get(current, "3500K/3500_complete.m3u8")
-      xbmc.log("Quality adjusted to '{}', adjusting to {}.".format(current, m3u8Path), xbmc.LOGNOTICE)
+      xbmc.log("Quality adjusted to '{0}', adjusting to {1}.".format(current, m3u8Path), xbmc.LOGNOTICE)
       return masterUrl.rsplit('/',1)[0] + "/" + m3u8Path
 
   def xbmcPlayer(url,mediaAuth):
