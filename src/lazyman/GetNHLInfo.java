@@ -14,7 +14,7 @@ public class GetNHLInfo {
     public static Game[] getGames(String date) {
         try {
             JsonObject t = new JsonParser().parse(Web.getContent("https://statsapi.web.nhl.com/api/v1/schedule?startDate=" + date + "&endDate=" + date
-                    + "&expand=schedule.teams,schedule.linescore,schedule.broadcasts.all,schedule.ticket,schedule.game.content.media.epg"))
+                    + "&expand=schedule.teams,schedule.linescore,schedule.game.content.media.epg"))
                     .getAsJsonObject();
 
             if (t.get("totalItems").getAsInt() < 1) {
@@ -43,6 +43,12 @@ public class GetNHLInfo {
                 g1.setHomeTeam(jo.getAsJsonObject().getAsJsonObject("teams").getAsJsonObject("home").getAsJsonObject("team").get("abbreviation").getAsString());
 
                 g1.setGameState(jo.getAsJsonObject().getAsJsonObject("status").get("detailedState").getAsString());
+                
+                try {
+                    g1.setActualStart(jo.getAsJsonObject().getAsJsonObject("linescore").getAsJsonArray("periods").get(0).getAsJsonObject().get("startTime").getAsString().replace("T", " ").replace("Z", ""));
+                } catch (Exception e) {
+                    g1.setActualStart("");
+                }
 
                 if (g1.getGameState().contains("In Progress")) {
                     String period = jo.getAsJsonObject().getAsJsonObject("linescore").get("currentPeriodOrdinal").getAsString();

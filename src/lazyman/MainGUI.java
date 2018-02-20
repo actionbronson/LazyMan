@@ -68,7 +68,8 @@ public final class MainGUI extends javax.swing.JFrame {
         }
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             changePasswordMI.setVisible(false);
-        } /*else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        }
+        /*else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
             com.apple.eawt.Application application = com.apple.eawt.Application.getApplication();
             application.addPreferencesMenuItem();
             application.setEnabledPreferencesMenu(true);
@@ -116,9 +117,6 @@ public final class MainGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buttonGroup1 = new javax.swing.ButtonGroup();
-        buttonGroup2 = new javax.swing.ButtonGroup();
-        buttonGroup3 = new javax.swing.ButtonGroup();
         consolePM = new javax.swing.JPopupMenu();
         jSeparator2 = new javax.swing.JSeparator();
         jPanel1 = new javax.swing.JPanel();
@@ -150,6 +148,7 @@ public final class MainGUI extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         feedCB = new javax.swing.JComboBox<>();
         refreshBtn = new javax.swing.JButton();
+        restartCB = new javax.swing.JCheckBox();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         changePasswordMI = new javax.swing.JMenuItem();
@@ -187,12 +186,15 @@ public final class MainGUI extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane3)
+                .addContainerGap()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         maximizeConsoleButton.setIcon(new javax.swing.ImageIcon(MainGUI.class.getResource("/Icons/fullscreen.png")));
@@ -560,6 +562,13 @@ public final class MainGUI extends javax.swing.JFrame {
                     }
                 });
 
+                restartCB.setText("Restart");
+                restartCB.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        restartCBActionPerformed(evt);
+                    }
+                });
+
                 jMenu1.setMnemonic(KeyEvent.VK_F);
                 jMenu1.setText("File");
 
@@ -653,40 +662,40 @@ public final class MainGUI extends javax.swing.JFrame {
                 layout.setHorizontalGroup(
                     layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(maximizeConsoleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(1, 1, 1)
-                                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(playBtn)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(saveStreamCB))
-                                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addContainerGap())))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 555, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(refreshBtn)
-                        .addContainerGap())
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(maximizeConsoleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(1, 1, 1)
+                                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addComponent(playBtn)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(saveStreamCB)
+                                                .addComponent(restartCB)))
+                                        .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(refreshBtn)))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
                 layout.setVerticalGroup(
                     layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
-                                .addComponent(refreshBtn))
-                            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(20, 20, 20)
+                                .addComponent(refreshBtn)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -694,14 +703,15 @@ public final class MainGUI extends javax.swing.JFrame {
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(playBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(saveStreamCB))
-                                .addGap(33, 33, 33)))
+                                .addGap(3, 3, 3)
+                                .addComponent(restartCB)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -751,6 +761,11 @@ public final class MainGUI extends javax.swing.JFrame {
         }
 
         leagues[jTabbedPane1.getSelectedIndex()].getGwi().setUrl(getMediaID(), leagues[jTabbedPane1.getSelectedIndex()].getName());
+
+        if (leagues[jTabbedPane1.getSelectedIndex()].getGwi().getUrl().endsWith("n/a")) {
+            MessageBox.show("The stream has expired. Ask StevensNJD4 to make it available.", "Not Available", 0);
+            return;
+        }
 
         if (playBtn.getText().equals("Stop Recording")) {
             leagues[jTabbedPane1.getSelectedIndex()].setStreamlinkSwitch(-1);
@@ -982,6 +997,10 @@ public final class MainGUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_NHLGameTableKeyReleased
 
+    private void restartCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restartCBActionPerformed
+        streamlink.restart = restartCB.isSelected();
+    }//GEN-LAST:event_restartCBActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem AboutMI;
@@ -994,9 +1013,6 @@ public final class MainGUI extends javax.swing.JFrame {
     private javax.swing.JTable NHLGameTable;
     private javax.swing.JButton NHLNextDayBtn;
     private javax.swing.JButton NHLPrevDayBtn;
-    private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.ButtonGroup buttonGroup2;
-    private javax.swing.ButtonGroup buttonGroup3;
     private javax.swing.JMenuItem changePasswordMI;
     private javax.swing.JPopupMenu consolePM;
     private javax.swing.JTextPane consoleTA;
@@ -1028,6 +1044,7 @@ public final class MainGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem preferencesMI;
     private javax.swing.JComboBox<String> qualityCB;
     private javax.swing.JButton refreshBtn;
+    private javax.swing.JCheckBox restartCB;
     private javax.swing.JCheckBox saveStreamCB;
     private javax.swing.JMenuItem updateMI;
     // End of variables declaration//GEN-END:variables
@@ -1091,7 +1108,7 @@ public final class MainGUI extends javax.swing.JFrame {
 
                         for (Game g1 : leagues[lg].getGames()) {
                             if (g1.getTimeRemaining().equalsIgnoreCase("n/a")) {
-                                time = Time.toLocalTZ(leagues[lg].getDate() + " " + g1.getTime(), "UTC", "yyyy-MM-dd H:mm");
+                                time = Time.toLocalTZ(g1.getDate() + " " + g1.getTime(), "UTC", "yyyy-MM-dd H:mm");
                             } else {
                                 time = g1.getTimeRemaining();
                             }
@@ -1138,16 +1155,18 @@ public final class MainGUI extends javax.swing.JFrame {
         for (int i = 0; i < leagues[lg].getGames().length; i++) {
             if ((leagues[lg].getGames()[i].getAwayTeam()).equals(team)) {
                 if (leagues[lg].getGames()[i].getGameState().contains("Pre") || leagues[lg].getGames()[i].getGameState().contains("In Progress") || leagues[lg].getGames()[i].getGameState().contains("Final")) {
-                   if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[i].contains("AWAY"))
-                           return i + "a";
-                   return i + "n";
+                    if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[i].contains("AWAY")) {
+                        return i + "a";
+                    }
+                    return i + "n";
                 }
                 return "-1n";
             }
             if (leagues[lg].getGames()[i].getHomeTeam().equals(team)) {
                 if (leagues[lg].getGames()[i].getGameState().contains("Pre") || leagues[lg].getGames()[i].getGameState().contains("In Progress") || leagues[lg].getGames()[i].getGameState().contains("Final")) {
-                    if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[i].contains("HOME"))
+                    if (leagues[jTabbedPane1.getSelectedIndex()].getGames()[i].contains("HOME")) {
                         return i + "h";
+                    }
                     return i + "n";
                 }
                 return "-1n";
@@ -1300,7 +1319,12 @@ public final class MainGUI extends javax.swing.JFrame {
         }
 
         try {
-            Collections.addAll(leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs(), Web.getContent("http://nhl.freegamez.gq/static/" + file + ".txt").replace("akc", "").replace("l3c", "").split("\n"));
+            String url = "nhl.freegamez.gq";
+
+            if (!Props.getIP().equals("")) {
+                url = Props.getIP();
+            }
+            Collections.addAll(leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs(), Web.getContent("http://" + url + "/static/" + file + ".txt").replace("akc", "").replace("l3c", "").split("\n"));
         } catch (UnknownHostException uhe) {
             MessageBox.show("The server may be down.", "Error", 2);
         }
@@ -1355,6 +1379,8 @@ public final class MainGUI extends javax.swing.JFrame {
             saveStreamCB.setSelected(true);
         }
 
+        restartCB.setEnabled(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx].getGameState().contains("In Progress"));
+
         if (!leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs().isEmpty()) {
             leagues[jTabbedPane1.getSelectedIndex()].getPlaybackIDs().clear();
         }
@@ -1371,8 +1397,7 @@ public final class MainGUI extends javax.swing.JFrame {
                     if (!Props.getVlcloc().equals("")) {
                         Process l;
                         int idx = leagues[jTabbedPane1.getSelectedIndex()].getSelectedGame();
-                        l = streamlink.run(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx], leagues[jTabbedPane1.getSelectedIndex()].getGwi()
-                        );
+                        l = streamlink.run(leagues[jTabbedPane1.getSelectedIndex()].getGames()[idx], leagues[jTabbedPane1.getSelectedIndex()].getGwi());
 
                         if (l != null) {
                             SwingWorker<Void, Void> go = getSLOutput(l);
@@ -1601,7 +1626,7 @@ public final class MainGUI extends javax.swing.JFrame {
                 }
             }
         } catch (UnknownHostException uhe) {
-            MessageBox.show("You are either offline or BitBucket is down to check for updates.", "Error", 2);
+            MessageBox.show("You are either offline or GitHub is down to check for updates.", "Error", 2);
         } catch (IOException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }

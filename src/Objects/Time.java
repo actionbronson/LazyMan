@@ -250,6 +250,20 @@ public class Time {
         return (int) TimeUnit.MILLISECONDS.toMinutes(now.getTime() - d.getTime());
     }
     
+    public static long getSecondsPassed(String startTime) {
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd H:mm");
+        Date d = null, now = new Date();
+        try {
+            startTime = toLocalTZ(startTime, "UTC", "yyyy-MM-dd H:mm", "yyyy-MM-dd H:mm");
+            d = df.parse(startTime);
+        } catch (ParseException ex) {
+            ex.printStackTrace();
+            return -1;
+        }
+        
+        return TimeUnit.MILLISECONDS.toSeconds(now.getTime() - d.getTime());
+    }
+    
     public static boolean isPastGameTime(String startTime)  {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd H:mm");
         Date d = null, now = new Date();
@@ -265,5 +279,15 @@ public class Time {
         cal2.setTime(now);
         
         return cal2.after(cal);
+    }
+    
+    public static String getFormattedMinsPassed(String startTime) {
+        long passed = getSecondsPassed(startTime)+56;
+        int min = (int) (passed / 60);
+        passed -= min * 60;
+        int hr = min / 60;
+        min -= hr * 60;
+        
+        return "" + hr + ":" + min + ":" + passed;
     }
 }

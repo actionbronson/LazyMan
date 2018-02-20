@@ -3,7 +3,7 @@ package GameObj;
 
 
 public class Game extends GameStream {
-    private String home, away, time, date, gameState, timeRemaining, awayFull, homeFull;
+    private String home, away, time, date, gameState, timeRemaining, awayFull, homeFull, actualStart;
     private int id;
     
     public String getHomeTeam() {
@@ -93,6 +93,20 @@ public class Game extends GameStream {
     
     public void setDate(String date) {
         this.date = date;
+    }
+
+    /**
+     * @return the actualStart
+     */
+    public String getActualStart() {
+        return actualStart;
+    }
+
+    /**
+     * @param actualStart the actualStart to set
+     */
+    public void setActualStart(String actualStart) {
+        this.actualStart = actualStart;
     }
         
 }
