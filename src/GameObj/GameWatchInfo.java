@@ -12,7 +12,7 @@ public class GameWatchInfo {
     public GameWatchInfo(String cdn, String quality, String date, String mediaID) {
         this.cdn = cdn;
         this.quality = quality;
-        String m3u8URL = "nhl.freegamez.gq";
+        String m3u8URL = "nhl.freegamez.ga";
         try {
             if (!Props.getIP().equals(""))
                 m3u8URL = Props.getIP();
@@ -69,7 +69,7 @@ public class GameWatchInfo {
     }
     
     public void setUrl(String mediaID, String league) {
-        String m3u8URL = "nhl.freegamez.gq";
+        String m3u8URL = "nhl.freegamez.ga";
             if (!Props.getIP().equals(""))
                 m3u8URL = Props.getIP();
         if (league.equals("NHL")) {

@@ -1319,7 +1319,7 @@ public final class MainGUI extends javax.swing.JFrame {
         }
 
         try {
-            String url = "nhl.freegamez.gq";
+            String url = "nhl.freegamez.ga";
 
             if (!Props.getIP().equals("")) {
                 url = Props.getIP();
