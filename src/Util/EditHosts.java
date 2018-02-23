@@ -295,7 +295,7 @@ public class EditHosts {
 
     private String getIP() {
         try {
-            return InetAddress.getByName(new URL("http://nhl.freegamez.gq").getHost()).getHostAddress();
+            return InetAddress.getByName(new URL("http://nhl.freegamez.ga").getHost()).getHostAddress();
         } catch (UnknownHostException ex) {
             ex.printStackTrace();
             MessageBox.show("It seems the server is down or blocked by a firewall.", "Error", 2);
