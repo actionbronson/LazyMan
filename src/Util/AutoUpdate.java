@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.net.ssl.HttpsURLConnection;
@@ -46,7 +47,7 @@ public class AutoUpdate {
         }
 
         try (InputStream stream = con.getInputStream()) {
-            Files.copy(stream, new File(loc).toPath());
+            Files.copy(stream, new File(loc).toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
             ex.printStackTrace();
             return false;

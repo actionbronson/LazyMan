@@ -2,6 +2,7 @@ package GameObj;
 
 import Objects.Time;
 import Objects.Web;
+import Util.Props;
 import java.net.UnknownHostException;
 
 public class GameWatchInfo {
@@ -11,8 +12,11 @@ public class GameWatchInfo {
     public GameWatchInfo(String cdn, String quality, String date, String mediaID) {
         this.cdn = cdn;
         this.quality = quality;
+        String m3u8URL = "nhl.freegamez.ga";
         try {
-            url = Web.getContent("http://zipstreams.net/m3u8/" + date + "/" + mediaID + cdn);
+            if (!Props.getIP().equals(""))
+                m3u8URL = Props.getIP();
+            url = Web.getContent("http://" + m3u8URL + "/m3u8/" + date + "/" + mediaID + cdn);
         } catch (UnknownHostException ex) {
             ex.printStackTrace();
         }
@@ -54,44 +58,54 @@ public class GameWatchInfo {
      * @return the url
      */
     public String getUrl() {
+        if (url.contains("exp=")) {
+            int expLoc = url.indexOf("exp=");
+            long expires = Integer.parseInt(url.substring(expLoc+4, url.indexOf("~", expLoc)));
+            
+            if (expires < System.currentTimeMillis()/1000)
+                return "n/a";
+        }
         return url;
     }
     
     public void setUrl(String mediaID, String league) {
+        String m3u8URL = "nhl.freegamez.ga";
+            if (!Props.getIP().equals(""))
+                m3u8URL = Props.getIP();
         if (league.equals("NHL")) {
             if (!Time.isToday(date)) {
-                if (Web.testURL("http://nhl.zipstreams.net/m3u8/" + date + "/" + mediaID + "akc")) {
+                if (Web.testURL("http://" + m3u8URL + "/m3u8/" + date + "/" + mediaID + "akc")) {
                     try {
-                        url = Web.getContent("http://nhl.zipstreams.net/m3u8/" + date + "/" + mediaID + "akc");
+                        url = Web.getContent("http://" + m3u8URL + "/m3u8/" + date + "/" + mediaID + "akc");
                     } catch (UnknownHostException ex) {
                         ex.printStackTrace();
                     }
                 } else {
                     try {
-                        url = Web.getContent("http://nhl.zipstreams.net/m3u8/" + date + "/" + mediaID);
+                        url = Web.getContent("http://" + m3u8URL + "/m3u8/" + date + "/" + mediaID);
                     } catch (UnknownHostException ex) {
                         ex.printStackTrace();
                     }
                 }
             } else {
                 try {
-                    url = Web.getContent("http://nhl.zipstreams.net/m3u8/" + date + "/" + mediaID + cdn);
+                    url = Web.getContent("http://" + m3u8URL + "/m3u8/" + date + "/" + mediaID + cdn);
                 } catch (UnknownHostException ex) {
                     ex.printStackTrace();
                 }
             }
         } else {
             if (!Time.isToday(date)) {
-                if (Web.testURL("http://nhl.zipstreams.net/mlb/m3u8/" + date + "/" + mediaID + "akc")) {
+                if (Web.testURL("http://" + m3u8URL + "/mlb/m3u8/" + date + "/" + mediaID + "akc")) {
                     try {
-                        url = Web.getContent("http://nhl.zipstreams.net/mlb/m3u8/" + date + "/" + mediaID + "akc");
+                        url = Web.getContent("http://" + m3u8URL + "/mlb/m3u8/" + date + "/" + mediaID + "akc");
                     } catch (UnknownHostException ex) {
                         ex.printStackTrace();
                     }
                 }
             } else {
                 try {
-                    url = Web.getContent("http://nhl.zipstreams.net/mlb/m3u8/" + date + "/" + mediaID + cdn);
+                    url = Web.getContent("http://" + m3u8URL + "/mlb/m3u8/" + date + "/" + mediaID + cdn);
                 } catch (UnknownHostException ex) {
                     ex.printStackTrace();
                 }

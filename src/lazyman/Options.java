@@ -149,7 +149,6 @@ public class Options extends javax.swing.JDialog {
         jLabel2.setText("Location to save streams:");
 
         saveStreamLocTB.setEditable(false);
-        saveStreamLocTB.setBackground(new java.awt.Color(255, 255, 255));
         saveStreamLocTB.setText("jTextField1");
         saveStreamLocTB.setDisabledTextColor(new java.awt.Color(0, 0, 0));
         saveStreamLocTB.setEnabled(false);
@@ -252,7 +251,7 @@ public class Options extends javax.swing.JDialog {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 209, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(MLBCB, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
@@ -289,7 +288,6 @@ public class Options extends javax.swing.JDialog {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(saveStreamLocTB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(5, 5, 5)))
-                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(refreshSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -439,7 +437,7 @@ public class Options extends javax.swing.JDialog {
         nhl.put("San Jose Sharks", "SJS");
         nhl.put("Los Angeles Kings", "LAK");
         nhl.put("Minnesota Wild", "MIN");
-        nhl.put("St Louis Blues", "STL");
+        nhl.put("St. Louis Blues", "STL");
         nhl.put("Pittsburgh Penguins", "PIT");
         nhl.put("Buffalo Sabres", "BUF");
         nhl.put("Montreal Canadiens", "MTL");

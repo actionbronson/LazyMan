@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class GetMLBInfo {
     public static Game[] getGames(String date) {
         try {
-            JsonObject t = new JsonParser().parse(Web.getContent("https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=" + date + "&hydrate=team,linescore,flags,liveLookin,person,stats,probablePitcher,game(content(summary,media(epg)),tickets)&language=en"))
+            JsonObject t = new JsonParser().parse(Web.getContent("https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=" + date + "&hydrate=team,linescore,game(content(summary,media(epg)))&language=en"))
                     .getAsJsonObject();
 
             if (t.get("totalItems").getAsInt() < 1) {

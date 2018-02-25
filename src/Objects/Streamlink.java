@@ -14,7 +14,7 @@ import java.util.List;
 public class Streamlink {
 
     private String location = "";
-    public boolean record = false;
+    public boolean record = false, restart = false;
 
     /**
      * @return the location
@@ -42,7 +42,7 @@ public class Streamlink {
         String ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
         ProcessBuilder pb;
 
-        List<String> args = new ArrayList<>(Arrays.asList(new String[]{location, getURLFormat(gwi.getUrl(), gwi.getQuality().equals("best")), gwi.getQuality(), "--http-header", "\"User-Agent=" + ua + "\"", "--http-cookie=mediaAuth=" + Encryption.getSaltString()}));
+        List<String> args = new ArrayList<>(Arrays.asList(new String[]{location, getURLFormat(gwi.getUrl(), gwi.getQuality().equals("best")), gwi.getQuality(), "--http-header", "\"User-Agent=" + ua + "\"", "--http-cookie=mediaAuth=" + Encryption.getSaltString(), "--hls-segment-threads=4"}));
 
         if (record) {
             String saveLoc = Props.getSaveStreamLoc() + File.separator + gwi.getDate();
@@ -73,7 +73,7 @@ public class Streamlink {
                 if (System.getProperty("os.name").contains("Win")) {
                     arg = arg.replace("\"", "\\\"");
                 }
-            if (!Props.getVlcloc().toLowerCase().contains("mpv")) {
+            if (!Props.getVlcloc().toLowerCase().contains("mpv") || restart) {
                 
                 args.add(Props.getVlcloc() + arg);
                    
@@ -83,7 +83,9 @@ public class Streamlink {
                 args.add("hls");
             }
         }
-
+        if (restart) {
+            args.add("--hls-start-offset=-" + Time.getFormattedMinsPassed(g.getActualStart()));
+        }
         if (!Props.getStreamLinkArgs().equals("")) {
             args.addAll(Arrays.asList(Props.getStreamlinkArgsArray()));
         }

@@ -20,8 +20,8 @@ public class LazyMan {
                 com.apple.eawt.Application application = com.apple.eawt.Application.getApplication();
                 java.awt.Image image = Toolkit.getDefaultToolkit().getImage(LazyMan.class.getResource("/Logos/LM.png"));
                 application.setDockIconImage(image);
-                application.setEnabledAboutMenu(false);
-                application.setEnabledPreferencesMenu(false);
+               // application.setEnabledAboutMenu(false);
+                //application.setEnabledPreferencesMenu(false);
             }
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             MainGUI m = new MainGUI();
