@@ -175,9 +175,9 @@ def playgame(date,feedId,provider):
   def getContentUrl(withCdn = True):
     actualCdn = cdn if withCdn else ""
     if provider == "NHL.tv":
-      return "http://freegamez.gq/m3u8/%s/%s%s" % (date,feedId,actualCdn)
+      return "http://freegamez.ga/m3u8/%s/%s%s" % (date,feedId,actualCdn)
     else:
-      return "http://freegamez.gq/mlb/m3u8/%s/%s%s" % (date,feedId,actualCdn)
+      return "http://freegamez.ga/mlb/m3u8/%s/%s%s" % (date,feedId,actualCdn)
 
   contentUrl = getContentUrl()
   xbmc.log("Trying to resolve from content-url: '" + contentUrl  + "'", xbmc.LOGNOTICE)
