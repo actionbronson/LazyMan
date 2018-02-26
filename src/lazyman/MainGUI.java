@@ -58,7 +58,7 @@ public final class MainGUI extends javax.swing.JFrame {
         leagues[0].setKeyURL("mf.svc.nhl.com");
         leagues[1].setTable(MLBGameTable);
         leagues[1].setDateTF(MLBDateTF);
-        leagues[1].setKeyURL("mlb-ws-mf.media.mlb.com");
+        leagues[1].setKeyURL("playback.svcs.mlb.com");
         checkUpdate();
         for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
             leagues[i].setName(jTabbedPane1.getTitleAt(i));
@@ -743,8 +743,14 @@ public final class MainGUI extends javax.swing.JFrame {
         if (!playBtn.isEnabled()) {
             return;
         }
-
-        checkHosts(leagues[jTabbedPane1.getSelectedIndex()].getKeyURL(), leagues[jTabbedPane1.getSelectedIndex()]);
+        
+        if (leagues[jTabbedPane1.getSelectedIndex()].getName().equals("MLB")) {
+            if (Integer.parseInt(leagues[jTabbedPane1.getSelectedIndex()].getDate().substring(0, 4)) > 2017)
+                checkHosts(leagues[jTabbedPane1.getSelectedIndex()].getKeyURL(), leagues[jTabbedPane1.getSelectedIndex()]);
+            else
+                checkHosts("mlb-ws-mf.media.mlb.com", leagues[jTabbedPane1.getSelectedIndex()]);
+        } else
+            checkHosts(leagues[jTabbedPane1.getSelectedIndex()].getKeyURL(), leagues[jTabbedPane1.getSelectedIndex()]);
 
         if (!leagues[jTabbedPane1.getSelectedIndex()].isHostsFileEdited()) {
             MessageBox.show("You are not completely set up! Your hosts file needs to be edited for " + leagues[jTabbedPane1.getSelectedIndex()].getName() + ".", "Hosts file not edited", 2);
