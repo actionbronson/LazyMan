@@ -231,14 +231,15 @@ def sanityCheck():
     providers = config.get("LazyMan","Providers").split(",")
     for service in providers:
       xbmc.executebuiltin("Notification(LazyMan,Verifying " + service + ")")
-      hostName = config.get(service,"Host")
+      hostNames = config.get(service,"Host").split(",")
       lazymanServer = config.get(service,"LazyManIP")
-      resolved = socket.gethostbyname(hostName)
-      if resolved != lazymanServer:
-        xbmcgui.Dialog().ok(addonName, "'" + hostName + "' doesn't resolve to the Lazyman server.", "Update your hosts file to point to " + lazymanServer)
-        xbmc.executebuiltin("XBMC.Container.Update(path,replace)")
-      else:
-        addon.setSetting("sanityChecked",str(calendar.timegm(time.gmtime())))
+      for h in hostNames:
+        resolved = socket.gethostbyname(h)
+        if resolved != lazymanServer:
+          xbmcgui.Dialog().ok(addonName, "'{}' doesn't resolve to the Lazyman server.".format(h), "Update your hosts file to point to " + lazymanServer)
+          xbmc.executebuiltin("XBMC.Container.Update(path,replace)")
+        else:
+          addon.setSetting("sanityChecked",str(calendar.timegm(time.gmtime())))
 
 if __name__ == '__main__':
   sanityCheck()
