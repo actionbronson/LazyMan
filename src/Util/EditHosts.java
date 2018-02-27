@@ -233,8 +233,16 @@ public class EditHosts {
             for (League l : lg) {
                 if (System.getProperty("os.name").toLowerCase().contains("mac")) {
                     m = new ProcessBuilder("/bin/sh", "-c", p + "sed -E -i '' '/" + l.getKeyURL() + "/d' /etc/hosts").start();
+                    if (l.getName().equals("MLB")) {
+                        m.waitFor();
+                        m = new ProcessBuilder("/bin/sh", "-c", p + "sed -E -i '' '/mlb-ws-mf.media.mlb.com/d' /etc/hosts").start();
+                    }
                 } else {
                     m = new ProcessBuilder("/bin/sh", "-c", p + "sed -i '/" + l.getKeyURL() + "/d' /etc/hosts").start();
+                    if (l.getName().equals("MLB")) {
+                        m.waitFor();
+                        m = new ProcessBuilder("/bin/sh", "-c", p + "sed -i '/mlb-ws-mf.media.mlb.com/d' /etc/hosts").start();
+                    }
                 }
                 m.waitFor();
             }
@@ -261,7 +269,7 @@ public class EditHosts {
             while (sc.hasNextLine()) {
                 s = sc.nextLine();
                 for (League l : lg) {
-                    if (s.contains(l.getKeyURL())) {
+                    if (s.contains(l.getKeyURL()) || s.contains("mlb-ws-mf.media.mlb.com")) {
                         continue outer;
                     }
                 }
