@@ -232,7 +232,7 @@ def sanityCheck():
     for service in providers:
       xbmc.executebuiltin("Notification(LazyMan,Verifying " + service + ")")
       hostNames = config.get(service,"Host").split(",")
-      lazymanServer = config.get(service,"LazyManIP")
+      lazymanServer = socket.gethostbyname("powersports.ml")
       for h in hostNames:
         resolved = socket.gethostbyname(h)
         if resolved != lazymanServer:
