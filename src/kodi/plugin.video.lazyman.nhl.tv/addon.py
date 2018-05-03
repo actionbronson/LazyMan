@@ -34,7 +34,6 @@ def listgrouphighlights(provider,group):
       label = "{0} ({1})".format(h.blurb,h.duration)
       listItem = xbmcgui.ListItem(label = label)
       listItem.setInfo( type="Video", infoLabels={ "Title": label } )
-      #xbmc.log("Highlight URL [%s]" % (h.playbackUrl), xbmc.LOGNOTICE)
       url = '{0}?action=playhighlight&url={1}'.format(addonUrl,h.playbackUrl)
       items.append((url, listItem, True))
 
@@ -134,7 +133,7 @@ def listfeeds(game,date,provider):
     label = str(f)
     listItem = xbmcgui.ListItem(label = label)
     listItem.setInfo( type="Video", infoLabels={ "Title": label } )
-    url = '{0}?action=play&date={1}&feedId={2}&provider={3}'.format(addonUrl,date,f.mediaId,provider)
+    url = '{0}?action=play&date={1}&feedId={2}&provider={3}&state={4}'.format(addonUrl,date,f.mediaId,provider,game.gameState)
     items.append((url, listItem, False))
 
   ok = xbmcplugin.addDirectoryItems(addonHandle, items, len(items)) 
@@ -148,19 +147,19 @@ def playhighlight(url):
     xbmc.Player().play(completeUrl)
 
 
-def playgame(date,feedId,provider):
+def playgame(date,feedId,provider,state):
   def adjustQuality(masterUrl):
     _720p60fps = "720p 60fps"
     qualityUrlDict = {
-      "360p": "1200K/1200_complete.m3u8",
-      "540p": "2500K/2500_complete.m3u8",
-      "720p": "3500K/3500_complete.m3u8",
+      "360p": "1200K/1200_{0}.m3u8",
+      "540p": "2500K/2500_{0}.m3u8",
+      "720p": "3500K/3500_{0}.m3u8"
     }
     current = addon.getSetting("quality")
     if current is None or current == _720p60fps or current == "": 
       return masterUrl
     else:
-      m3u8Path = qualityUrlDict.get(current, "3500K/3500_complete.m3u8")
+      m3u8Path = qualityUrlDict.get(current, "3500K/3500_{0}.m3u8").format('slide' if state == 'In Progress' else 'complete-trimmed')
       xbmc.log("Quality adjusted to '{0}', adjusting to {1}.".format(current, m3u8Path), xbmc.LOGNOTICE)
       return masterUrl.rsplit('/',1)[0] + "/" + m3u8Path
 
@@ -205,7 +204,7 @@ def router(paramstring):
       gameDict = dict(map(lambda g: (g.id, g), dategames))
       listfeeds(gameDict[int(params['game'])], params['date'],params['provider'])
     elif params['action'] == 'play':
-      playgame(params['date'],params['feedId'],params['provider'])
+      playgame(params['date'],params['feedId'],params['provider'],params['state'])
     elif params['action'] == 'listyears':
       listyears(params['provider'])
     elif params['action'] == 'listhighlights':
