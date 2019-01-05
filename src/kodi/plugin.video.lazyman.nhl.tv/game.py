@@ -183,6 +183,6 @@ class GameBuilder:
       home = g["teams"]["home"]["team"]
       time = g["gameDate"][11:].replace("Z", "") 
       state = g["status"]["detailedState"]
-      return Game(g["gamePk"], away["abbreviation"], home["abbreviation"], "TBD" if time == "04:00:00" else time, state,away["name"],home["name"],remaining(state,g),FeedBuilder.fromContent(g["content"],config.get(provider,"Provider")))
+      return Game(g["gamePk"], away["abbreviation"], home["abbreviation"], time, state,away["name"],home["name"],remaining(state,g),FeedBuilder.fromContent(g["content"],config.get(provider,"Provider")))
     return map(asGame, games)
 
