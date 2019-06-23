@@ -189,11 +189,11 @@ def playgame(date,feedId,provider,state):
   playUrl = response.read().replace('l3c',cdn)
   xbmc.log("Play URL resolved to : '" + playUrl  + "'", xbmc.LOGNOTICE)
   mediaAuthSalt = utils.salt()
-  if utils.head(playUrl,dict(mediaAuth=mediaAuthSalt)):
+  if utils.get(playUrl,dict(mediaAuth=mediaAuthSalt)):
     xbmcPlayer(playUrl,mediaAuthSalt)
   else:
     otherCdn = 'akc' if cdn == 'l3c' else 'l3c' 
-    xbmc.log("URL [%s] failed on HEAD, switching CDN from %s to %s" % (playUrl,cdn,otherCdn), xbmc.LOGNOTICE)
+    xbmc.log("URL [%s] failed on GET, switching CDN from %s to %s" % (playUrl,cdn,otherCdn), xbmc.LOGNOTICE)
     xbmcPlayer(playUrl.replace(cdn,otherCdn), mediaAuthSalt)
 
 def router(paramstring):
