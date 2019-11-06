@@ -1,11 +1,11 @@
-import urllib, json
+import urllib.request, urllib.parse, urllib.error, json
 import xbmc
-from ConfigParser import NoOptionError
+from configparser import NoOptionError
 
 def get_highlights(config,provider): 
   data = None
   try:
-    response = urllib.urlopen(config.get(provider,"HighlightsUrl"))
+    response = urllib.request.urlopen(config.get(provider,"HighlightsUrl"))
     data = json.loads(response.read())
   except NoOptionError:
     return []
@@ -16,7 +16,7 @@ def get_highlights(config,provider):
     for h in t['list']:
       blurb = h['blurb']
       duration = h['duration']
-      playbacks = filter(lambda x: x['name'] == 'HTTP_CLOUD_WIRED_60', h['playbacks'])
+      playbacks = [x for x in h['playbacks'] if x['name'] == 'HTTP_CLOUD_WIRED_60']
       if (len(playbacks) > 0):
         xbmc.log("Creating highlight [%s (%s)] from %s" % (blurb,duration,playbacks[0]['url']), xbmc.LOGNOTICE)
         title_highlights.append(Highlight(blurb,duration,playbacks[0]['url']))

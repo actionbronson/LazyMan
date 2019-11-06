@@ -1,4 +1,4 @@
-import urllib, json
+import urllib.request, urllib.parse, urllib.error, json
 import xbmc
 
 class FeedBuilder:
@@ -146,7 +146,7 @@ class Game:
     return self._feeds
 
   def __repr__(self):
-    return "Game(%s vs. %s, %s, feeds: %s)" % (self.away,self.home,self.remaining,", ".join(map(lambda f: f.tvStation, self.feeds)))
+    return "Game(%s vs. %s, %s, feeds: %s)" % (self.away,self.home,self.remaining,", ".join([f.tvStation for f in self.feeds]))
  
 class GameBuilder:
 
@@ -172,8 +172,9 @@ class GameBuilder:
     
   @staticmethod
   def fromDate(config,date,remaining,provider):
-    xbmc.log("Fetching games from: '" + config.get(provider,"GameScheduleUrl") % (date,date) + "'", level=xbmc.LOGNOTICE)
-    response = urllib.urlopen(config.get(provider,"GameScheduleUrl") % (date,date))
+    u = config.get(provider,"GameScheduleUrl", raw=True) % (date,date)
+    xbmc.log("Fetching games from: '" + u + "'", level=xbmc.LOGNOTICE)
+    response = urllib.request.urlopen(u)
     data = json.loads(response.read())
     if data["totalItems"] <= 0 or len(data["dates"]) == 0:
       return []
@@ -184,5 +185,5 @@ class GameBuilder:
       time = g["gameDate"][11:].replace("Z", "") 
       state = g["status"]["detailedState"]
       return Game(g["gamePk"], away["abbreviation"], home["abbreviation"], time, state,away["name"],home["name"],remaining(state,g),FeedBuilder.fromContent(g["content"],config.get(provider,"Provider")))
-    return map(asGame, games)
+    return list(map(asGame, games))
 

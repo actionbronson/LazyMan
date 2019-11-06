@@ -3,11 +3,11 @@ import sys
 import os
 import calendar, datetime, time
 import utils
-import ConfigParser
-import urllib, json
+import urllib.request, urllib.parse, urllib.error, json
+import configparser
 import socket
 from datetime import datetime
-from urlparse import parse_qsl
+from urllib.parse import parse_qsl
 from game import *
 from highlights import *
 #import player
@@ -20,7 +20,7 @@ addonPath = addon.getAddonInfo('path')
 addonName = addon.getAddonInfo('name')
 sanityChecked = False
 iniFilePath = os.path.join(addonPath, 'resources', 'lazyman.ini')
-config = ConfigParser.ConfigParser()
+config = configparser.ConfigParser()
 config.read(iniFilePath)
 
 def games(date,provider): 
@@ -29,7 +29,7 @@ def games(date,provider):
 
 def listgrouphighlights(provider,group):
   items = []
-  for hg in filter(lambda x: x.title == group, get_highlights(config,provider)):
+  for hg in [x for x in get_highlights(config,provider) if x.title == group]:
     for h in hg.highlights:
       label = "{0} ({1})".format(h.blurb,h.duration)
       listItem = xbmcgui.ListItem(label = label)
@@ -129,7 +129,7 @@ def listgames(date,provider,previous = False,highlights = False):
 
 def listfeeds(game,date,provider):
   items = []
-  for f in filter(lambda f: f.viewable(), game.feeds):
+  for f in [f for f in game.feeds if f.viewable()]:
     label = str(f)
     listItem = xbmcgui.ListItem(label = label)
     listItem.setInfo( type="Video", infoLabels={ "Title": label } )
@@ -185,8 +185,8 @@ def playgame(date,feedId,provider,state):
     if not utils.head(contentUrl):
       xbmc.log("Cannot resolve content-url '" + contentUrl + "'", xbmc.LOGERROR)
       raise ValueError("Invalid content-url '" + contentUrl + "'") 
-  response = urllib.urlopen(contentUrl)
-  playUrl = response.read().replace('l3c',cdn)
+  response = urllib.request.urlopen(contentUrl)
+  playUrl = response.read().decode('utf-8').replace('l3c',cdn)
   xbmc.log("Play URL resolved to : '" + playUrl  + "'", xbmc.LOGNOTICE)
   mediaAuthSalt = utils.salt()
   if utils.get(playUrl,dict(mediaAuth=mediaAuthSalt)):
@@ -201,7 +201,7 @@ def router(paramstring):
   if params:
     if params['action'] == 'feeds':
       dategames = games(params['date'],params['provider'])
-      gameDict = dict(map(lambda g: (g.id, g), dategames))
+      gameDict = dict([(g.id, g) for g in dategames])
       listfeeds(gameDict[int(params['game'])], params['date'],params['provider'])
     elif params['action'] == 'play':
       playgame(params['date'],params['feedId'],params['provider'],params['state'])
@@ -226,7 +226,7 @@ def router(paramstring):
 
 def sanityCheck():
   since = addon.getSetting("sanityChecked")
-  if since == "" or calendar.timegm(time.gmtime()) - (3600*24) > long(since):
+  if since == "" or calendar.timegm(time.gmtime()) - (3600*24) > int(since):
     providers = config.get("LazyMan","Providers").split(",")
     for service in providers:
       xbmc.executebuiltin("Notification(LazyMan,Verifying " + service + ")")

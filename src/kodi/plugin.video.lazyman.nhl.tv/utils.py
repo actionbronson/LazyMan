@@ -27,20 +27,20 @@ def asCurrentTz(d,t):
 
 def years(provider): 
   start = 2017 if provider == "MLB.tv" else 2015
-  return xrange(start,today().year + 1)
+  return range(start,today().year + 1)
 
 def months(year): 
   if int(year) == today().year:
-    return map(lambda m: (calendar.month_name[m],m), xrange(1,today().month + 1))
+    return [(calendar.month_name[m],m) for m in range(1,today().month + 1)]
   else:
-    return map(lambda m: (calendar.month_name[m],m), xrange(1,13))
+    return [(calendar.month_name[m],m) for m in range(1,13)]
 
 def days(year,month): 
   if int(year) == today().year and int(month) == today().month:
-    return xrange(1,today().day)
+    return range(1,today().day)
   else:
     r = calendar.monthrange(int(year),int(month))
-    return xrange(1,max(r)+1)
+    return range(1,max(r)+1)
 
 def garble(salt = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"): return ''.join(random.sample(salt,len(salt)))
 
@@ -49,9 +49,9 @@ def salt():
   return ''.join([garbled[int(i * random.random()) % len(garbled)]  for i in range(0,241)])
 
 def head(url,cookies = dict()):
-  print "Checking (HEAD) url %s" % (url)
+  print(("Checking (HEAD) url %s" % (url)))
   return requests.request('HEAD',url,cookies = cookies).status_code < 400
 
 def get(url,cookies = dict()):
-  print "Checking (GET) url %s" % (url)
+  print(("Checking (GET) url %s" % (url)))
   return requests.request('GET',url,cookies = cookies).status_code < 400
