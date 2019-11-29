@@ -1,6 +1,9 @@
+import json
+import urllib.request
 from configparser import NoOptionError
-import urllib.request, json
+
 import xbmc
+
 
 def get_highlights(config, provider):
     data = None

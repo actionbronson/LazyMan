@@ -4,7 +4,7 @@
 		<setting label="Quality" type="labelenum" id="quality" values="540p|720p|720p60|master">
       <default>master</default>
     </setting>
-	</category>
+  </category>
   <category label="Network">
 		<setting label="CDN (Content Delivery Network)" type="labelenum" id="cdn" values="Akamai|Level 3"/>
 	</category>

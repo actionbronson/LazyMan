@@ -1,14 +1,23 @@
-import os, sys, calendar, time
-import urllib.request, configparser, socket
+import calendar
+import configparser
+import os
+import socket
+import sys
+import time
+import urllib.request
 from urllib.parse import parse_qsl
-import xbmc, xbmcgui, xbmcplugin, xbmcaddon
-from game import GameBuilder
-from highlights import get_highlights
-import utils
+
+import xbmc
+import xbmcaddon
+import xbmcgui
+import xbmcplugin
+from resources.lib import utils
+from resources.lib.game import GameBuilder
+from resources.lib.highlights import get_highlights
 
 addonUrl = sys.argv[0]
 addonHandle = int(sys.argv[1])
-addonId = "video.lazyman.nhl.tv"
+addonId = "plugin.video.lazyman.nhl.tv"
 addon = xbmcaddon.Addon(id=addonId)
 addonPath = addon.getAddonInfo('path')
 addonName = addon.getAddonInfo('name')

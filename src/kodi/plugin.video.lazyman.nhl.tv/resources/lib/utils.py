@@ -1,9 +1,12 @@
 import calendar
-import time
 import random
+import time
 from datetime import datetime, timedelta
-from pytz import timezone, reference
+
 import requests
+
+from pytz import reference, timezone
+
 
 losangeles = timezone('America/Los_Angeles')
 localtz = reference.LocalTimezone()
@@ -24,7 +27,7 @@ def asCurrentTz(d, t):
 
 def years(provider):
     start = 2017 if provider == "MLB.tv" else 2015
-    return range(start, today().year + 1)
+    return list(range(start, today().year + 1))
 
 def months(year):
     if int(year) == today().year:
@@ -34,10 +37,10 @@ def months(year):
 
 def days(year, month):
     if int(year) == today().year and int(month) == today().month:
-        return range(1, today().day)
+        return list(range(1, today().day))
     else:
         r = calendar.monthrange(int(year), int(month))
-        return range(1, max(r)+1)
+        return list(range(1, max(r)+1))
 
 def garble(salt="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"):
     return ''.join(random.sample(salt, len(salt)))
