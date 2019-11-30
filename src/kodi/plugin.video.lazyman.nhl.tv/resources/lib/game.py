@@ -176,7 +176,7 @@ class GameBuilder:
     @staticmethod
     def fromDate(config, date, remaining, provider):
         u = config.get(provider, "GameScheduleUrl", raw=True) % (date, date)
-        xbmc.log("Fetching games from: '" + u + "'", level=xbmc.LOGNOTICE)
+        xbmc.log("Fetching games from: '" + u + "'", xbmc.LOGNOTICE)
         response = urllib.request.urlopen(u)
         data = json.loads(response.read())
         if data["totalItems"] <= 0 or len(data["dates"]) == 0:

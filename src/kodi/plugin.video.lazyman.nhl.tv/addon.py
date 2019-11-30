@@ -126,7 +126,7 @@ def listgames(date, provider, previous=False, highlights=False):
         items.append((url, listItem, True))
     ok = xbmcplugin.addDirectoryItems(addonHandle, items, len(items))
     xbmcplugin.endOfDirectory(addonHandle)
-    xbmc.log("Added %d games" % len(items))
+    xbmc.log("Added %d games" % len(items), xbmc.LOGNOTICE)
 
 def listfeeds(game, date, provider):
     items = []
@@ -149,17 +149,19 @@ def playhighlight(url):
 
 def playgame(date, feedId, provider, state):
     def adjustQuality(masterUrl):
-        _720p60fps = "master"
         qualityUrlDict = {
             "540p":   "2500K/2500_{0}.m3u8",
             "720p":   "3500K/3500_{0}.m3u8",
             "720p60": "5600K/5600_{0}.m3u8"
         }
         current = addon.getSetting("quality")
-        if current is None or current == _720p60fps or current == "":
+        if current is None or current == "":
             return masterUrl
         else:
-            m3u8Path = qualityUrlDict.get(current, "3500K/3500_{0}.m3u8").format('slide' if state == 'In Progress' else 'complete-trimmed')
+            m3u8Path = qualityUrlDict.get(current, "3500K/3500_{0}.m3u8").format(
+                'slide' if state == 'In Progress' or addon.getSetting("force") == 'true'
+                else 'complete-trimmed'
+            )
             xbmc.log("Quality adjusted to '{0}', adjusting to {1}.".format(current, m3u8Path), xbmc.LOGNOTICE)
             return masterUrl.rsplit('/', 1)[0] + "/" + m3u8Path
 
@@ -167,9 +169,6 @@ def playgame(date, feedId, provider, state):
         xbmc.log("XBMC trying to play URL [%s]" % (url), xbmc.LOGNOTICE)
         completeUrl = url + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth))
         xbmc.Player().play(adjustQuality(url) + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth)))
-        #player.LazyManPlayer().play(adjustQuality(url) + ("|Cookie=mediaAuth%%3D%%22%s%%22" % (mediaAuth)))
-
-    cdn = 'akc' if addon.getSetting("cdn") == "Akamai" else 'l3c'
 
     def getContentUrl(withCdn=True):
         actualCdn = cdn if withCdn else ""
@@ -178,6 +177,7 @@ def playgame(date, feedId, provider, state):
         else:
             return "http://freegamez.ga/mlb/m3u8/%s/%s%s" % (date, feedId, actualCdn)
 
+    cdn = 'akc' if addon.getSetting("cdn") == "Akamai" else 'l3c'
     contentUrl = getContentUrl()
     xbmc.log("Trying to resolve from content-url: '" + contentUrl    + "'", xbmc.LOGNOTICE)
     if not utils.head(contentUrl):
