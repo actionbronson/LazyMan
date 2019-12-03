@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="General">
+        <setting label="Video Quality" type="labelenum" id="quality" values="540p|720p|720p60|master" default="720p60"/>
+        <setting label="Content Delivery Network" type="labelenum" id="cdn" values="Akamai|Level 3" default="Akamai"/>
+    </category>
+</settings>
