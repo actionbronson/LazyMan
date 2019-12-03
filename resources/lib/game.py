@@ -1,6 +1,4 @@
-import json
 import requests
-from urllib.request import urlopen
 
 
 class FeedBuilder:
@@ -16,25 +14,23 @@ class FeedBuilder:
             mediaFeedType = item["mediaFeedType"].upper()
             if mediaFeedType == "HOME":
                 return Home(item["callLetters"], idProvider(item))
-            elif mediaFeedType == "NATIONAL":
+            if mediaFeedType == "NATIONAL":
                 return National(item["callLetters"], idProvider(item))
-            elif mediaFeedType == "AWAY":
+            if mediaFeedType == "AWAY":
                 return Away(item["callLetters"], idProvider(item))
-            elif mediaFeedType == "FRENCH":
+            if mediaFeedType == "FRENCH":
                 return French(item["callLetters"], idProvider(item))
-            elif mediaFeedType == "COMPOSITE":
+            if mediaFeedType == "COMPOSITE":
                 return Composite(item["callLetters"], idProvider(item))
-            elif mediaFeedType == "ISO":
+            if mediaFeedType == "ISO":
                 return Other(item["feedName"], item["callLetters"], idProvider(item))
-            else:
-                return NonViewable(item["callLetters"], idProvider(item))
+            return NonViewable(item["callLetters"], idProvider(item))
 
         if "media" in content:
             return [fromItem(item)
-                for stream in content["media"]["epg"] if stream["title"] == streamProvider
-                for item in stream["items"]]
-        else:
-            return []
+                    for stream in content["media"]["epg"] if stream["title"] == streamProvider
+                    for item in stream["items"]]
+        return []
 
 class Feed:
     _tvStation = None
@@ -52,12 +48,6 @@ class Feed:
     def mediaId(self):
         return self._mediaId
 
-class Home(Feed):
-    def __init__(self, tvStation, mediaId):
-        Feed.__init__(self, tvStation, mediaId)
-    def __repr__(self):
-        return "%s (Home)" % (self.tvStation)
-
 class NonViewable(Feed):
     def __init__(self, tvStation, mediaId):
         Feed.__init__(self, tvStation, mediaId)
@@ -65,6 +55,11 @@ class NonViewable(Feed):
         return "NonViewable"
     def viewable(self):
         return False
+
+class Home(Feed):
+    def __init__(self, tvStation, mediaId):
+        Feed.__init__(self, tvStation, mediaId)
+    def __repr__(self): return "%s (Home)" % (self.tvStation)
 
 class Away(Feed):
     def __init__(self, tvStation, mediaId):
@@ -78,13 +73,13 @@ class National(Feed):
 
 class French(Feed):
     def __init__(self, tvStation, mediaId):
-        Feed.__init__(self,tvStation, mediaId)
+        Feed.__init__(self, tvStation, mediaId)
     def __repr__(self): return "%s (French)" % (self.tvStation)
 
 class Composite(Feed):
     def __init__(self, tvStation, mediaId):
         Feed.__init__(self, tvStation, mediaId)
-    def __repr__(self): return "3-Way Camera (Composite)"
+    def __repr__(self): return "3-Way Camera"
 
 class Other(Feed):
     _feedName = None
@@ -104,8 +99,8 @@ class Game:
     _remaining = None
     _feeds = []
 
-    def __init__(self, id, away, home, time, gameState, awayFull, homeFull, remaining, feeds=[]):
-        self._id = id
+    def __init__(self, gid, away, home, time, gameState, awayFull, homeFull, remaining, feeds=[]):
+        self._id = gid
         self._away = away
         self._home = home
         self._time = time
@@ -154,23 +149,21 @@ class GameBuilder:
     def mlbTvRemaining(state, game):
         if "In Progress" in state:
             return game["linescore"]["currentInningOrdinal"] + " " + game["linescore"]["inningHalf"]
-        elif state == "Final":
+        if state == "Final":
             return "Final"
-        elif state == "Postponed":
+        if state == "Postponed":
             return "PPD"
-        else:
-            return "N/A"
+        return "N/A"
 
     @staticmethod
     def nhlTvRemaining(state, game):
         if "In Progress" in state:
             return game["linescore"]["currentPeriodOrdinal"] + " " + game["linescore"]["currentPeriodTimeRemaining"]
-        elif state == "Pre-Game":
+        if state == "Pre-Game":
             return "Pre Game"
-        elif state == "Final":
+        if state == "Final":
             return "Final"
-        else:
-            return "N/A"
+        return "N/A"
 
     @staticmethod
     def fromDate(config, date, remaining, provider):
@@ -187,5 +180,7 @@ class GameBuilder:
             home = g["teams"]["home"]["team"]
             time = g["gameDate"][11:].replace("Z", "")
             state = g["status"]["detailedState"]
-            return Game(g["gamePk"], away["abbreviation"], home["abbreviation"], time, state, away["name"], home["name"], remaining(state, g), FeedBuilder.fromContent(g["content"], config.get(provider, "Provider")))
+            return Game(g["gamePk"], away["abbreviation"], home["abbreviation"],
+                        time, state, away["name"], home["name"], remaining(state, g),
+                        FeedBuilder.fromContent(g["content"], config.get(provider, "Provider")))
         return list(map(asGame, games))

@@ -1,21 +1,24 @@
 import calendar
 import configparser
 import os
+import re
 import socket
 import sys
 import time
-import re
 from urllib.parse import parse_qsl
 
+import requests
+import requests_cache
+
+import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
-import requests
-import requests_cache
 from resources.lib import utils
-from resources.lib.utils import log
 from resources.lib.game import GameBuilder
 from resources.lib.highlights import get_highlights
+from resources.lib.utils import log
+
 
 addonUrl = sys.argv[0]
 addonHandle = int(sys.argv[1])
@@ -30,7 +33,6 @@ config.read(iniFilePath)
 
 cachePath = os.path.join(addonPath, 'resources', 'cache')
 requests_cache.install_cache(cachePath, backend='sqlite', expire_after=90)
-
 
 def create_listitem(label):
     return xbmcgui.ListItem(label=str(label), offscreen=True)
@@ -140,14 +142,14 @@ def listgames(date, provider, previous=False, highlights=False):
 def listfeeds(game, date, provider):
 
     def getfeedicon(feed):
-        feed = re.sub('\ \(Home\)|\ \(Away\)|\ \(National\)|\ \(French\)|\ \(Composite\)|\ Camera|\ 2|\+|\-', '', feed)
+        feed = p.sub('', feed)
         feed = re.sub('ATT.*', 'ATT', feed)
         feed = re.sub('MSG.*', 'MSG', feed)
-        feed = re.sub('TVAS2', 'TVAS', feed)
-        #log(feed)
         return os.path.join(addonPath, 'resources', 'icons', feed + '.png')
 
     items = []
+    p = re.compile('\ \(Home\)|\ \(Away\)|\ \(National\)+|\ \(French\)+'
+                   '|\ Camera|2|\+|\-')
     for f in [f for f in game.feeds if f.viewable()]:
         label = str(f)
         listItem = create_listitem(label)
@@ -164,8 +166,7 @@ def playhighlight(url):
     #log("Trying to play URL: %s" % url)
     mediaAuth = utils.salt()
     if utils.head(url, dict(mediaAuth=mediaAuth)):
-        completeUrl = "%s|Cookie=mediaAuth%%3D%%22%s%%22" % (url, mediaAuth)
-        xbmc.Player().play(completeUrl)
+        xbmc.Player().play("%s|Cookie=mediaAuth%%3D%%22%s%%22" % (url, mediaAuth))
 
 def playgame(date, feedId, provider, state):
 
@@ -178,23 +179,20 @@ def playgame(date, feedId, provider, state):
         current = addon.getSetting("quality")
         if current == 'master':
             return masterUrl
-        else:
-            m3u8Path = qualityUrlDict.get(current, "3500K/3500_{0}.m3u8").format(
-                'slide' if state in ('In Progress', 'Scheduled', 'Pre-Game')
-                else 'complete-trimmed')
-            #log("Quality selected: %s, adjusting to %s" % (current, m3u8Path))
-            return masterUrl.rsplit('/', 1)[0] + "/" + m3u8Path
+
+        m3u8Path = qualityUrlDict.get(current, "3500K/3500_{0}.m3u8").format(
+            'slide' if state in ('In Progress', 'Scheduled', 'Pre-Game')
+            else 'complete-trimmed')
+        #log("Quality selected: %s, adjusting to %s" % (current, m3u8Path))
+        return masterUrl.rsplit('/', 1)[0] + "/" + m3u8Path
 
     def xbmcPlayer(url, mediaAuth):
         #log("Trying to play URL: %s" % url)
-        completeUrl = "%s|Cookie=mediaAuth%%3D%%22%s%%22" % (url, mediaAuth)
         xbmc.Player().play(adjustQuality("%s|Cookie=mediaAuth%%3D%%22%s%%22" % (url, mediaAuth)))
 
     def getContentUrl():
-        if provider == "NHL.tv":
-            return "http://freegamez.ga/m3u8/%s/%s%s" % (date, feedId, cdn)
-        else:
-            return "http://freegamez.ga/mlb/m3u8/%s/%s%s" % (date, feedId, cdn)
+        url = "http://freegamez.ga/mlb/m3u8/%s/%s%s" % (date, feedId, cdn)
+        return url.replace('mlb/', '') if provider == "NHL.tv" else url
 
     cdn = 'akc' if addon.getSetting("cdn") == "Akamai" else 'l3c'
     contentUrl = getContentUrl()

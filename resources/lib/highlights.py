@@ -1,5 +1,6 @@
-import requests
 from configparser import NoOptionError
+
+import requests
 
 
 def get_highlights(config, provider):

@@ -1,11 +1,11 @@
 import calendar
 import random
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import requests
-import xbmc
 
+import xbmc
 from pytz import reference, timezone
 
 
@@ -13,7 +13,7 @@ losangeles = timezone('America/Los_Angeles')
 localtz = reference.LocalTimezone()
 
 def log(message):
-    level=xbmc.LOGNOTICE
+    level = xbmc.LOGNOTICE
     xbmc.log("LazyMan: {0}".format(message), level=level)
 
 def today(tz=losangeles):
@@ -37,27 +37,25 @@ def years(provider):
 def months(year):
     if int(year) == today().year:
         return [(calendar.month_name[m], m) for m in range(1, today().month + 1)]
-    else:
-        return [(calendar.month_name[m], m) for m in range(1, 13)]
+    return [(calendar.month_name[m], m) for m in range(1, 13)]
 
 def days(year, month):
     if int(year) == today().year and int(month) == today().month:
         return list(range(1, today().day))
-    else:
-        r = calendar.monthrange(int(year), int(month))
-        return list(range(1, max(r)+1))
+    r = calendar.monthrange(int(year), int(month))
+    return list(range(1, max(r)+1))
 
-def garble(salt="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"):
-    return ''.join(random.sample(salt, len(salt)))
+def garble(s="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"):
+    return ''.join(random.sample(s, len(s)))
 
 def salt():
     garbled = garble()
     return ''.join([garbled[int(i * random.random()) % len(garbled)] for i in range(0, 241)])
 
-def head(url, cookies=dict()):
+def head(url, cookies):
     ret = requests.head(url, cookies=cookies)
     return ret.status_code < 400
 
-def get(url, cookies=dict()):
+def get(url, cookies):
     ret = requests.get(url, cookies=cookies)
     return ret.status_code < 400
