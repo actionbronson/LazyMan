@@ -52,10 +52,10 @@ def salt():
     garbled = garble()
     return ''.join([garbled[int(i * random.random()) % len(garbled)] for i in range(0, 241)])
 
-def head(url, cookies):
+def head(url, cookies=None):
     ret = requests.head(url, cookies=cookies)
     return ret.status_code < 400
 
-def get(url, cookies):
+def get(url, cookies=None):
     ret = requests.get(url, cookies=cookies)
     return ret.status_code < 400
