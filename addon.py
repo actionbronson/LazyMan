@@ -114,7 +114,8 @@ def listgames(date, provider, previous=False, highlights=False):
     items = []
     dategames = games(date, provider)
     for g in dategames:
-        label = "%s vs. %s [%s]" % (g.awayFull, g.homeFull, g.remaining if g.remaining != "N/A" else utils.asCurrentTz(date, g.time))
+        label = "%s vs. %s [%s]" % (g.awayFull.encode('latin1').decode(), g.homeFull.encode('latin1').decode(),
+                                    g.remaining if g.remaining != "N/A" else utils.asCurrentTz(date, g.time))
         listItem = create_listitem(label)
         listItem.setInfo(type="video", infoLabels={"title": label, "mediatype": 'video'})
         url = '{0}?action=feeds&game={1}&date={2}&provider={3}'.format(addonUrl, g.id, date, provider)
