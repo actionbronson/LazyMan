@@ -180,6 +180,7 @@ def playgame(date, feedId, provider, state):
         if current == 'master':
             return masterUrl
 
+        #log("State: %s" % state)
         m3u8Path = qualityUrlDict.get(current, "3500K/3500_{0}.m3u8").format(
             'slide' if state in ('In Progress', 'Scheduled', 'Pre-Game')
             else 'complete-trimmed')
