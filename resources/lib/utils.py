@@ -43,7 +43,7 @@ def days(year, month):
     if int(year) == today().year and int(month) == today().month:
         return list(range(1, today().day))
     r = calendar.monthrange(int(year), int(month))
-    return list(range(1, max(r)+1))
+    return list(range(1, max(r) + 1))
 
 def garble(s="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"):
     return ''.join(random.sample(s, len(s)))

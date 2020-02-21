@@ -244,7 +244,7 @@ def router(paramstring):
 
 def sanityCheck():
     since = addon.getSetting("sanityChecked")
-    if since == "" or calendar.timegm(time.gmtime()) - (3600*24) > int(since):
+    if since == "" or calendar.timegm(time.gmtime()) - (3600 * 24) > int(since):
         providers = config.get("LazyMan", "Providers").split(",")
         icon = os.path.join(addonPath, 'resources', 'icon.png')
         for service in providers:
@@ -257,6 +257,7 @@ def sanityCheck():
                     xbmcgui.Dialog().ok(addonName, "%s doesn't resolve to the Lazyman server." % h, "Update your hosts file to point to %s" % lazymanServer)
                 else:
                     addon.setSetting("sanityChecked", str(calendar.timegm(time.gmtime())))
+
 
 if __name__ == '__main__':
     sanityCheck()

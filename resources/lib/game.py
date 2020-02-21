@@ -5,10 +5,9 @@ class FeedBuilder:
 
     @staticmethod
     def fromContent(content, streamProvider):
-        if streamProvider == "MLBTV":
-            idProvider = lambda item: item["id"]
-        else:
-            idProvider = lambda item: item["mediaPlaybackId"]
+
+        def idProvider(item):
+            return item[mediaIdx]
 
         def fromItem(item):
             mediaFeedType = item["mediaFeedType"].upper()
@@ -27,6 +26,7 @@ class FeedBuilder:
             return NonViewable(item["callLetters"], idProvider(item))
 
         if "media" in content:
+            mediaIdx = "id" if streamProvider == "MLBTV" else "mediaPlaybackId"
             return [fromItem(item)
                     for stream in content["media"]["epg"] if stream["title"] == streamProvider
                     for item in stream["items"]]
@@ -175,6 +175,7 @@ class GameBuilder:
         if data["totalItems"] <= 0 or len(data["dates"]) == 0:
             return []
         games = data["dates"][0]["games"]
+
         def asGame(g):
             away = g["teams"]["away"]["team"]
             home = g["teams"]["home"]["team"]
