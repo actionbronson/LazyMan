@@ -4,4 +4,7 @@
         <setting label="Video Quality" type="labelenum" id="quality" values="540p|720p|720p60|master" default="720p60"/>
         <setting label="Content Delivery Network" type="labelenum" id="cdn" values="Akamai|Level 3" default="Akamai"/>
     </category>
+    <category label="Advanced">
+        <setting label="Enable Logging" type="bool" id="debug" value="false"/>
+    </category>
 </settings>

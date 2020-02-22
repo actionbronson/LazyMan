@@ -14,6 +14,7 @@
     <description>An application that helps you watch free NHL and MLB games</description>
     <forum>https://www.reddit.com/r/LazyMan</forum>
     <source>https://github.com/actionbronson/LazyMan</source>
+    <platform>all</platform>
     <reuselanguageinvoker>true</reuselanguageinvoker>
     <license>GPL-2.0</license>
     <assets>

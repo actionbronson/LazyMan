@@ -6,13 +6,16 @@ from datetime import datetime
 import requests
 
 import xbmc
+import xbmcaddon
 from pytz import reference, timezone
 
 
 losangeles = timezone('America/Los_Angeles')
 localtz = reference.LocalTimezone()
 
-def log(message):
+def log(message, debug=False):
+    if debug is True and xbmcaddon.Addon().getSettingBool("debug") is not True:
+        return
     level = xbmc.LOGNOTICE
     xbmc.log("LazyMan: {0}".format(message), level=level)
 

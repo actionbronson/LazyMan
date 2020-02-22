@@ -1,6 +1,7 @@
 from configparser import NoOptionError
 
 import requests
+from .utils import log
 
 
 def get_highlights(config, provider):
@@ -19,8 +20,7 @@ def get_highlights(config, provider):
             duration = h['duration']
             playbacks = [x for x in h['playbacks'] if x['name'] == 'HTTP_CLOUD_WIRED_60']
             if len(playbacks) > 0:
-                #from .utils import log
-                #log("Creating highlight [%s (%s)] from %s" % (blurb, duration, playbacks[0]['url']))
+                log("Creating highlight [%s (%s)] from %s" % (blurb, duration, playbacks[0]['url']), debug=True)
                 title_highlights.append(Highlight(blurb, duration, playbacks[0]['url']))
         highlights.append(HighlightGroup(title, title_highlights))
     return highlights

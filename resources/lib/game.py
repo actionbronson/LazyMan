@@ -1,4 +1,5 @@
 import requests
+from .utils import log
 
 
 class FeedBuilder:
@@ -27,9 +28,13 @@ class FeedBuilder:
 
         if "media" in content:
             mediaIdx = "id" if streamProvider == "MLBTV" else "mediaPlaybackId"
-            return [fromItem(item)
-                    for stream in content["media"]["epg"] if stream["title"] == streamProvider
-                    for item in stream["items"]]
+            try:
+                return [fromItem(item)
+                        for stream in content["media"]["epg"] if stream["title"] == streamProvider
+                        for item in stream["items"]]
+            except KeyError:
+                pass
+
         return []
 
 class Feed:
@@ -168,10 +173,10 @@ class GameBuilder:
     @staticmethod
     def fromDate(config, date, remaining, provider):
         u = config.get(provider, "GameScheduleUrl", raw=True) % (date, date)
-        #from .utils import log
-        #log("Fetching games from: %s" % u)
         response = requests.get(u)
         data = response.json()
+        #log("Server Response: %s" % data, debug=True)
+
         if data["totalItems"] <= 0 or len(data["dates"]) == 0:
             return []
         games = data["dates"][0]["games"]

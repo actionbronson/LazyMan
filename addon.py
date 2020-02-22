@@ -34,6 +34,7 @@ config.read(iniFilePath)
 cachePath = os.path.join(addonPath, 'resources', 'cache')
 requests_cache.install_cache(cachePath, backend='sqlite', expire_after=90)
 
+
 def create_listitem(label):
     return xbmcgui.ListItem(label=str(label), offscreen=True)
 
@@ -113,15 +114,19 @@ def listproviders():
 def listgames(date, provider, previous=False, highlights=False):
     items = []
     dategames = games(date, provider)
+
+    if len(dategames) == 0:
+        xbmcgui.Dialog().ok(addonName, "No games scheduled today")
+        if not previous:
+            xbmc.executebuiltin('Action(back)')
+            return
+
     for g in dategames:
         label = "%s vs. %s [%s]" % (g.awayFull, g.homeFull, g.remaining if g.remaining != "N/A" else utils.asCurrentTz(date, g.time))
         listItem = create_listitem(label)
         listItem.setInfo(type="video", infoLabels={"title": label, "mediatype": 'video'})
         url = '{0}?action=feeds&game={1}&date={2}&provider={3}'.format(addonUrl, g.id, date, provider)
         items.append((url, listItem, True))
-
-    if len(items) == 0:
-        xbmcgui.Dialog().ok(addonName, "No games scheduled today")
 
     if highlights:
         listItem = create_listitem('Highlights')
@@ -137,19 +142,17 @@ def listgames(date, provider, previous=False, highlights=False):
 
     xbmcplugin.addDirectoryItems(addonHandle, items, len(items))
     xbmcplugin.endOfDirectory(addonHandle)
-    #log("Added %d games" % len(items))
+    log("Added %d games" % len(items), debug=True)
 
 def listfeeds(game, date, provider):
 
     def getfeedicon(feed):
         feed = p.sub('', feed)
-        feed = re.sub('ATT.*', 'ATT', feed)
-        feed = re.sub('MSG.*', 'MSG', feed)
+        log("Icon: %s" % feed, debug=True)
         return os.path.join(addonPath, 'resources', 'icons', feed + '.png')
 
     items = []
-    p = re.compile('\ \(Home\)|\ \(Away\)|\ \(National\)+|\ \(French\)+'
-                   '|\ Camera|2|\+|\-')
+    p = re.compile('\ \(Home\)|\ \(Away\)|\ \(National\)+|\ \(French\)+|\ Camera|2|\+|\-')
     for f in [f for f in game.feeds if f.viewable()]:
         label = str(f)
         listItem = create_listitem(label)
@@ -163,7 +166,7 @@ def listfeeds(game, date, provider):
     xbmcplugin.endOfDirectory(addonHandle)
 
 def playhighlight(url):
-    #log("Trying to play URL: %s" % url)
+    log("Trying to play URL: %s" % url, debug=True)
     mediaAuth = utils.salt()
     if utils.head(url, dict(mediaAuth=mediaAuth)):
         xbmc.Player().play("%s|Cookie=mediaAuth%%3D%%22%s%%22" % (url, mediaAuth))
@@ -180,15 +183,15 @@ def playgame(date, feedId, provider, state):
         if current == 'master':
             return masterUrl
 
-        #log("State: %s" % state)
+        log("State: %s" % state, debug=True)
         m3u8Path = qualityUrlDict.get(current, "3500K/3500_{0}.m3u8").format(
             'slide' if state in ('In Progress', 'Scheduled', 'Pre-Game')
             else 'complete-trimmed')
-        #log("Quality selected: %s, adjusting to %s" % (current, m3u8Path))
+        log("Quality selected: %s, adjusting to %s" % (current, m3u8Path), debug=True)
         return masterUrl.rsplit('/', 1)[0] + "/" + m3u8Path
 
     def xbmcPlayer(url, mediaAuth):
-        #log("Trying to play URL: %s" % url)
+        log("Trying to play URL: %s" % url, debug=True)
         xbmc.Player().play(adjustQuality("%s|Cookie=mediaAuth%%3D%%22%s%%22" % (url, mediaAuth)))
 
     def getContentUrl():
@@ -198,14 +201,14 @@ def playgame(date, feedId, provider, state):
     cdn = 'akc' if addon.getSetting("cdn") == "Akamai" else 'l3c'
     contentUrl = getContentUrl()
 
-    #log("Trying to resolve from content-url: %s" % contentUrl)
+    log("Trying to resolve from content-url: %s" % contentUrl, True)
     if not utils.head(contentUrl):
         log("Invalid content-url: %s" % contentUrl)
         xbmcgui.Dialog().ok(addonName, "Game not available yet")
         return
 
     playUrl = requests.get(contentUrl).text
-    #log("Play URL resolved to: %s" % playUrl)
+    log("Play URL resolved to: %s" % playUrl, debug=True)
     mediaAuthSalt = utils.salt()
 
     if not utils.head(playUrl, dict(mediaAuth=mediaAuthSalt)):
