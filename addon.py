@@ -2,10 +2,9 @@ import calendar
 import configparser
 import os
 import re
-import socket
 import sys
 import time
-from urllib.parse import parse_qsl
+from urllib.parse import parse_qsl, quote
 
 import requests
 import requests_cache
@@ -20,138 +19,117 @@ from resources.lib.highlights import get_highlights
 from resources.lib.utils import log
 
 
-addonUrl = sys.argv[0]
-addonHandle = int(sys.argv[1])
-addon = xbmcaddon.Addon()
-addonName = "LazyMan"
-addonId = "plugin.video.lazyman.nhl.tv"
-addonPath = addon.getAddonInfo('path')
+ADDONURL     = sys.argv[0]
+ADDONHANDLE  = int(sys.argv[1])
+ADDON        = xbmcaddon.Addon()
+ADDONNAME    = ADDON.getAddonInfo('name')
+ADDONPATH    = ADDON.getAddonInfo('path')
+ICON         = ADDON.getAddonInfo('icon')
+BASE_URL     = "freegamez.ga"
+USER_AGENT   = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.116 Safari/537.36"
 
-iniFilePath = os.path.join(addonPath, 'resources', 'lazyman.ini')
-config = configparser.ConfigParser()
-config.read(iniFilePath)
+CONFIG = configparser.ConfigParser()
+CONFIG.read(os.path.join(ADDONPATH, 'resources', 'lazyman.ini'))
 
-cachePath = os.path.join(addonPath, 'resources', 'cache')
-requests_cache.install_cache(cachePath, backend='sqlite', expire_after=90)
+CACHEPATH = os.path.join(ADDONPATH, 'resources', 'cache')
+requests_cache.install_cache(CACHEPATH, backend='sqlite', expire_after=90)
 
+items = []
 
 def create_listitem(label):
     return xbmcgui.ListItem(label=str(label), offscreen=True)
 
+def create_dir(list):
+    xbmcplugin.addDirectoryItems(ADDONHANDLE, list, len(list))
+    xbmcplugin.endOfDirectory(ADDONHANDLE, cacheToDisc=False)
+
 def games(date, provider):
-    remaining = GameBuilder.nhlTvRemaining if provider == "NHL.tv" else GameBuilder.mlbTvRemaining
-    return GameBuilder.fromDate(config, date, remaining, provider)
+    return GameBuilder.fromDate(CONFIG, date, GameBuilder.Remaining, provider)
 
 def listgrouphighlights(provider, group):
-    items = []
-    for hg in [x for x in get_highlights(config, provider) if x.title == group]:
+    for hg in [x for x in get_highlights(CONFIG, provider) if x.title == group]:
         for h in hg.highlights:
-            label = "{0} ({1})".format(h.blurb, h.duration)
+            label = f"{h.blurb} ({h.duration})"
             listItem = create_listitem(label)
-            listItem.setInfo(type="video", infoLabels={"title": label, "mediatype": 'video'})
-            url = '{0}?action=playhighlight&url={1}'.format(addonUrl, h.playbackUrl)
+            listItem.setInfo(type="video", infoLabels={"title": label, "plot": h.desc})
+            listItem.setArt({'thumb': h.thumb})
+            url = f"{ADDONURL}?action=playhighlight&url={h.playbackUrl}"
             items.append((url, listItem, True))
-
-    xbmcplugin.addDirectoryItems(addonHandle, items, len(items))
-    xbmcplugin.endOfDirectory(addonHandle)
+    xbmcplugin.setContent(ADDONHANDLE, 'videos')
+    create_dir(items)
 
 def listhighlights(provider):
-    items = []
-    for hg in get_highlights(config, provider):
+    for hg in get_highlights(CONFIG, provider):
         listItem = create_listitem(hg.title)
-        listItem.setInfo(type="video", infoLabels={"title": hg.title, "mediatype": 'video'})
-        url = '{0}?action=listgrouphighlights&group={1}&provider={2}'.format(addonUrl, hg.title, provider)
+        url = f"{ADDONURL}?action=listgrouphighlights&group={hg.title}&provider={provider}"
         items.append((url, listItem, True))
-
-    xbmcplugin.addDirectoryItems(addonHandle, items, len(items))
-    xbmcplugin.endOfDirectory(addonHandle)
+    create_dir(items)
 
 def listyears(provider):
-    items = []
     for y in utils.years(provider):
         listItem = create_listitem(y)
-        listItem.setInfo(type="video", infoLabels={"title": y, "mediatype": 'video'})
-        url = '{0}?action=listmonths&year={1}&provider={2}'.format(addonUrl, y, provider)
+        url = f"{ADDONURL}?action=listmonths&year={y}&provider={provider}"
         items.append((url, listItem, True))
-
-    xbmcplugin.addDirectoryItems(addonHandle, items, len(items))
-    xbmcplugin.endOfDirectory(addonHandle)
+    create_dir(items)
 
 def listmonths(year, provider):
-    items = []
     for (mn, m) in utils.months(year):
         listItem = create_listitem(mn)
-        listItem.setInfo(type="video", infoLabels={"title": mn, "mediatype": 'video'})
-        url = '{0}?action=listdays&year={1}&month={2}&provider={3}'.format(addonUrl, year, m, provider)
+        url = f"{ADDONURL}?action=listdays&year={year}&month={m}&provider={provider}"
         items.append((url, listItem, True))
-
-    xbmcplugin.addDirectoryItems(addonHandle, items, len(items))
-    xbmcplugin.endOfDirectory(addonHandle)
+    create_dir(items)
 
 def listdays(year, month, provider):
-    items = []
     for d in utils.days(year, month):
         listItem = create_listitem(d)
-        listItem.setInfo(type="video", infoLabels={"title": d, "mediatype": 'video'})
-        url = '{0}?action=listgames&year={1}&month={2}&day={3}&provider={4}'.format(addonUrl, year, month, d, provider)
+        url = f"{ADDONURL}?action=listgames&year={year}&month={month}&day={d}&provider={provider}"
         items.append((url, listItem, True))
-
-    xbmcplugin.addDirectoryItems(addonHandle, items, len(items))
-    xbmcplugin.endOfDirectory(addonHandle)
+    create_dir(items)
 
 def listproviders():
-    items = []
-    providers = config.get("LazyMan", "Providers").split(",")
+    providers = CONFIG.get("LazyMan", "Providers").split(",")
     for provider in providers:
         listItem = create_listitem(provider)
-        listItem.setInfo(type="video", infoLabels={"title": provider, "mediatype": 'video'})
-        url = '{0}?action=listtodaysgames&provider={1}'.format(addonUrl, provider)
+        url = f"{ADDONURL}?action=listtodaysgames&provider={provider}"
         items.append((url, listItem, True))
-
-    xbmcplugin.addDirectoryItems(addonHandle, items, len(items))
-    xbmcplugin.endOfDirectory(addonHandle)
+    create_dir(items)
 
 def listgames(date, provider, previous=False, highlights=False):
-    items = []
     dategames = games(date, provider)
 
     if len(dategames) == 0:
-        xbmcgui.Dialog().ok(addonName, "No games scheduled today")
+        xbmcplugin.endOfDirectory(ADDONHANDLE, succeeded=False)
+        xbmcgui.Dialog().ok(ADDONNAME, "No games scheduled today")
         if not previous:
-            xbmc.executebuiltin('Action(back)')
             return
 
     for g in dategames:
-        label = "%s vs. %s [%s]" % (g.awayFull, g.homeFull, g.remaining if g.remaining != "N/A" else utils.asCurrentTz(date, g.time))
+        label = f"{g.awayFull} vs. {g.homeFull} " \
+                f"[{g.remaining if g.remaining != 'N/A' else utils.asCurrentTz(date, g.time)}]"
         listItem = create_listitem(label)
         listItem.setInfo(type="video", infoLabels={"title": label, "mediatype": 'video'})
-        url = '{0}?action=feeds&game={1}&date={2}&provider={3}'.format(addonUrl, g.id, date, provider)
+        url = f"{ADDONURL}?action=feeds&game={g.id}&date={date}&provider={provider}"
         items.append((url, listItem, True))
 
     if highlights:
         listItem = create_listitem('Highlights')
         listItem.setInfo(type="video", infoLabels={"title": "Highlights", "mediatype": 'video'})
-        url = '{0}?action=listhighlights&provider={1}'.format(addonUrl, provider)
+        url = f"{ADDONURL}?action=listhighlights&provider={provider}"
         items.append((url, listItem, True))
 
     if previous:
         listItem = create_listitem('Previous')
         listItem.setInfo(type="video", infoLabels={"title": "Previous", "mediatype": 'video'})
-        url = '{0}?action=listyears&provider={1}'.format(addonUrl, provider)
+        url = f"{ADDONURL}?action=listyears&provider={provider}"
         items.append((url, listItem, True))
-
-    xbmcplugin.addDirectoryItems(addonHandle, items, len(items))
-    xbmcplugin.endOfDirectory(addonHandle)
-    log("Added %d games" % len(items), debug=True)
+    create_dir(items)
 
 def listfeeds(game, date, provider):
-
     def getfeedicon(feed):
         feed = p.sub('', feed)
-        log("Icon: %s" % feed, debug=True)
-        return os.path.join(addonPath, 'resources', 'icons', feed + '.png')
+        log(f"FeedIcon: {feed}", debug=True)
+        return os.path.join(ADDONPATH, 'resources', 'icons', feed + '.png')
 
-    items = []
     p = re.compile('\ \(Home\)|\ \(Away\)|\ \(National\)+|\ \(French\)+|\ Camera|2|\+|\-')
     for f in [f for f in game.feeds if f.viewable()]:
         label = str(f)
@@ -159,63 +137,56 @@ def listfeeds(game, date, provider):
         listItem.setInfo(type="video", infoLabels={"title": label, "mediatype": 'video'})
         icon = getfeedicon(label)
         listItem.setArt({'icon': icon})
-        url = '{0}?action=play&date={1}&feedId={2}&provider={3}&state={4}'.format(addonUrl, date, f.mediaId, provider, game.gameState)
+        url = f"{ADDONURL}?action=play&date={date}&feedId={f.mediaId}&provider={provider}&state={game.gameState}"
         items.append((url, listItem, False))
-
-    xbmcplugin.addDirectoryItems(addonHandle, items, len(items))
-    xbmcplugin.endOfDirectory(addonHandle)
+    xbmcplugin.setContent(ADDONHANDLE, 'videos')
+    create_dir(items)
 
 def playhighlight(url):
-    log("Trying to play URL: %s" % url, debug=True)
-    mediaAuth = utils.salt()
-    if utils.head(url, dict(mediaAuth=mediaAuth)):
-        xbmc.Player().play("%s|Cookie=mediaAuth%%3D%%22%s%%22" % (url, mediaAuth))
+    xbmc.Player().play(f"{url}|User-Agent={quote(USER_AGENT)}")
+    xbmcplugin.endOfDirectory(ADDONHANDLE, succeeded=False)
 
 def playgame(date, feedId, provider, state):
-
     def adjustQuality(masterUrl):
         qualityUrlDict = {
             "540p":   "2500K/2500_{0}.m3u8",
             "720p":   "3500K/3500_{0}.m3u8",
             "720p60": "5600K/5600_{0}.m3u8"
         }
-        current = addon.getSetting("quality")
+        current = ADDON.getSetting("quality")
         if current == 'master':
             return masterUrl
 
-        log("State: %s" % state, debug=True)
+        log(f"StreamQualityWanted: {current}", debug=True)
+        ext_live = 'slide' if provider == 'NHL.tv' else 'complete'
         m3u8Path = qualityUrlDict.get(current, "3500K/3500_{0}.m3u8").format(
-            'slide' if state in ('In Progress', 'Scheduled', 'Pre-Game')
+            ext_live if state in ('In Progress', 'Scheduled', 'Pre-Game', 'Warmup')
             else 'complete-trimmed')
-        log("Quality selected: %s, adjusting to %s" % (current, m3u8Path), debug=True)
+
+        log(f"AdjustedQuality: {m3u8Path}", debug=True)
         return masterUrl.rsplit('/', 1)[0] + "/" + m3u8Path
 
-    def xbmcPlayer(url, mediaAuth):
-        log("Trying to play URL: %s" % url, debug=True)
-        xbmc.Player().play(adjustQuality("%s|Cookie=mediaAuth%%3D%%22%s%%22" % (url, mediaAuth)))
+    log(f"GameState: {state}", debug=True)
+    cdn = 'akc' if ADDON.getSetting("cdn") == 'Akamai' else 'l3c'
+    url = f"http://{BASE_URL}/mlb/m3u8/{date}/{feedId}{cdn}"
+    contentUrl = url.replace('mlb/', '') if provider == 'NHL.tv' else url
 
-    def getContentUrl():
-        url = "http://freegamez.ga/mlb/m3u8/%s/%s%s" % (date, feedId, cdn)
-        return url.replace('mlb/', '') if provider == "NHL.tv" else url
-
-    cdn = 'akc' if addon.getSetting("cdn") == "Akamai" else 'l3c'
-    contentUrl = getContentUrl()
-
-    log("Trying to resolve from content-url: %s" % contentUrl, True)
+    log(f"Checking contentUrl: {contentUrl}", debug=True)
     if not utils.head(contentUrl):
-        log("Invalid content-url: %s" % contentUrl)
-        xbmcgui.Dialog().ok(addonName, "Game not available yet")
+        log("Invalid contentUrl")
+        xbmcgui.Dialog().ok(ADDONNAME, "Game not available yet")
         return
 
-    playUrl = requests.get(contentUrl).text
-    log("Play URL resolved to: %s" % playUrl, debug=True)
-    mediaAuthSalt = utils.salt()
+    url = requests.get(contentUrl).text
+    log(f"Stream URL resolved: {url}", debug=True)
 
-    if not utils.head(playUrl, dict(mediaAuth=mediaAuthSalt)):
-        xbmcgui.Dialog().ok(addonName, "Error while contacting server", "Try switching CDN and try again")
+    cookie = utils.salt()
+    auth_header = f"mediaAuth%%3D%%22{cookie}%%22"
+
+    if not utils.head(url, dict(mediaAuth=cookie)):
+        xbmcgui.Dialog().ok(ADDONNAME, "Error while contacting server", "Try switching CDN and try again")
         return
-
-    xbmcPlayer(playUrl, mediaAuthSalt)
+    xbmc.Player().play(f"{adjustQuality(url)}|Cookie={auth_header}&User-Agent={quote(USER_AGENT)}")
 
 def router(paramstring):
     params = dict(parse_qsl(paramstring))
@@ -239,27 +210,32 @@ def router(paramstring):
         elif params['action'] == 'listdays':
             listdays(params['year'], params['month'], params['provider'])
         elif params['action'] == 'listgames':
-            listgames("%d-%02d-%02d" % (int(params['year']), int(params['month']), int(params['day'])), params['provider'])
+            listgames(f"{int(params['year'])}-{int(params['month']):02}-{int(params['day']):02}", params['provider'])
         elif params['action'] == 'listtodaysgames':
             listgames(utils.today().strftime("%Y-%m-%d"), params['provider'], True, True)
     else:
         listproviders()
 
 def sanityCheck():
-    since = addon.getSetting("sanityChecked")
-    if since == "" or calendar.timegm(time.gmtime()) - (3600 * 24) > int(since):
-        providers = config.get("LazyMan", "Providers").split(",")
-        icon = os.path.join(addonPath, 'resources', 'icon.png')
+    # time (in hours) between checking dns entries
+    if calendar.timegm(time.gmtime()) - (3600 * 24) > ADDON.getSettingInt("sanityChecked"):
+        providers = CONFIG.get("LazyMan", "Providers").split(",")
         for service in providers:
-            xbmc.executebuiltin("Notification(LazyMan,Verifying %s,,%s)" % (service, icon))
-            hostNames = config.get(service, "Host").split(",")
-            lazymanServer = socket.gethostbyname('freegamez.ga')
-            for h in hostNames:
-                resolved = socket.gethostbyname(h)
+            hostNames = CONFIG.get(service, "Host").split(",")
+            lazymanServer = utils.resolve(BASE_URL)
+            # check if server is alive
+            if not utils.isUp(lazymanServer):
+                xbmcgui.Dialog().ok(ADDONNAME, "The Lazyman Server is Offline.")
+                break
+            xbmc.executebuiltin(f"Notification(LazyMan,Verifying {service},,{ICON})")
+            for host in hostNames:
+                # check if dns entries are redirected properly
+                resolved = utils.resolve(host)
                 if resolved != lazymanServer:
-                    xbmcgui.Dialog().ok(addonName, "%s doesn't resolve to the Lazyman server." % h, "Update your hosts file to point to %s" % lazymanServer)
+                    xbmcgui.Dialog().ok(ADDONNAME, f"{host} doesn't resolve to the Lazyman server.",
+                                                   f"Update your hosts file to point to {lazymanServer}")
                 else:
-                    addon.setSetting("sanityChecked", str(calendar.timegm(time.gmtime())))
+                    ADDON.setSettingInt("sanityChecked", calendar.timegm(time.gmtime()))
 
 
 if __name__ == '__main__':

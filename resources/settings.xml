@@ -6,5 +6,6 @@
     </category>
     <category label="Advanced">
         <setting label="Enable Logging" type="bool" id="debug" value="false"/>
+        <setting type="number" id="sanityChecked" visible="false" value="0"/>
     </category>
 </settings>

@@ -18,10 +18,11 @@ def get_highlights(config, provider):
         for h in t['list']:
             blurb = h['blurb']
             duration = h['duration']
+            desc = h['description']
+            thumb = h['image']['cuts']['640x360']['src']
             playbacks = [x for x in h['playbacks'] if x['name'] == 'HTTP_CLOUD_WIRED_60']
             if len(playbacks) > 0:
-                log("Creating highlight [%s (%s)] from %s" % (blurb, duration, playbacks[0]['url']), debug=True)
-                title_highlights.append(Highlight(blurb, duration, playbacks[0]['url']))
+                title_highlights.append(Highlight(blurb, duration, playbacks[0]['url'], thumb, desc))
         highlights.append(HighlightGroup(title, title_highlights))
     return highlights
 
@@ -36,10 +37,14 @@ class Highlight:
     playbackUrl = None
     duration = None
     blurb = None
-    def __init__(self, blurb_, duration_, playback_):
+    thumb = None
+    desc = None
+    def __init__(self, blurb_, duration_, playback_, thumb_, desc_):
         self.blurb = blurb_
         self.duration = duration_
         self.playbackUrl = playback_
+        self.thumb = thumb_
+        self.desc = desc_
 
     def viewable(self):
         return True

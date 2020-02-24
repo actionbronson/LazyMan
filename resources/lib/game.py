@@ -146,28 +146,27 @@ class Game:
         return self._feeds
 
     def __repr__(self):
-        return "Game(%s vs. %s, %s, feeds: %s)" % (self.away, self.home, self.remaining, ", ".join([f.tvStation for f in self.feeds]))
+        return "Game(%s vs. %s, %s, feeds: %s)" % (self.away, self.home, self.remaining, \
+                                                   ", ".join([f.tvStation for f in self.feeds]))
 
 class GameBuilder:
 
     @staticmethod
-    def mlbTvRemaining(state, game):
-        if "In Progress" in state:
-            return game["linescore"]["currentInningOrdinal"] + " " + game["linescore"]["inningHalf"]
-        if state == "Final":
-            return "Final"
-        if state == "Postponed":
-            return "PPD"
-        return "N/A"
+    def Remaining(state, game, provider):
+        if state in "In Progress":
 
-    @staticmethod
-    def nhlTvRemaining(state, game):
-        if "In Progress" in state:
-            return game["linescore"]["currentPeriodOrdinal"] + " " + game["linescore"]["currentPeriodTimeRemaining"]
+            idx = ["currentPeriodOrdinal","currentPeriodTimeRemaining"] if provider == "NHL.tv" else \
+                  ["currentInningOrdinal","inningHalf"]
+            return game["linescore"][idx[0]] + " " + game["linescore"][idx[1]]
+
+        if state in ("Final", "Final: Tied", "Game Over"):
+            return "Final"
         if state == "Pre-Game":
             return "Pre Game"
-        if state == "Final":
-            return "Final"
+        if state == "Warmup":
+            return "Warmup"
+        if state in ("Postponed", "Cancelled"):
+            return "PPD"
         return "N/A"
 
     @staticmethod
@@ -175,7 +174,7 @@ class GameBuilder:
         u = config.get(provider, "GameScheduleUrl", raw=True) % (date, date)
         response = requests.get(u)
         data = response.json()
-        #log("Server Response: %s" % data, debug=True)
+        #log(f"Server Response: {data}", debug=True)
 
         if data["totalItems"] <= 0 or len(data["dates"]) == 0:
             return []
@@ -187,6 +186,6 @@ class GameBuilder:
             time = g["gameDate"][11:].replace("Z", "")
             state = g["status"]["detailedState"]
             return Game(g["gamePk"], away["abbreviation"], home["abbreviation"],
-                        time, state, away["name"], home["name"], remaining(state, g),
+                        time, state, away["name"], home["name"], remaining(state, g, provider),
                         FeedBuilder.fromContent(g["content"], config.get(provider, "Provider")))
-        return list(map(asGame, games))
+        return [asGame(x) for x in games]
