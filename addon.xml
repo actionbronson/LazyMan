@@ -22,8 +22,9 @@
       <fanart>resources/fanart.jpg</fanart>
     </assets>
     <news>
-v1.2.1  (2020-02-22)
+v1.2.1  (2020-02-23)
   - Added network icons for mlb
+  - Added thumbnails/descriptions for nhl highlights
 v1.2.0  (2019-11-28)
   - Python3 Support for kodi matrix
   - Livestreams playable at pre-game
