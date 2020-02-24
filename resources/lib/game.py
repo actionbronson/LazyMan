@@ -1,5 +1,4 @@
 import requests
-from .utils import log
 
 
 class FeedBuilder:
@@ -118,7 +117,7 @@ class Game:
         else:
             self._feeds = feeds
     @property
-    def id(self):
+    def gid(self):
         return self._id
     @property
     def away(self):
@@ -146,7 +145,7 @@ class Game:
         return self._feeds
 
     def __repr__(self):
-        return "Game(%s vs. %s, %s, feeds: %s)" % (self.away, self.home, self.remaining, \
+        return "Game(%s vs. %s, %s, feeds: %s)" % (self.away, self.home, self.remaining,
                                                    ", ".join([f.tvStation for f in self.feeds]))
 
 class GameBuilder:
@@ -155,8 +154,8 @@ class GameBuilder:
     def Remaining(state, game, provider):
         if state in "In Progress":
 
-            idx = ["currentPeriodOrdinal","currentPeriodTimeRemaining"] if provider == "NHL.tv" else \
-                  ["currentInningOrdinal","inningHalf"]
+            idx = ["currentPeriodOrdinal", "currentPeriodTimeRemaining"] if provider == "NHL.tv" else \
+                  ["currentInningOrdinal", "inningHalf"]
             return game["linescore"][idx[0]] + " " + game["linescore"][idx[1]]
 
         if state in ("Final", "Final: Tied", "Game Over"):
@@ -174,6 +173,7 @@ class GameBuilder:
         u = config.get(provider, "GameScheduleUrl", raw=True) % (date, date)
         response = requests.get(u)
         data = response.json()
+        #from .utils import log
         #log(f"Server Response: {data}", debug=True)
 
         if data["totalItems"] <= 0 or len(data["dates"]) == 0:

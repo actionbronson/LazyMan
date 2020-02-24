@@ -1,0 +1,21 @@
+name: Python Linter
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Python 3
+      uses: actions/setup-python@master
+      with:
+        python-version: 3.7
+    - name: Test
+      env:
+          tests: "E301,E302,E221,E241,E265,E501,E704,W605,S311"
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 flake8-builtins flake8-tidy-imports flake8-bandit
+        flake8 --jobs=8 --ignore="$tests"

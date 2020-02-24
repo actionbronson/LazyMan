@@ -39,8 +39,8 @@ items = []
 def create_listitem(label):
     return xbmcgui.ListItem(label=str(label), offscreen=True)
 
-def create_dir(list):
-    xbmcplugin.addDirectoryItems(ADDONHANDLE, list, len(list))
+def create_dir(item):
+    xbmcplugin.addDirectoryItems(ADDONHANDLE, item, len(item))
     xbmcplugin.endOfDirectory(ADDONHANDLE, cacheToDisc=False)
 
 def games(date, provider):
@@ -108,7 +108,7 @@ def listgames(date, provider, previous=False, highlights=False):
                 f"[{g.remaining if g.remaining != 'N/A' else utils.asCurrentTz(date, g.time)}]"
         listItem = create_listitem(label)
         listItem.setInfo(type="video", infoLabels={"title": label, "mediatype": 'video'})
-        url = f"{ADDONURL}?action=feeds&game={g.id}&date={date}&provider={provider}"
+        url = f"{ADDONURL}?action=feeds&game={g.gid}&date={date}&provider={provider}"
         items.append((url, listItem, True))
 
     if highlights:
@@ -184,7 +184,7 @@ def playgame(date, feedId, provider, state):
     auth_header = f"mediaAuth%%3D%%22{cookie}%%22"
 
     if not utils.head(url, dict(mediaAuth=cookie)):
-        xbmcgui.Dialog().ok(ADDONNAME, "Error while contacting server", "Try switching CDN and try again")
+        xbmcgui.Dialog().ok(ADDONNAME, "Stream is unavailable")
         return
     xbmc.Player().play(f"{adjustQuality(url)}|Cookie={auth_header}&User-Agent={quote(USER_AGENT)}")
 
@@ -193,7 +193,7 @@ def router(paramstring):
     if params:
         if params['action'] == 'feeds':
             dategames = games(params['date'], params['provider'])
-            gameDict = dict([(g.id, g) for g in dategames])
+            gameDict = dict([(g.gid, g) for g in dategames])
             listfeeds(gameDict[int(params['game'])], params['date'], params['provider'])
         elif params['action'] == 'play':
             playgame(params['date'], params['feedId'], params['provider'], params['state'])

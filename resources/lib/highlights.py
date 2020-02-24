@@ -1,7 +1,7 @@
 from configparser import NoOptionError
 
 import requests
-from .utils import log
+#from .utils import log
 
 
 def get_highlights(config, provider):
