@@ -1,0 +1,378 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Avalanche"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Blackhawks"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Blue Jackets"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Blues"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Bruins"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Canadiens"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Canucks"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Capitals"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Coyotes"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Devils"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Ducks"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Flames"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Flyers"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Hurricanes"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Islanders"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Jets"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Kings"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Knights"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Leafs"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Lightning"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Oilers"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Panthers"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Penguins"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Predators"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Rangers"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Red Wings"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Sabres"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Senators"
+msgstr ""
+
+msgctxt "#30028"
+msgid "Sharks"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Stars"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Wild"
+msgstr ""
+
+msgctxt "#30031"
+msgid "None"
+msgstr ""
+
+msgctxt "#40000"
+msgid "Angels"
+msgstr ""
+
+msgctxt "#40001"
+msgid "Astros"
+msgstr ""
+
+msgctxt "#40002"
+msgid "Athletics"
+msgstr ""
+
+msgctxt "#40003"
+msgid "Blue Jays"
+msgstr ""
+
+msgctxt "#40004"
+msgid "Braves"
+msgstr ""
+
+msgctxt "#40005"
+msgid "Brewers"
+msgstr ""
+
+msgctxt "#40006"
+msgid "Cardinals"
+msgstr ""
+
+msgctxt "#40007"
+msgid "Cubs"
+msgstr ""
+
+msgctxt "#40008"
+msgid "Diamondbacks"
+msgstr ""
+
+msgctxt "#40009"
+msgid "Dodgers"
+msgstr ""
+
+msgctxt "#40010"
+msgid "Giants"
+msgstr ""
+
+msgctxt "#40011"
+msgid "Indians"
+msgstr ""
+
+msgctxt "#40012"
+msgid "Mariners"
+msgstr ""
+
+msgctxt "#40013"
+msgid "Marlins"
+msgstr ""
+
+msgctxt "#40014"
+msgid "Mets"
+msgstr ""
+
+msgctxt "#40015"
+msgid "Nationals"
+msgstr ""
+
+msgctxt "#40016"
+msgid "Orioles"
+msgstr ""
+
+msgctxt "#40017"
+msgid "Padres"
+msgstr ""
+
+msgctxt "#40018"
+msgid "Phillies"
+msgstr ""
+
+msgctxt "#40019"
+msgid "Pirates"
+msgstr ""
+
+msgctxt "#40020"
+msgid "Rangers"
+msgstr ""
+
+msgctxt "#40021"
+msgid "Rays"
+msgstr ""
+
+msgctxt "#40022"
+msgid "Red Sox"
+msgstr ""
+
+msgctxt "#40023"
+msgid "Reds"
+msgstr ""
+
+msgctxt "#40024"
+msgid "Rockies"
+msgstr ""
+
+msgctxt "#40025"
+msgid "Royals"
+msgstr ""
+
+msgctxt "#40026"
+msgid "Tigers"
+msgstr ""
+
+msgctxt "#40027"
+msgid "Twins"
+msgstr ""
+
+msgctxt "#40028"
+msgid "White Sox"
+msgstr ""
+
+msgctxt "#40029"
+msgid "Yankees"
+msgstr ""
+
+msgctxt "#40030"
+msgid "None"
+msgstr ""
+
+msgctxt "#50000"
+msgid "General"
+msgstr ""
+
+msgctxt "#50018"
+msgid "Quality"
+msgstr ""
+
+msgctxt "#50001"
+msgid "Video Stream"
+msgstr ""
+
+msgctxt "#50002"
+msgid "Artwork"
+msgstr ""
+
+msgctxt "#50003"
+msgid "Resolution of downloaded artwork. Turn Off on slow connections or weak devices"
+msgstr ""
+
+msgctxt "#50004"
+msgid "Content Delivery Network"
+msgstr ""
+
+msgctxt "#50005"
+msgid "Try changing the CDN provider if youre having issues with streaming"
+msgstr ""
+
+msgctxt "#50006"
+msgid "Favorites"
+msgstr ""
+
+msgctxt "#50007"
+msgid "Highlights your team so you can find it quickly"
+msgstr ""
+
+msgctxt "#50008"
+msgid "NHL"
+msgstr ""
+
+msgctxt "#50009"
+msgid "MLB"
+msgstr ""
+
+msgctxt "#50010"
+msgid "Advanced"
+msgstr ""
+
+msgctxt "#50017"
+msgid "Previous Games"
+msgstr ""
+
+msgctxt "#50011"
+msgid "Show All Days"
+msgstr ""
+
+msgctxt "#50012"
+msgid "Access games from earlier than yesterday"
+msgstr ""
+
+msgctxt "#50013"
+msgid "Enable Logging"
+msgstr ""
+
+msgctxt "#50014"
+msgid "Enables extra info in log file"
+msgstr ""
+
+msgctxt "#50015"
+msgid "Inputstream Adpative"
+msgstr ""
+
+msgctxt "#50016"
+msgid "Use inputstream.adpative to play streams (wont work due to ssl cert verification)"
+msgstr ""
+
+msgctxt "#50019"
+msgid "NHL Multi Cam"
+msgstr ""
+
+msgctxt "#50020"
+msgid "Show the NHL 3-Way camera feed"
+msgstr ""
+
+msgctxt "#60000"
+msgid "540p"
+msgstr ""
+
+msgctxt "#60001"
+msgid "720p"
+msgstr ""
+
+msgctxt "#60002"
+msgid "720p60"
+msgstr ""
+
+msgctxt "#60003"
+msgid "master"
+msgstr ""
+
+msgctxt "#60004"
+msgid "Low"
+msgstr ""
+
+msgctxt "#60005"
+msgid "High"
+msgstr ""
+
+msgctxt "#60006"
+msgid "Max"
+msgstr ""
+
+msgctxt "#60007"
+msgid "Off"
+msgstr ""
+
+msgctxt "#60008"
+msgid "Akamai"
+msgstr ""
+
+msgctxt "#60009"
+msgid "Level 3"
+msgstr ""

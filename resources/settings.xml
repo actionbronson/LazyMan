@@ -1,11 +1,180 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-    <category label="General">
-        <setting label="Video Quality" type="labelenum" id="quality" values="540p|720p|720p60|master" default="720p60"/>
-        <setting label="Content Delivery Network" type="labelenum" id="cdn" values="Akamai|Level 3" default="Akamai"/>
-    </category>
-    <category label="Advanced">
-        <setting label="Enable Logging" type="bool" id="debug" value="false"/>
-        <setting type="number" id="sanityChecked" visible="false" value="0"/>
-    </category>
+<settings version="1">
+    <section id="plugin.video.lazyman.nhl.tv">
+
+        <category id="general" label="50000">
+            <group id="1" label="50018">
+                <setting id="qualityStrm" label="50001" type="string">
+                    <level>0</level>
+                    <default>720p</default>
+                    <constraints>
+                        <options>
+                            <option label="60000">540p</option>
+                            <option label="60001">720p</option>
+                            <option label="60002">720p60</option>
+                            <option label="60003">master</option>
+                        </options>
+                    </constraints>
+                    <control format="string" type="spinner"/>
+                </setting>
+                <setting id="qualityArt" label="50002" help="50003" type="string">
+                    <level>0</level>
+                    <default>Low</default>
+                    <constraints>
+                        <options>
+                            <option label="60004">Low</option>
+                            <option label="60005">High</option>
+                            <option label="60006">Max</option>
+                            <option label="60007">Off</option>
+                        </options>
+                    </constraints>
+                    <control format="string" type="spinner"/>
+                </setting>
+            </group>
+            <group id="2" label="50006">
+                <setting id="nhlFav" label="50008" type="integer">
+                    <level>0</level>
+                    <default>31</default>
+                    <constraints>
+                        <options>
+                            <option label="30000">0</option> <!-- Team Names -->
+                            <option label="30001">1</option>
+                            <option label="30002">2</option>
+                            <option label="30003">3</option>
+                            <option label="30004">4</option>
+                            <option label="30005">5</option>
+                            <option label="30006">6</option>
+                            <option label="30007">7</option>
+                            <option label="30008">8</option>
+                            <option label="30009">9</option>
+                            <option label="30010">10</option>
+                            <option label="30011">11</option>
+                            <option label="30012">12</option>
+                            <option label="30013">13</option>
+                            <option label="30014">14</option>
+                            <option label="30015">15</option>
+                            <option label="30016">16</option>
+                            <option label="30017">17</option>
+                            <option label="30018">18</option>
+                            <option label="30019">19</option>
+                            <option label="30020">20</option>
+                            <option label="30021">21</option>
+                            <option label="30022">22</option>
+                            <option label="30023">23</option>
+                            <option label="30024">24</option>
+                            <option label="30025">25</option>
+                            <option label="30026">26</option>
+                            <option label="30027">27</option>
+                            <option label="30028">28</option>
+                            <option label="30029">29</option>
+                            <option label="30030">30</option>
+                            <option label="30031">31</option>
+                        </options>
+                    </constraints>
+                    <control format="string" type="list">
+                        <heading>5</heading>
+                    </control>
+                </setting>
+                <setting id="mlbFav" label="50009" type="integer">
+                    <level>0</level>
+                    <default>30</default>
+                    <constraints>
+                        <options>
+                            <option label="40000">0</option> <!-- Team Names -->
+                            <option label="40001">1</option>
+                            <option label="40002">2</option>
+                            <option label="40003">3</option>
+                            <option label="40004">4</option>
+                            <option label="40005">5</option>
+                            <option label="40006">6</option>
+                            <option label="40007">7</option>
+                            <option label="40008">8</option>
+                            <option label="40009">9</option>
+                            <option label="40010">10</option>
+                            <option label="40011">11</option>
+                            <option label="40012">12</option>
+                            <option label="40013">13</option>
+                            <option label="40014">14</option>
+                            <option label="40015">15</option>
+                            <option label="40016">16</option>
+                            <option label="40017">17</option>
+                            <option label="40018">18</option>
+                            <option label="40019">19</option>
+                            <option label="40020">20</option>
+                            <option label="40021">21</option>
+                            <option label="40022">22</option>
+                            <option label="40023">23</option>
+                            <option label="40024">24</option>
+                            <option label="40025">25</option>
+                            <option label="40026">26</option>
+                            <option label="40027">27</option>
+                            <option label="40028">28</option>
+                            <option label="40029">29</option>
+                            <option label="40030">30</option>
+                        </options>
+                    </constraints>
+                    <control format="string" type="list">
+                        <heading>6</heading>
+                    </control>
+                </setting>
+            </group>
+            <group id="3" label="50017">
+                <setting id="showAll" label="50011" help="50012" type="boolean">
+                    <level>0</level>
+                    <default>false</default>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+        </category>
+
+        <category id="advanced" label="50010">
+            <group id="1" label="50010">
+                <setting id="cdn" label="50004" help="50005" type="string">
+                    <level>2</level>
+                    <default>Akamai</default>
+                    <constraints>
+                        <options>
+                            <option label="60008">Akamai</option>
+                            <option label="60009">Level 3</option>
+                        </options>
+                    </constraints>
+                    <control format="string" type="spinner"/>
+                </setting>
+                <setting id="showMultiCam" label="50019" help="50020" type="boolean">
+                    <level>2</level>
+                    <default>false</default>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="debug" label="50013" help="50014" type="boolean">
+                    <level>2</level>
+                    <default>false</default>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="inputstream" label="50015" help="50016" type="boolean">
+                    <level>4</level>
+                    <default>false</default>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="dnsChecked" type="integer" >
+                    <level>4</level>
+                    <default>0</default>
+                    <control format="integer" type="edit">
+                        <heading/>
+                    </control>
+                </setting>
+            </group>
+        </category>
+    </section>
 </settings>
