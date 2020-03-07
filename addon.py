@@ -160,7 +160,7 @@ def get_stream(date, feed, provider, state):
                    '720p':   '3500K/3500_{0}.m3u8',
                    '720p60': '5600K/5600_{0}.m3u8'
         }
-        if STRM_QUALITY == "master":
+        if STRM_QUALITY == "Master":
             return masterUrl
 
         ext_live = "slide" if provider == "NHL.tv" else "complete"

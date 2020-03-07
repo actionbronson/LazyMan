@@ -4,7 +4,7 @@
 
         <category id="general" label="50000">
             <group id="1" label="50018">
-                <setting id="qualityStrm" label="50001" type="string">
+                <setting id="qualityStrm" label="50001" help="50021" type="string">
                     <level>0</level>
                     <default>720p</default>
                     <constraints>
@@ -12,7 +12,7 @@
                             <option label="60000">540p</option>
                             <option label="60001">720p</option>
                             <option label="60002">720p60</option>
-                            <option label="60003">master</option>
+                            <option label="60003">Master</option>
                         </options>
                     </constraints>
                     <control format="string" type="spinner"/>

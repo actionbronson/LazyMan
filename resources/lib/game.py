@@ -163,8 +163,7 @@ class FeedBuilder:
                     for item in stream['items']
                 ]
             except KeyError:
-                log("KeyError in fromItem()")
-                pass
+                log("Found game with no feeds", debug=True)
         return []
 
 

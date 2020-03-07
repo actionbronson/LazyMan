@@ -337,6 +337,10 @@ msgctxt "#50020"
 msgid "Show the NHL 3-Way camera feed"
 msgstr ""
 
+msgctxt "#50021"
+msgid "Selecting Master will let you switch the audio to the radio broadcasts"
+msgstr ""
+
 msgctxt "#60000"
 msgid "540p"
 msgstr ""
@@ -350,7 +354,7 @@ msgid "720p60"
 msgstr ""
 
 msgctxt "#60003"
-msgid "master"
+msgid "Master"
 msgstr ""
 
 msgctxt "#60004"
