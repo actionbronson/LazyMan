@@ -8,11 +8,10 @@ from resources.lib.utils import (
 )
 from resources.lib.vars import (
     IMG_QUALITY,
-    LANG,
-    NHL_API,
-    NHL_FAV,
     MLB_API,
+    NHL_API,
     MLB_FAV,
+    NHL_FAV,
 )
 
 
@@ -77,7 +76,6 @@ def get_recaps(provider, page):
 
     elif provider == "MLB.tv":
         # show today then yesterday on page 2
-        # TODO: check if this is too many when season starts
         start = 1 if page == 1 else 3
         end   = 0 if page == 1 else 2
 
@@ -134,7 +132,7 @@ def teamList(provider):
             team = item['teamName']
             city = item['locationName']
             url = f"https://www.nhl.com/{team.lower().replace(' ', '')}/video"
-            title = f"[COLOR red][B]{city} {team}[/B][/COLOR]" if LANG(30000 + NHL_FAV) in team else f"{city} {team}"
+            title = f"[COLOR red][B]{city} {team}[/B][/COLOR]" if NHL_FAV in team else f"{city} {team}"
             add_list(title, "listteam", provider, url=url)
 
     elif provider == "MLB.tv":
@@ -144,7 +142,7 @@ def teamList(provider):
         for item in data['teams']:
             team = item['teamName']
             city = item['locationName']
-            title = f"[COLOR red][B]{city} {team}[/B][/COLOR]" if LANG(40000 + MLB_FAV) in team else f"{city} {team}"
+            title = f"[COLOR red][B]{city} {team}[/B][/COLOR]" if MLB_FAV in team else f"{city} {team}"
             url = f"https://www.mlb.com/{team.lower().replace('-', '').replace(' ', '')}/video"
             add_list(title, "listteam", provider, url=url)
 
@@ -288,7 +286,7 @@ def random_image(provider):
                 log(f"Failed to find a team image: {size} from {item}", debug=True)
 
     elif provider == "MLB.tv":
-        team = LANG(40000 + MLB_FAV).replace(' ', '').lower()
+        team = MLB_FAV.replace(' ', '').lower()
         url = f"https://www.mlb.com/{team}/team/photos" if team != "none" else \
                "https://www.mlb.com/mlb/team/photos/mlb-ballpark-sunsets"
         # ~1.2mB / ~400kB

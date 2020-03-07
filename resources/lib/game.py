@@ -4,10 +4,9 @@ from resources.lib.utils import (
 )
 from resources.lib.vars import (
     IMG_QUALITY,
-    LANG,
     MLB_API,
-    MLB_FAV,
     NHL_API,
+    MLB_FAV,
     NHL_FAV,
     SHOWMULTICAM,
 )
@@ -32,13 +31,12 @@ class GameBuilder:
                 'hydrate': 'linescore,probablePitcher,weather,game(content(media(epg)))',
                 'sportId': '1'
             })
-            quality = {"Low":  3, "High": 1, "Max": 0}  # 960x540 1280x720 1920x1080
-            size_m = quality.get(IMG_QUALITY, None)
+            # quality = {"Low":  3, "High": 1, "Max": 0}  # 960x540 1280x720 1920x1080
+            # size_m = quality.get(IMG_QUALITY, None)
 
         # only use short cache for live games
         cache = cacheMin if today().strftime("%Y-%m-%d") == date else cacheHr
         response = _requests(cache).get(u, params=query, timeout=3)
-        #log(f"Was it taken from cache1: {response.from_cache}")
         data = response.json()
 
         if data['totalItems'] <= 0 or len(data['dates']) == 0:
@@ -59,12 +57,8 @@ class GameBuilder:
             # without this check, querying this data happens again when all we want is the feed id
             if not getfeeds:
                 if provider == "MLB.tv":
-                    # TODO: deduplicate?
-                    homeFull = f"[COLOR red][B]{home['name']}[/B][/COLOR]" if LANG(40000 + MLB_FAV) in \
-                        home['name'] else home['name']
-                    awayFull = f"[COLOR red][B]{away['name']}[/B][/COLOR]" if LANG(40000 + MLB_FAV) in \
-                        away['name'] else away['name']
-
+                    homeFull = f"[COLOR red][B]{home['name']}[/B][/COLOR]" if MLB_FAV in home['name'] else home['name']
+                    awayFull = f"[COLOR red][B]{away['name']}[/B][/COLOR]" if MLB_FAV in away['name'] else away['name']
                     # reverse names from {last, first}
                     starter_a = g['teams']['away'].get("probablePitcher", {}).get("fullName", "unknown").split(', ')[::-1]
                     starter_h = g['teams']['home'].get("probablePitcher", {}).get("fullName", "unknown").split(', ')[::-1]
@@ -80,22 +74,19 @@ class GameBuilder:
                         f"{wWind}"
                     )
 
-                    # TODO: need to make this request smaller
+                    # TODO: need to make this request smaller or async
                     # if size_m is not None:
-                    #     response = _requests().get(MLB_API[0] + content, timeout=3)
-                    #     #log(f"Was it taken from cache2: {response.from_cache}")
+                    #     # ~150kB * x games = ~3mB
+                    #     response = _requests().get(MLB_API[0] + content, timeout=3).json()
                     #     try:
-                    #         thumb = response.json()['highlights']['highlights']['items'][0]['image']['cuts'][size_m]['src']
+                    #         thumb = response['highlights']['highlights']['items'][0]['image']['cuts'][size_m]['src']
                     #     except:
                     #         log("Failed to find thumbnail", debug=True)
                 else:
-                    homeFull = f"[COLOR red][B]{home['name']}[/B][/COLOR]" if LANG(30000 + NHL_FAV) in \
-                        home['name'] else home['name']
-                    awayFull = f"[COLOR red][B]{away['name']}[/B][/COLOR]" if LANG(30000 + NHL_FAV) in \
-                        away['name'] else away['name']
+                    homeFull = f"[COLOR red][B]{home['name']}[/B][/COLOR]" if NHL_FAV in home['name'] else home['name']
+                    awayFull = f"[COLOR red][B]{away['name']}[/B][/COLOR]" if NHL_FAV in away['name'] else away['name']
 
                     response = _requests().get(NHL_API[0] + content, timeout=3)
-                    #log(f"Was it taken from cache2: {response.from_cache}")
                     try:
                         desc = response.json()['editorial']['preview']['items'][0]['seoDescription']
                         if size_n is not None:
