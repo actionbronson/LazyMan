@@ -39,6 +39,7 @@ def get_nhl_highlights():
     url = "https://nhl.bamcontent.com/nhl/en/nav/v1/video/connectedDevices/nhl/playstation-v1.json"
     data = _requests().get(url, timeout=3).json()
 
+    thumb = None
     highlights = []
     for topic in data['topics']:
         title = topic['title']
@@ -47,8 +48,13 @@ def get_nhl_highlights():
             blurb = video['blurb']
             duration = video['duration']
             desc = video['description']
-            thumb = video['image']['cuts']['1136x640']['src'] if IMG_QUALITY != "Off" else ""
             playbacks = [x for x in video['playbacks'] if x['name'] == "HTTP_CLOUD_WIRED_60"][0]['url']
+            if IMG_QUALITY != "Off":
+                images = video['image']['cuts']
+                try:
+                    thumb = images['1136x640']['src']
+                except:
+                    thumb = images[next(iter(images))]['src']
             title_highlights.append(Highlight(blurb, duration, playbacks, thumb, desc))
         highlights.append(HighlightGroup(title, title_highlights))
     return highlights
@@ -61,6 +67,7 @@ def get_recaps(provider, page):
         query = {'page': page, 'sort': 'new', 'type': 'video'}
         data = _requests().get(url, params=query, timeout=3).json()
 
+        thumb = None
         for video in data['docs']:
             content = video['asset_id']
             url = f"https://nhl.bamcontent.com/nhl/id/v1/{content}/details/web-v1.json"
@@ -70,7 +77,12 @@ def get_recaps(provider, page):
             #duration = data['duration']
             #title = f"{name} [{duration}]"
             desc = data['bigBlurb']
-            thumb = data['image']['cuts']['1136x640']['src'] if IMG_QUALITY != "Off" else ""
+            if IMG_QUALITY != "Off":
+                images = video['image']['cuts']
+                try:
+                    thumb = images['1136x640']['src']
+                except:
+                    thumb = images[next(iter(images))]['src']
             url = [x for x in data['playbacks'] if x['name'] == "HTTP_CLOUD_WIRED_60"][0]['url']
             add_list(title, "playhighlight", url=url, desc=desc, icon=thumb, isStream=True)
 
