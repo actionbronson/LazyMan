@@ -7,6 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       addon: "plugin.video.lazyman.nhl.tv"
+      version: "matrix"
 
     steps:
     - uses: actions/checkout@v2
@@ -15,28 +16,25 @@ jobs:
       with:
         python-version: 3.7
 
-    - name: Flake8
+    - name: Addon verification
       env:
         tests: "E124,E127,E128,E501,E722,E701,E241,E265,E221,E226,W605,S311"
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 flake8-builtins flake8-tidy-imports flake8-bandit
+        pip install kodi-addon-checker flake8 flake8-builtins flake8-tidy-imports flake8-bandit
         flake8 --jobs=8 --exit-zero --ignore="$tests"
+        kodi-addon-checker --branch=matrix --allow-folder-id-mismatch .
 
-    - name: Addon verification
-      uses: xbmc/action-kodi-addon-checker@master
+    - name: Create zip
+      if: success()
+      run: |
+        mkdir tmp
+        rsync -ar --exclude='.git/' \
+                  --exclude='.github/' \
+                  --exclude='.gitignore' \
+                  . tmp/${{env.addon}}
+
+    - uses: actions/upload-artifact@v1
       with:
-        kodi-version: matrix
-
-    # - name: Prepare zip
-    #   if: success()
-    #   run: |
-    #     mkdir tmp
-    #     rsync -ar --exclude='.git/' \
-    #               --exclude='.github/' \
-    #               --exclude='.gitignore' \
-    #               . tmp/${{env.addon}}
-    # - uses: actions/upload-artifact@v1
-    #   with:
-    #     name: ${{env.addon}}-matrix.zip
-    #     path: tmp
+        name: ${{env.addon}}-${{env.version}}
+        path: tmp
