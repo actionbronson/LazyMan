@@ -1,0 +1,40 @@
+name: Upload Asset
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    env:
+      ADDON: "plugin.video.lazyman.nhl.tv"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Version
+      id: version
+      run: |
+        git fetch --prune --unshallow
+        echo ::set-output name=tag::$(git describe --abbrev=0 --tags)
+
+    - name: Create zip
+      env:
+        VERSION: ${{steps.version.outputs.tag}}
+      run: |
+        mkdir ${{env.ADDON}}
+        rsync -ar --exclude='.git/' \
+                  --exclude='.github/' \
+                  --exclude='.gitignore' \
+                  . ${{env.ADDON}}
+        zip -Tr ${{env.ADDON}}-${{env.VERSION}}.zip ${{env.ADDON}}
+
+    - uses: actions-github/upload-to-release@master
+      if: success()
+      env:
+        VERSION: ${{steps.version.outputs.tag}}
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      with:
+        file: ${{env.ADDON}}-${{env.VERSION}}.zip
+        type: 'application/zip'

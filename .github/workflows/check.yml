@@ -1,0 +1,52 @@
+name: Addon Verification
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      ADDON: "plugin.video.lazyman.nhl.tv"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Version
+      id: version
+      run: |
+        git fetch --prune --unshallow
+        echo ::set-output name=tag::$(git describe --abbrev=0 --tags)
+        echo ::set-output name=full::$(git describe --abbrev=7 --tags)
+
+    - uses: actions/setup-python@master
+      with:
+        python-version: 3.7
+
+    - name: Kodi addon checker
+      env:
+        tests: "E124,E127,E128,E501,E722,E701,E241,E265,E221,E226,W605,S311"
+      run: |
+        python -m pip -q install --upgrade pip
+        pip -q install kodi-addon-checker flake8 flake8-builtins flake8-tidy-imports flake8-bandit
+        flake8 --jobs=8 --exit-zero --ignore="$tests"
+        kodi-addon-checker --branch=matrix --allow-folder-id-mismatch .
+
+    - name: Prepare zip
+      if: success()
+      run: |
+        mkdir tmp
+        rsync -ar --exclude='.git/' \
+                  --exclude='.github/' \
+                  --exclude='.gitignore' \
+                  . tmp/${{env.ADDON}}
+
+    - uses: actions/upload-artifact@v1
+      env:
+        TAGNAME: ${{steps.version.outputs.tag}}
+        VERSION: ${{steps.version.outputs.full}}
+      with:
+        name: ${{env.ADDON}}-${{env.VERSION}}
+        path: tmp
