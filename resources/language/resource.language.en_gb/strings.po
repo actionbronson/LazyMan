@@ -302,11 +302,11 @@ msgid "Advanced"
 msgstr ""
 
 msgctxt "#50017"
-msgid "Previous Games"
+msgid "Listings"
 msgstr ""
 
 msgctxt "#50011"
-msgid "Show All Days"
+msgid "Show All Previous"
 msgstr ""
 
 msgctxt "#50012"

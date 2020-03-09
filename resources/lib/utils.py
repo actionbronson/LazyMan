@@ -18,6 +18,7 @@ from resources.lib.vars import (
     CACHE,
     DEBUG,
     HEADERS,
+    TIME_FRMT,
 )
 
 
@@ -55,7 +56,7 @@ def asCurrentTz(d, t):
     parsed = datetime(*(time.strptime(f"{d} {t}", '%Y-%m-%d %H:%M:%S')[0:6]))
     replaced = parsed.replace(tzinfo=timezone("UTC"))
     local = replaced.astimezone(reference.LocalTimezone())
-    return f"{local.hour:02}:{local.minute:02}"
+    return f"{local.strftime(TIME_FRMT)}"
 
 
 def years(provider):

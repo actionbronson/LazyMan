@@ -1,5 +1,7 @@
 import os
 import sys
+
+import xbmc
 import xbmcaddon
 
 
@@ -16,6 +18,7 @@ DEBUG        = ADDON.getSettingBool('debug')
 INPUTSTREAM  = ADDON.getSettingBool('inputstream')
 SHOWALLDAYS  = ADDON.getSettingBool('showAll')
 SHOWMULTICAM = ADDON.getSettingBool('showMultiCam')
+TIME_FRMT    = xbmc.getRegion('time').replace(':%S', '')
 
 CDN          = "akc" if ADDON.getSetting('cdn') == "Akamai" else "l3c"
 CACHE        = os.path.join(ADDONPATH, 'resources', 'cache')
