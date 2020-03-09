@@ -124,7 +124,7 @@ def get_stream(date, feed, provider, state):
 
         m3u8Path = quality.get(STRM_QUALITY).format(
             "complete"
-            if state in ("In Progress", "Scheduled", "Pre-Game", "Warmup")
+            if re.search(r"Progress|Scheduled|Pre-Game|Warmup", state)
             else "complete-trimmed"
         )
 
