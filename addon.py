@@ -20,7 +20,6 @@ from resources.lib.vars import (
     BASE_URL,
     CDN,
     ICON,
-    INPUTSTREAM,
     SHOWALLDAYS,
     STRM_QUALITY,
     USER_AGENT,
@@ -53,7 +52,7 @@ def menu():
         add_list(provider, 'listtodaysgames', provider, desc=leaders, icon=thumb)
 
 
-def list_games(date, provider, previous=False, highlights=False):
+def list_games(date, provider, previous=False, highlight=False):
     dategames = games(date, provider)
 
     if len(dategames) < 1:
@@ -77,7 +76,7 @@ def list_games(date, provider, previous=False, highlights=False):
             title = "[I]Previous Games[/I]"
         add_list(title, action, provider)
 
-    if highlights:
+    if highlight:
         add_list("[I]Highlights[/I]", "listhighlightsgroup", provider)
 
 
@@ -96,13 +95,11 @@ def list_feeds(game, date, provider):
 
 def highlights_menu(provider):
     if provider == "NHL.tv":
-        # TODO: this gets called (v) twice... rewrite it
         for hg in highlights.get_nhl_highlights():
             add_list(hg.title, "listhighlights", provider, group=hg.title)
+
     add_list("Game Recaps", "listrecaps", provider, state=1)  # state=page
     add_list("Team Videos", "listteams", provider)
-    #else:
-    #add_list("Game Recaps (youtube)", "get_youtubePlaylist", YT_RECAP[provider])
 
 
 def list_highlights(provider, group):
@@ -119,8 +116,7 @@ def get_stream(date, feed, provider, state):
 
         quality = {'540p':   '2500K/2500_{0}.m3u8',
                    '720p':   '3500K/3500_{0}.m3u8',
-                   '720p60': '5600K/5600_{0}.m3u8'
-        }
+                   '720p60': '5600K/5600_{0}.m3u8'}
 
         m3u8Path = quality.get(STRM_QUALITY).format(
             "complete"
@@ -156,18 +152,16 @@ def play(url, mode=None, highlight=False):
     item = xbmcgui.ListItem(path=url)
     item.setMimeType('application/x-mpegURL')
 
-    if mode == "youtube":
-        url = f"plugin://plugin.video.youtube/play/?incognito=true&video_id={url}"
-        item.setPath(url)
-    else:
-        auth_header = f"mediaAuth%3D%22{utils.salt()}%22"
-        url = f"{url}|cookie={auth_header}&user-agent={quote(USER_AGENT)}"
-        # TODO: inputstream checks ssl cert domain mismatch
-        if INPUTSTREAM or highlight:
-            item.setPath(url.split('|')[0])
-            item.setProperty('inputstreamaddon', 'inputstream.adaptive')
-            item.setProperty('inputstream.adaptive.manifest_type', 'hls')
-            item.setProperty('inputstream.adaptive.stream_headers', url.split('|')[1])
+    auth_header = f"mediaAuth%3D%22{utils.salt()}%22"
+    url = f"{url}|cookie={auth_header}&user-agent={quote(USER_AGENT)}"
+
+    # NOTE: inputstream/curl fails on ssl cert domain mismatch so we cant use it for game feeds
+    # TODO: try streamlink when its updated for v19
+    if highlight:
+        item.setPath(url.split('|')[0])
+        item.setProperty('inputstreamclass', 'inputstream.adaptive')
+        item.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        item.setProperty('inputstream.adaptive.stream_headers', url.split('|')[1])
 
     xbmcplugin.setResolvedUrl(ADDONHANDLE, True, item)
 
@@ -191,8 +185,8 @@ def dnsCheck():
             if resolved != lazymanServer:
                 xbmcgui.Dialog().ok(
                     ADDONNAME,
-                    f"{host} doesn't resolve to the Lazyman server.",
-                    f"Update your hosts file to point to {lazymanServer}",
+                    f"{host} doesn't resolve to the Lazyman server."
+                    f"Update your hosts file to point to {lazymanServer}"
                 )
             else:
                 ADDON.setSettingInt("dnsChecked", int(time.time()))
@@ -226,13 +220,11 @@ elif action == "listhighlights":
     list_highlights(params['mode'], params['group'])
 elif action == "listrecaps":
     highlights.get_recaps(params['mode'], int(params['state']))
-#elif action == "get_youtubePlaylist":
-#    youtube(params['mode'])
 
 elif action == "listteams":
     highlights.teamList(params['mode'])
 elif action == "listteam":
-    highlights.team(params['url'], params['mode'])
+    highlights.teamTopics(params['url'], params['mode'])
 elif action == "listteam_subdir":
     highlights.teamSub(params['url'], params['mode'])
 

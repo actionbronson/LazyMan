@@ -4,15 +4,16 @@ import socket
 import sys
 import time
 from datetime import datetime, timedelta
-
-import requests_cache
+from pytz import reference, timezone
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+
+import requests
+import requests_cache
 
 import xbmc
 import xbmcgui
 import xbmcplugin
-from pytz import reference, timezone
 from resources.lib.vars import (
     ADDONHANDLE,
     CACHE,
@@ -61,7 +62,7 @@ def asCurrentTz(d, t):
 
 def years(provider):
     start = 2015 if provider == "NHL.tv" else 2017
-    return list(range(start, today().year + 1))
+    return [*range(start, today().year + 1)]
 
 
 def months(year):
@@ -72,9 +73,9 @@ def months(year):
 
 def days(year, month):
     if int(year) == today().year and int(month) == today().month:
-        return list(range(1, today().day))
+        return [*range(1, today().day)]
     r = calendar.monthrange(int(year), int(month))
-    return list(range(1, max(r) + 1))
+    return [*range(1, max(r) + 1)]
 
 
 def today(delta=0):
@@ -94,7 +95,7 @@ def salt():
 
 
 def head(url, cookies=None):
-    ret = _requests().head(url, cookies=cookies, timeout=3)
+    ret = requests.head(url, cookies=cookies, timeout=3)
     return ret.status_code < 400
 
 

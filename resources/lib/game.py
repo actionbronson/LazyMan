@@ -59,19 +59,20 @@ class GameBuilder:
                 if provider == "MLB.tv":
                     homeFull = f"[COLOR red][B]{home['name']}[/B][/COLOR]" if MLB_FAV in home['name'] else home['name']
                     awayFull = f"[COLOR red][B]{away['name']}[/B][/COLOR]" if MLB_FAV in away['name'] else away['name']
-                    # reverse names from {last, first}
-                    starter_a = g['teams']['away'].get("probablePitcher", {}).get("fullName", "unknown").split(', ')[::-1]
-                    starter_h = g['teams']['home'].get("probablePitcher", {}).get("fullName", "unknown").split(', ')[::-1]
 
-                    wCondition = g['weather'].get('condition', 'N/A')
-                    wWind = g['weather'].get('wind', '').replace(',', ' winds')
-                    wTemp = g['weather'].get('temp', '')
+                    # reverse names from {last, first}
+                    awayPitcher = g['teams']['away'].get("probablePitcher", {}).get("fullName", "unknown").split(', ')[::-1]
+                    homePitcher = g['teams']['home'].get("probablePitcher", {}).get("fullName", "unknown").split(', ')[::-1]
+
+                    condition = g['weather'].get('condition', 'N/A')
+                    wind = g['weather'].get('wind', '').replace(',', ' winds')
+                    temp = g['weather'].get('temp', '')
 
                     desc = (
                         f"[B]Starting Pitchers:[/B] \n"
-                        f"{' '.join(starter_a)} vs. {' '.join(starter_h)} \n\n"
-                        f"[B]Weather:[/B] {wCondition} {wTemp}° \n"
-                        f"{wWind}"
+                        f"{' '.join(awayPitcher)} vs. {' '.join(homePitcher)} \n\n"
+                        f"[B]Weather:[/B] {condition} {temp}° \n"
+                        f"{wind}"
                     )
 
                     # TODO: need to make this request smaller or async
@@ -80,8 +81,8 @@ class GameBuilder:
                     #     response = _requests().get(MLB_API[0] + content, timeout=3).json()
                     #     try:
                     #         thumb = response['highlights']['highlights']['items'][0]['image']['cuts'][size_m]['src']
-                    #     except:
-                    #         log("Failed to find thumbnail", debug=True)
+                    #     except LookupError:
+                    #         pass
                 else:
                     homeFull = f"[COLOR red][B]{home['name']}[/B][/COLOR]" if NHL_FAV in home['name'] else home['name']
                     awayFull = f"[COLOR red][B]{away['name']}[/B][/COLOR]" if NHL_FAV in away['name'] else away['name']
@@ -91,8 +92,8 @@ class GameBuilder:
                         desc = response.json()['editorial']['preview']['items'][0]['seoDescription']
                         if size_n is not None:
                             thumb = response.json()['editorial']['preview']['items'][0]['media']['image']['cuts'][size_n]['src']
-                    except:
-                        log("Failed to find thumbnail", debug=True)
+                    except LookupError:
+                        pass
 
             return Game(
                 g['gamePk'],

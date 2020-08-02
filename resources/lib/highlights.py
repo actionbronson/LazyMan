@@ -3,8 +3,7 @@ import re
 from bs4 import BeautifulSoup
 
 from resources.lib.utils import (
-    log, _requests, today, add_list,
-    cacheHr, cacheDay,
+    log, _requests, today, add_list, cacheDay,
 )
 from resources.lib.vars import (
     IMG_QUALITY,
@@ -53,7 +52,7 @@ def get_nhl_highlights():
                 images = video['image']['cuts']
                 try:
                     thumb = images['1136x640']['src']
-                except:
+                except KeyError:
                     thumb = images[next(iter(images))]['src']
             title_highlights.append(Highlight(blurb, duration, playbacks, thumb, desc))
         highlights.append(HighlightGroup(title, title_highlights))
@@ -72,16 +71,16 @@ def get_recaps(provider, page):
             content = video['asset_id']
             url = f"https://nhl.bamcontent.com/nhl/id/v1/{content}/details/web-v1.json"
             data = _requests().get(url, timeout=3).json()
-            #date = [x for x in data['keywordsAll'] if x['type'] == 'gameId'][0]['displayName'].split('-')[1]
-            title = [x for x in data['keywordsAll'] if x['type'] == "calendarEventId"][0]['displayName']
-            #duration = data['duration']
-            #title = f"{name} [{duration}]"
+            try:
+                title = [x for x in data['keywordsAll'] if x['type'] == "calendarEventId"][0]['displayName']
+            except:
+                title = [x for x in data['keywordsAll'] if x['type'] == 'gameId'][0]['displayName'].split('-')[0]
             desc = data['bigBlurb']
             if IMG_QUALITY != "Off":
                 images = video['image']['cuts']
                 try:
                     thumb = images['1136x640']['src']
-                except:
+                except KeyError:
                     thumb = images[next(iter(images))]['src']
             url = [x for x in data['playbacks'] if x['name'] == "HTTP_CLOUD_WIRED_60"][0]['url']
             add_list(title, "playhighlight", url=url, desc=desc, icon=thumb, isStream=True)
@@ -97,7 +96,7 @@ def get_recaps(provider, page):
             'endDate': today(end).strftime("%Y-%m-%d")
         }
         u = ''.join(MLB_API)
-        gamelist = _requests(cacheHr).get(u, params=query, timeout=3).json()
+        gamelist = _requests().get(u, params=query, timeout=3).json()
 
         if len(gamelist) < 1:
             return
@@ -113,11 +112,11 @@ def get_recaps(provider, page):
                 # check for 8m condensed games first then 4m recaps if not found
                 try:
                     highlight = data['media']['epgAlternate'][0]['items'][0]
-                except:
+                except LookupError:
                     try:
                         highlight = data['media']['epgAlternate'][1]['items'][0]
-                    except:
-                        log("no recap found", debug=True)
+                    except LookupError:
+                        log("no recaps found", debug=True)
                         continue
 
                 title = re.sub(r"(CG:|\|) ", '', highlight['title'])
@@ -138,7 +137,7 @@ def get_recaps(provider, page):
 def teamList(provider):
     if provider == "NHL.tv":
         url = f"{NHL_API[0]}/api/v1/teams"
-        data = _requests().get(url, timeout=3).json()
+        data = _requests(cacheDay).get(url, timeout=3).json()
 
         for item in data['teams']:
             team = item['teamName']
@@ -149,7 +148,7 @@ def teamList(provider):
 
     elif provider == "MLB.tv":
         url = f"{MLB_API[0]}/api/v1/teams?sportId=1"
-        data = _requests().get(url, timeout=3).json()
+        data = _requests(cacheDay).get(url, timeout=3).json()
 
         for item in data['teams']:
             team = item['teamName']
@@ -159,9 +158,9 @@ def teamList(provider):
             add_list(title, "listteam", provider, url=url)
 
 
-def team(url, provider):
+def teamTopics(url, provider):
     if provider == "NHL.tv":
-        data = _requests().get(url, timeout=3).text
+        data = _requests(cacheDay).get(url, timeout=3).text
         soup = BeautifulSoup(data, 'html.parser')
 
         for item in soup.find_all(attrs={'class': 'section-banner__tray-item'}):
@@ -170,7 +169,7 @@ def team(url, provider):
             add_list(title, "listteam_subdir", provider, url=url)
 
     elif provider == "MLB.tv":
-        data = _requests().get(url, timeout=3).text
+        data = _requests(cacheDay).get(url, timeout=3).text
         soup = BeautifulSoup(data, 'html.parser')
 
         # NOTE: look here if no results found
@@ -203,7 +202,6 @@ def teamSub(url, provider):
                 thumb = data['image']['cuts']['1136x640']['src'] if IMG_QUALITY != "Off" else ""
             except KeyError:
                 thumb = ""
-                log(f"Failed to get thumbnail: {u}", debug=True)
             add_list(title, "playhighlight", url=url, desc=desc, icon=thumb, isStream=True)
 
     elif provider == "MLB.tv":
@@ -214,7 +212,7 @@ def teamSub(url, provider):
             url = data['advancedCriteria']
             url = f"https://www.mlb.com/data-service/en/search?advancedCriteria={url}"
             key = 'docs'
-        except:
+        except KeyError:
             url = data['selection'][0]['slug']
             url = f"https://www.mlb.com/data-service/en/selection/{url}?$limit=15"
             key = 'items'
@@ -249,13 +247,12 @@ def get_leaders(provider):
     elif provider == "MLB.tv":
         # NOTE: example queries
         #       leagueId=103,104 (american, national)
-        #       season=2020&standingsTypes=regularSeason,springTraining,firstHalf,secondHalf
+        #       season=2020&standingsTypes=regularSeason,regularSeason,firstHalf,secondHalf
         #       hydrate=division,conference,sport,league,team(nextSchedule(team,gameType=[R,F,D,L,W,C],inclusive=false),previousSchedule(team,gameType=[R,F,D,L,W,C],inclusive=true))
         query = {
             'leagueId': '103,104',  # american, national
             'season': today().strftime("%Y"),
-            # TODO: change when season starts
-            'standingsTypes': 'springTraining',
+            'standingsTypes': 'regularSeason',
             'hydrate': 'league'
         }
         url = f"{MLB_API[0]}/api/v1/standings"
@@ -287,14 +284,15 @@ def random_image(provider):
         quality = {'Low': '1136', 'High': '2048', 'Max': '2568'}
         size = quality.get(IMG_QUALITY, '1136')
 
-        for item in soup.find_all("img", class_="article-sidebar-item__img "):
-            item = item.get("data-srcset").split(' ')
+        for item in soup.find_all("img", class_="article-sidebar-item__img"):
+            item = item.get("data-srcset").split()
             # dont fail if the quality sizes change in the future
             try:
                 # unlike mlb, the results arent sorted for easy pickings
                 url = [x for x in item if size in x][0]
                 items.append(url)
-            except:
+            except LookupError:
+                # TODO: default to item.get("src")
                 log(f"Failed to find a team image: {size} from {item}", debug=True)
 
     elif provider == "MLB.tv":
@@ -307,6 +305,6 @@ def random_image(provider):
 
         for item in soup.find_all("img", class_="lazyload"):
             # quality should always be 1284x722
-            items.append(item.get("data-srcset").split(' ')[0])
+            items.append(item.get("data-srcset").split()[0])
 
     return random.choice(items) if len(items) > 0 else None

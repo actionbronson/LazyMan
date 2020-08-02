@@ -159,14 +159,6 @@
                     </constraints>
                     <control type="toggle"/>
                 </setting>
-                <setting id="inputstream" label="50015" help="50016" type="boolean">
-                    <level>4</level>
-                    <default>false</default>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <control type="toggle"/>
-                </setting>
                 <setting id="dnsChecked" type="integer" >
                     <level>4</level>
                     <default>0</default>
