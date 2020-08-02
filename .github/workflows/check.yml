@@ -2,6 +2,8 @@ name: Addon Verification
 
 on:
   push:
+    branches-ignore:
+      - 'gui'
   pull_request:
     types: [opened, synchronize]
 
