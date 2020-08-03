@@ -23,6 +23,7 @@ from resources.lib.vars import (
     TIME_FRMT,
 )
 
+
 os.makedirs(DATA_PATH, exist_ok=True)
 # cache epg listing for 1 minutes (this seems like a good medium between speed and stale data)
 cacheMin = requests_cache.CachedSession(DATA_PATH + 'cache', backend='sqlite', fast_save=True, expire_after=60)
