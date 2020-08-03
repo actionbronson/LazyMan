@@ -1,6 +1,7 @@
 import calendar
 import random
 import socket
+import os
 import sys
 import time
 from datetime import datetime, timedelta
@@ -16,19 +17,19 @@ import xbmcgui
 import xbmcplugin
 from resources.lib.vars import (
     ADDONHANDLE,
-    CACHE,
+    DATA_PATH,
     DEBUG,
     HEADERS,
     TIME_FRMT,
 )
 
-
+os.makedirs(DATA_PATH, exist_ok=True)
 # cache epg listing for 1 minutes (this seems like a good medium between speed and stale data)
-cacheMin = requests_cache.CachedSession(CACHE, backend='sqlite', fast_save=True, expire_after=60)
+cacheMin = requests_cache.CachedSession(DATA_PATH + 'cache', backend='sqlite', fast_save=True, expire_after=60)
 # cache individual game data for 1 hour (this request is substantially larger than the main epg list)
-cacheHr  = requests_cache.CachedSession(CACHE + '-hourly', backend='sqlite', fast_save=True, expire_after=3600)
+cacheHr  = requests_cache.CachedSession(DATA_PATH + 'cache-hourly', backend='sqlite', fast_save=True, expire_after=3600)
 # cache larger requests for 12 hours
-cacheDay = requests_cache.CachedSession(CACHE + '-daily', backend='sqlite', fast_save=True, expire_after=3600*12)
+cacheDay = requests_cache.CachedSession(DATA_PATH + 'cache-daily', backend='sqlite', fast_save=True, expire_after=3600*12)
 
 
 def _requests(session=cacheHr, retries=2):

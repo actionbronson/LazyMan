@@ -19,7 +19,7 @@ DEBUG        = ADDON.getSettingBool('debug')
 SHOWALLDAYS  = ADDON.getSettingBool('showAll')
 SHOWMULTICAM = ADDON.getSettingBool('showMultiCam')
 TIME_FRMT    = xbmc.getRegion('time').replace(':%S', '')
-CACHE        = xbmc.translatePath(f"special://profile/addon_data/{ADDONID}/cache")
+DATA_PATH    = xbmc.translatePath(f"special://profile/addon_data/{ADDONID}/")
 CDN          = "akc" if ADDON.getSetting('cdn') == "Akamai" else "l3c"
 
 BASE_URL     = "freegamez.ga"
